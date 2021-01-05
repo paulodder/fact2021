@@ -129,7 +129,7 @@ because both the prior and the encoder posterior are independent Gaussian distri
 KL divergence between the two is simply a sum over KL divergences between the
 univariate Gaussians $q_{\theta_{T}}(z_{T}^i \vert \bm{x})$ and $p(z_{T}^i)$.
 
-One of those KL divergence terms can be computed as follows:
+One KL divergence terms can be computed as follows:
 #+BEGIN_EXPORT latex
 \[
   \begin{aligned}

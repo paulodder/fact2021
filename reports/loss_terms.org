@@ -113,7 +113,7 @@ $p(z_{S})$ are parameterized by $(\mu_{S}, \sigma_{S})$ and $(\mu_{M},
 Furthermore, the orthogonality constraint is enforced by choosing $\mu_{S}$
  and $\mu_{T}$ such that $\mu_{S} \perp \mu_{T}$
 ** *Worked out losses*
-The OD target loss can be computed as follows:
+We can write out the OD target loss as follows,
 #+BEGIN_EXPORT latex
 \[
 \begin{aligned}
@@ -125,7 +125,7 @@ The OD target loss can be computed as follows:
 \end{aligned}
 \]
 #+END_EXPORT
-Because both the prior and the encoder posterior are independent Gaussian distributions, the
+because both the prior and the encoder posterior are independent Gaussian distributions, the
 KL divergence between the two is simply a sum over KL divergences between the
 univariate Gaussians $q_{\theta_{T}}(z_{T}^i \vert \bm{x})$ and $p(z_{T}^i)$.
 

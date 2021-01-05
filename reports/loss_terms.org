@@ -1,5 +1,5 @@
 #+BIND: org-export-use-babel nil
-#+TITLE: loss_terms
+#+TITLE: Loss Terms
 #+AUTHOR: Paul Lodder, Pim Meerdink
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 5, 2021

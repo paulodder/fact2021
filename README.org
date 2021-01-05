@@ -7,3 +7,10 @@ Fire up a =python3.8= virtualenvironment and install the requirements accordingl
 #+BEGIN_SRC python
 pip install -r requirements.txt
 #+END_SRC
+** .env
+Add a =.env= file in the root directory of this project with the following
+values defined:
+#+BEGIN_SRC sh
+PROJECT_DIR=/path/to/this/project
+DATA_DIR=/path/to/this/project/data
+#+END_SRC

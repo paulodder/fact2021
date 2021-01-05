@@ -19,7 +19,7 @@
 * Introduction
 This file serves the purpose of documenting our initial current understanding
 of the loss terms presented in [[https://arxiv.org/pdf/2003.05707.pdf][our paper]]. We provide names for each of the loss
-terms as well in *bold*, and introduce names for loss terms that have not been
+terms in *bold* as well, and introduce names for loss terms that have not been
 explicitly named yet.
 * Agents
 Prior to introducing the loss terms, let us give a brief overview of the

@@ -1,6 +1,6 @@
 #+BIND: org-export-use-babel nil
 #+TITLE: Loss Terms
-#+AUTHOR: Paul Lodder, Pim Meerdink
+#+AUTHOR: Jeroen Jagt, Paul Lodder, Pim Meerdink, Siem Teusink
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 5, 2021
 #+LATEX: \setlength\parindent{0pt}
@@ -112,13 +112,43 @@ here. What remains is equal to the cross-entropy loss:
 Again, this is the same as the cross-entropy loss over the output of the
 discriminator. The representation sensitive loss can be computed similarly.
 ** *Entropy loss*
-$$\mathcal{L}_{E}(\phi_{S},\theta_{T}) = KL(p(s|z_{T})\parallel\mathcal{U}(s))$$ This
-is the entropy loss as it maximizes the entropy of the distribution over
+The entropy loss is defined as:
+\begin{equation}
+\mathcal{L}_{E}(\phi_{S},\theta_{T}) =
+KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s}))
+\end{equation}
+This is the entropy loss as it maximizes the entropy of the distribution over
 sensitive classes $s$ given the target latent representation $z_{T}$. This term
 maximizes the entropy as it forces the distribution $p(s|z_{T})$ to be as close
 to the uniform distribution as possible. In essence this promotes fairness by
 ensuring an equal distribution over sensitive classes for any given target
 latent representation.
+*** Loss derivation
+We can compute the entropy loss as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    \mathcal{L}_{E}(\phi_{S},\theta_{T})
+    &= KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s})) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log \mathcal{U}(\bm{s}) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \frac{m}{\log m} \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \frac{m}{\log m}
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+The second term is a constant and will be the same for every loss no matter the
+network, hence we drop it:
+\begin{equation}
+\label{eq:entropy_loss}
+\mathcal{L}_{E}(\phi_{S},\theta_{T}) = \sum_{\bm{s}}
+q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+\end{equation}
+*Important to note* here is that this losses uses the output of the sensitive
+ discriminator which had taken the target representation as input. Hence, this
+ is different from the regular output of the sensitive discriminator.
 ** *Orthogonal-disentangled losses*
 $$\mathcal{L}_{OD}(\phi_{T},\phi_{S}) = \mathcal{L}_{z_{T}}(\theta_{T}) +
 \mathcal{L}_{z_{S}}(\theta_{T})$$This term is called the orthogonal

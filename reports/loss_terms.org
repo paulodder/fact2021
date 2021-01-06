@@ -8,6 +8,7 @@
 #+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
 #+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
 #+LATEX_HEADER_EXTRA: \usepackage{tikz}
+#+LATEX_HEADER_EXTRA: \usepackage{bm}
 #+LATEX_HEADER_EXTRA: \usetikzlibrary{shapes,backgrounds}
 #+LATEX_HEADER_EXTRA: \usepackage{verbatim}
 #+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
@@ -59,7 +60,7 @@ $$\underset{\theta_{T},\theta_{S},\phi{T},\phi{S}}{argmin}
 | Sensitive OD loss | $\mathcal{L}_{z_{S}}(\theta_{T})$            |
 
 ** *Target loss* ($\mathcal{L}_{T}(\theta_{T},\phi_{T})$)
-$$\mathcal{L}_{T}(\theta_{T},\phi_{T}) = KL(p(y|x)\parallelq_{\phi_{t}}(y|z_{T}))$$
+$$\mathcal{L}_{T}(\theta_{T},\phi_{T}) = KL(p(y|x)\parallel q_{\phi_{t}}(y|z_{T}))$$
 Important to note here is that this loss depends on the both target encoder
 (generates target latent representation $z_{T}$ based on $x$) and discriminator
 (responsible for $q_{\phi_{T}}(y|z_{T})$.\\
@@ -94,7 +95,7 @@ latent representation.
 ** *Orthogonal-disentangled loss*
 $$\mathcal{L}_{OD}(\phi_{T},\phi_{S}) = \mathcal{L}_{z_{T}}(\theta_{T}) +
 \mathcal{L}_{z_{S}}(\theta_{T})$$This term is called the orthogonal
-disentangled loss (or OD loss) as it enforces disentangledment
+disentangled loss (or OD loss) as it enforces disentanglement
 (i.e. independence among dimensions) and orthogonality of the approximated
 target $q_{\phi_{T}}(z_{T}|x)$ vs. sensitive $q_{\phi_{T}}(z_{S}|x)$ latent
 distributions. Both of these conditions are enforced through the choice of the
@@ -111,3 +112,39 @@ $p(z_{S})$ are parameterized by $(\mu_{S}, \sigma_{S})$ and $(\mu_{M},
 \sigma_{M})$, respectively.\\
 Furthermore, the orthogonality constraint is enforced by choosing $\mu_{S}$
  and $\mu_{T}$ such that $\mu_{S} \perp \mu_{T}$
+** *Worked out losses*
+We can write out the OD target loss as follows,
+#+BEGIN_EXPORT latex
+\[
+\begin{aligned}
+  \mathcal{L}_{\bm{z}_{T}}(\theta_{T})
+  &= KL(q_{\theta_{T}}(\bm{z}_{T} \vert \bm{x}) \parallel p(\bm{z}_{T})) \\
+  &= \sum_{i=1}^{d_T} KL(q_{\theta_{T}}z_{T}^i \vert \bm{x}) \parallel p(z_{T}^i))
+
+
+\end{aligned}
+\]
+#+END_EXPORT
+because both the prior and the encoder posterior are independent Gaussian distributions, the
+KL divergence between the two is simply a sum over KL divergences between the
+univariate Gaussians $q_{\theta_{T}}(z_{T}^i \vert \bm{x})$ and $p(z_{T}^i)$.
+
+One KL divergence terms can be computed as follows:
+#+BEGIN_EXPORT latex
+\[
+  \begin{aligned}
+    KL(q_{\theta_{T}}(z^i_T \vert \bm{x}) \parallel p(z^i_T))
+    &= - \int q_{\theta_{T}}(z^i_T \vert \bm{x}) \log \frac{q_{\theta_{T}}(z^i_T \vert \bm{x})}
+    {p(z^i_T)} d\bm{x} \\
+    &= \frac{1}{2} \log (2 \pi \sigma_{p_T}^i)
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 \sigma_{p_T}^i}
+    - \frac{1}{2} (1 + \log 2\pi (\sigma_{q_T}^i)^2) \\
+    &= \log \frac{\sigma_{p_T}^i}{\sigma_{q_T}^i}
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 \sigma_{p_T}^i}
+    - \frac{1}{2}
+  \end{aligned}
+\]
+#+END_EXPORT
+In practice, we will compute the element-wise KL divergence between the prior
+and posterior and sum over the result. The OD sensitive loss can be computed in
+a similar way.

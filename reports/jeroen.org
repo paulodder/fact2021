@@ -22,6 +22,29 @@ two versions of the extended yaleb dataset exist; original and cropped. in the
 cropped version, images are aligned and cropped. we use the cropped version, as
 it is easier to work with.
 
+additionally, the lighting positions corresponding to the images used for the
+training partition of the data are specified as "top left, top, top right,
+bottom left, bottom right", but only coordinates are specified in the
+dataset. hence, we estimated these positions to correspond to the coordinates
+
+#+BEGIN_SRC python
+train_positions = {
+    (-110, 65),
+    (0, 90),
+    (110, 65),
+    (110, -20),
+    (-110, -20),
+}
+#+END_SRC
+
+based on this plot of these coordinates present in the dataset:
+
+#+ATTR_LATEX: :width 0.8\linewidth :float nil
+#+CAPTION:
+#+label: fig:yaleb_lighting_positions
+[[file:../plots/yaleb_lighting_positions.png]]
+
+
 ** cifar100
 
 the authors, following [20], repurpose the cifar100 dataset to become a

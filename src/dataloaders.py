@@ -12,7 +12,7 @@ import pandas as pd
 from PIL import Image
 
 DOTENV = dotenv_values(find_dotenv())
-DATA_DIR = Path(DOTENV["DATA_DIR"])
+DATA_DIR = Path(DOTENV["PROJECT_DIR"]) / "data"
 
 
 def categorical_series_labels_to_index(series):
@@ -127,22 +127,6 @@ class GermanDataset(Dataset):
 
     def __len__(self):
         return self.x.shape[0]
-
-
-# def get_yaleb_poses():
-#     root = DATA_DIR / "yaleb" / "CroppedYale"
-#     filepaths = root.glob("**/*")
-#     reg = "A(.\d+)E(.\d+)"
-#     poses = []
-#     for filepath in filepaths:
-#         s = re.search(reg, str(filepath))
-#         if s:
-#             poses.append(s.groups())
-#     return poses
-# import matplotlib.pyplot as plt
-# for group in set(get_yaleb_poses()):
-#     plt.scatter(int(group[0]), int(group[1]))
-# plt.show()
 
 
 class YalebDataset(Dataset):

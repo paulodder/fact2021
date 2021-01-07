@@ -1,0 +1,10 @@
+# cifar-10
+# living: { 'bird', 'cat', 'deer', 'dog', 'frog', 'horse' }
+# living: { 2, 3, 4, 5, 6, 7 }
+# nonliving: { 'airplane', 'automobile', 'ship', 'truck' }
+# nonliving: { 0, 1, 8, 9 }
+
+import pickle
+def unpickle(f):
+    with open(f, 'rb') as fo:
+        return pickle.load(fo, encoding='bytes')

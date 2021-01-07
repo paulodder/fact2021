@@ -6,4 +6,4 @@ source .env
 cd  $DATA_DIR
 cd $CURRENT_DIR
 mkdir $DATA_DIR/german
-wget https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data-numeric -O $DATA_DIR/german/data.csv
+wget https://archive.ics.uci.edu/ml/machine-learning-databases/statlog/german/german.data -O $DATA_DIR/german/data.csv

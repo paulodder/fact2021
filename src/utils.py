@@ -1,6 +1,5 @@
 import torch
 import torch.nn as nn
-from scipy.stats import entropy
 
 
 def sample_reparameterize(mean, std):
@@ -34,9 +33,8 @@ def KLD(mean, std, mean_prior):
     "assumes prior unit variance"
     val = (
         torch.log(torch.ones_like(std) / (std + 1e-8))
-        + (((std ** 2) * ((mean - mean_prior) ** 2)) / 2)
-        - 0.5
-    ).sum(1)
+        + (((std ** 2) + ((mean - mean_prior) ** 2)) / 2)
+    ).sum(1) - 0.5
     return val
 
 

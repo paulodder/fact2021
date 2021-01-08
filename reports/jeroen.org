@@ -56,3 +56,9 @@ however, it is not said whether or not the fine classes are included as input
 to the model. even though it would make sense because sensitive attributes are
 also included in other datasets, it would be non-trivial to shape the input in
 a 2d rectangle, and thus would not make a lot of sense when using a CNN.
+
+** german
+
+for the german dataset, there is no predefined train/test split. the paper also
+does not specify anything about this, so we have defined a split of our own,
+by setting some fraction to be the train split size.

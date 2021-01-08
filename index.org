@@ -3,6 +3,6 @@
 This file serves the purpose of indexing all =.org= files in this
 repository. If you push a new org file, make sure to add an entry for it in
 this file, along with a couple of lines of info on the file.
-* [[./reports/loss_terms.org][reports/loss_terms.org]]
+* [[./reports/loss_terms.org][=reports/loss_terms.org=]]
 Explanation of the loss terms as well as mathematical derivations for each loss
 terms.

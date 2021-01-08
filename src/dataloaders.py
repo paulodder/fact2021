@@ -93,11 +93,15 @@ class AdultDataset(Dataset):
             DATA_DIR / "adult" / f"{'train' if self.train else 'test'}.csv"
         )
         df = pd.read_csv(
-            self.filepath, header=None, skiprows=(0 if self.train else 1)
+            self.filepath,
+            header=None,
+            skipinitialspace=True,
+            skiprows=(0 if self.train else 1),
         )
 
         # the final column indicates the target var, which is one of "<=50K", ">50K"
-        self.y = torch.Tensor((df[14] == ">50K").values)
+        # (in test.csv, these values have a . appended so we remove it)
+        self.y = torch.Tensor((df[14].str.replace(".", "") == ">50K").values)
         # we don't want the target column in our data
         df.drop(columns=14, inplace=True)
 
@@ -105,6 +109,7 @@ class AdultDataset(Dataset):
         # and is one of "Male", "Female", which we map to 0, 1, respectively.
         # this attribute remains present explicitly in the model input, we don't
         # remove it.
+        self.df = df.copy()
         self.sensitive_attrs = torch.Tensor((df[9] == "Female").values)
 
         # represent the categorical columns as indices, not strings
@@ -124,7 +129,9 @@ class GermanDataset(Dataset):
         super(GermanDataset, self).__init__()
         self.train = train
         self.filepath = DATA_DIR / "german" / "data.csv"
-        df = pd.read_csv(self.filepath, header=None, sep=" ")
+        df = pd.read_csv(
+            self.filepath, header=None, skipinitialspace=True, sep=" "
+        )
 
         split_index = int(df.shape[0] * train_fraction)
         if train:
@@ -282,7 +289,7 @@ def load_data(dataset, batch_size, num_workers=0):
 if __name__ == "__main__":
     for dataset in dataset_registrar.keys():
         print(dataset)
-        tdl, vdl = load_data(dataset, 1)
+        tdl, vdl = load_data(dataset, 20)
         for xb, yb, sb in vdl:
             print(xb)
             print(yb)

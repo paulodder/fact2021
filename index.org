@@ -7,7 +7,7 @@ this file, along with a couple of lines of info on the file.
 Explanation of the loss terms as well as mathematical derivations for each loss
 terms.
 * [[./reports/paul.org][=reports/paul.org=]]
-Documents any experiences during the project.
+Documents any of paul's experiences during the project.
 
-* =reports/jeroen.org=
-Documents any of MY experiences during the project.
+* [[./reports/jeroen.org][=reports/jeroen.org=]]
+Documents any of jeroen's experiences during the project.

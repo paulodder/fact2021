@@ -33,4 +33,11 @@ the parameter updates are done everytime we compute the losses.
 # it is unclear how to perform the $\lambda_{OD}$ and
 # $\lambda_{E}$ decay: , where $t$ is the
 # current epoch number, and $t_{s}$ and $\gamma$ are constants.\\
-
+* implicit assumption about relation between sensitive info and accuracy
+Under experiments design on page 8 they claim that if they train a classifier
+to predict sensitive attributes based on target info, and its accuracy is
+closer to naive label ratio, then less information is leaked. However, this
+seems like an oversimplifying assumption: if your accuracy is about the same as
+the label ratio, that does not imply no info is leaked, it could just be that
+certain information is indeed leaked but it just performs even worse on other
+parts of the data.

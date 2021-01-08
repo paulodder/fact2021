@@ -49,3 +49,4 @@ flycheck_*.el
 
 
 data
+__pycache__

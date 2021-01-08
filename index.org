@@ -8,3 +8,6 @@ Explanation of the loss terms as well as mathematical derivations for each loss
 terms.
 * [[./reports/paul.org][=reports/paul.org=]]
 Documents any experiences during the project.
+
+* =reports/jeroen.org=
+Documents any of MY experiences during the project.

@@ -11,8 +11,8 @@ from torchvision import transforms
 import pandas as pd
 from PIL import Image
 
-DOTENV = dotenv_values(find_dotenv())
-DATA_DIR = Path(DOTENV["PROJECT_DIR"]) / "data"
+DOTENV = dotenv_values()
+DATA_DIR = Path(DOTENV["DATA_DIR"])
 
 
 def categorical_series_labels_to_index(series):

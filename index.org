@@ -6,3 +6,5 @@ this file, along with a couple of lines of info on the file.
 * [[./reports/loss_terms.org][=reports/loss_terms.org=]]
 Explanation of the loss terms as well as mathematical derivations for each loss
 terms.
+* [[./reports/paul.org][=reports/paul.org=]]
+Documents any experiences during the project.

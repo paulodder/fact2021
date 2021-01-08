@@ -5,6 +5,7 @@ import pickle
 from dotenv import dotenv_values, find_dotenv
 from pathlib import Path
 import torch
+import torch.nn.functional as F
 from torch.utils.data import Dataset, DataLoader
 import torchvision.datasets as datasets
 from torchvision import transforms
@@ -25,7 +26,25 @@ def df_categorical_columns_to_indices(df, columns):
     return df
 
 
+def tensor_cols_to_flat_onehot(tensor, cols, cols_n):
+    col_mask = torch.zeros(tensor.size(1), dtype=bool)
+    col_mask[cols] = True
+    n_rows = tensor.size(0)
+
+    # need the iteration to have onehots of different length
+    cols_onehot = [
+        F.one_hot(tensor[:, col].long(), col_n).view(n_rows, -1)
+        for col, col_n in zip(cols, cols_n)
+    ]
+
+    # note: this does totally change the column order
+    return torch.hstack((tensor[:, ~col_mask], *cols_onehot))
+
+
 class CIFAR10Dataset(datasets.CIFAR10):
+    n_classes = 2
+    n_labels = 10
+
     def __init__(self, train):
         root = DATA_DIR / "cifar10"
         super(CIFAR10Dataset, self).__init__(
@@ -34,8 +53,12 @@ class CIFAR10Dataset(datasets.CIFAR10):
             transform=transforms.ToTensor(),
             target_transform=None,
         )
+
+        self.sensitive_attrs = torch.Tensor(self.targets).long()
+        # convert to one-hot encoding
+        self.sensitive_attrs = F.one_hot(self.sensitive_attrs, self.n_labels)
+
         self.living_labels = {2, 3, 4, 5, 6, 7}
-        self.sensitive_attrs = torch.Tensor(self.targets)
         self.targets = torch.Tensor(
             [int(target in self.living_labels) for target in self.targets]
         )
@@ -47,6 +70,9 @@ class CIFAR10Dataset(datasets.CIFAR10):
 
 
 class CIFAR100Dataset(datasets.CIFAR100):
+    n_fine_labels = 100
+    n_coarse_labels = 20
+
     def __init__(self, train):
         root = DATA_DIR / "cifar100"
         super(CIFAR100Dataset, self).__init__(
@@ -76,8 +102,14 @@ class CIFAR100Dataset(datasets.CIFAR100):
 
         self.data = np.vstack(self.data).reshape(-1, 3, 32, 32)
         self.data = self.data.transpose((0, 2, 3, 1))  # convert to HWC
-        self.targets = torch.Tensor(self.targets)
-        self.sensitive_attrs = torch.Tensor(self.sensitive_attrs)
+        self.targets = torch.Tensor(self.targets).long()
+        self.sensitive_attrs = torch.Tensor(self.sensitive_attrs).long()
+
+        # convert to one-hot encoding
+        self.sensitive_attrs = F.one_hot(
+            self.sensitive_attrs, self.n_fine_labels
+        )
+        self.targets = F.one_hot(self.targets, self.n_coarse_labels)
 
     def __getitem__(self, i):
         x, target = super().__getitem__(i)
@@ -109,13 +141,20 @@ class AdultDataset(Dataset):
         # and is one of "Male", "Female", which we map to 0, 1, respectively.
         # this attribute remains present explicitly in the model input, we don't
         # remove it.
-        self.df = df.copy()
         self.sensitive_attrs = torch.Tensor((df[9] == "Female").values)
 
-        # represent the categorical columns as indices, not strings
         self.cat_columns = [1, 3, 5, 6, 7, 8, 9, 13]
+        # n of labels in each categorical column
+        self.cat_columns_n = [9, 16, 7, 15, 6, 5, 2, 42]
+
+        # represent the categorical columns as indices, not strings
         df = df_categorical_columns_to_indices(df, self.cat_columns)
         self.x = torch.Tensor(df.values)
+
+        # ok, but we also want the categorical columns in one-hot encoding
+        self.x = tensor_cols_to_flat_onehot(
+            self.x, self.cat_columns, self.cat_columns_n
+        )
 
     def __getitem__(self, i):
         return self.x[i], self.y[i], self.sensitive_attrs[i]
@@ -158,8 +197,12 @@ class GermanDataset(Dataset):
 
         # represent the categorical columns as indices, not strings
         self.cat_columns = [0, 2, 3, 5, 6, 8, 9, 11, 13, 14, 16, 18, 19]
+        self.cat_columns_n = [4, 5, 10, 5, 5, 4, 3, 4, 3, 3, 4, 2, 2]
         df = df_categorical_columns_to_indices(df, self.cat_columns)
         self.x = torch.Tensor(df.values)
+        self.x = tensor_cols_to_flat_onehot(
+            self.x, self.cat_columns, self.cat_columns_n
+        )
 
     def __getitem__(self, i):
         return self.x[i], self.y[i], self.sensitive_attrs[i]
@@ -179,6 +222,7 @@ class YalebDataset(Dataset):
         (110, -20),
         (-110, -20),
     }
+    n_lighting_positions = 65
 
     # convert a numerical coord to the format used by the filenames
     x_to_coord = lambda self, n: f"{'+' if n >= 0 else '-'}{abs(n):03}"
@@ -225,7 +269,8 @@ class YalebDataset(Dataset):
                     ]
                 )
             ).values
-        )
+        ).long()
+        self.targets = F.one_hot(self.targets, len(self.people_ids))
 
         # same with the sensitive attributes, which here is the camera position,
         # i.e. the coords in the filename. the format does not matter, as we are
@@ -242,10 +287,23 @@ class YalebDataset(Dataset):
                     ]
                 )
             ).values
+        ).long()
+        # sensitive attrs are disjoint between train and test, so we need to
+        # make sure we don't reuse indices between them by accident
+        # by shifting the non-train attributes.
+        if not self.train:
+            self.sensitive_attrs = self.sensitive_attrs + len(
+                self.train_positions
+            )
+        self.sensitive_attrs = F.one_hot(
+            self.sensitive_attrs, self.n_lighting_positions
         )
 
+        # load all the images
         self.images = []
         for path in self.paths:
+            # if an image was corrupted, the filename is appended with .bad in
+            # the dataset
             if not os.path.isfile(path):
                 path += ".bad"
             self.images.append(np.array(Image.open(path)))
@@ -291,7 +349,7 @@ if __name__ == "__main__":
         print(dataset)
         tdl, vdl = load_data(dataset, 20)
         for xb, yb, sb in vdl:
-            print(xb)
-            print(yb)
-            print(sb)
+            print(xb.size())
+            print(yb.size())
+            print(sb.size())
             break

@@ -1,0 +1,36 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: paul
+#+AUTHOR: Paul Lodder
+#+EMAIL: <paul_lodder@live.nl>
+#+DATE: January 7, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session inconsistencies_paul :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+* algorithm epoch unclear
+Algorithm 1 has a single for loop, that goes over the number of /epochs/. The
+subsequent code suggests that there is full batch gradient descent, i.e. the
+losses are computed once per loss and the lambda decay happens once per epoch
+and its decay is based on the epoch number. However, full batch gradient
+descent is highly unlikely as they later specify a batch size, implying
+minibatch gradient descent.\\
+If we assume that they do in fact mean minibatch gradient descent, computation
+of the losses is straightforward. It is unclear however, when we should update
+the lambda parameters. They give the following formula:
+$\lambda = \lambda\gamma^{t/t_{s}}$
+where $t$ is the current epoch number. Should this update be performed
+everytime the losses are computed, as the pseudocode suggests? If so should we
+use the /epoch/ or /batch number/? Or should we compute it only at the end of
+an epoch, meaning that the pseudocode is inconsistent in that it suggests that
+the parameter updates are done everytime we compute the losses.
+
+# it is unclear how to perform the $\lambda_{OD}$ and
+# $\lambda_{E}$ decay: , where $t$ is the
+# current epoch number, and $t_{s}$ and $\gamma$ are constants.\\
+

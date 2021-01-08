@@ -14,3 +14,8 @@ values defined:
 PROJECT_DIR=/path/to/this/project
 DATA_DIR=/path/to/this/project/data
 #+END_SRC
+** Data
+To get the data, make sure to have =DATA_DIR= set in your =.env= and run
+#+BEGIN_SRC sh
+bash scripts/get_all.sh
+#+END_SRC

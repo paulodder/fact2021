@@ -89,24 +89,80 @@ the next section.
 - Give explanation of the model
   - Alterations for different data-sets
   - /Is this a good place to give details of all the losses?/
-** 3.2 Datasets
+
+Let $\mathcal{X}$ be the dataset and let $\bm{x} \in \mathbb{R}^D$ be a single
+input sample. Each sample has an associated target vector $\bm{y} \in
+\mathbb{R}^n$ and an associated sensitive attribute vector $\bm{s} \in
+\mathbb{R}^m$, with $n$ and $m$ classes respectively. The aim is to create two
+latent representations; a target latent representation $\bm{z}_T$ and a
+sensitive latent representation $\bm{z}_S$. These representations are generated
+via a VAE-like encoder network [cite VAE] that outputs the means and variances
+of $\bm{z}_T$ and $\bm{z}_S$.
+
+- Beginning encoder shared, splits into two specific encoders
+- Both are fed through specific discriminator
+- Architecture depends on the dataset.
+- Trained in supervised fashion to minimize loss:
+\begin{align}
+\label{eq:recon-losses}
+\mathcal{L}_{T}(\theta_{T},\phi_{T}) &= KL(p(\bm{y}|\bm{x})\parallel
+q_{\phi_{t}}(\bm{y}|\bm{z}_{T})) \\
+\mathcal{L}_{S}(\theta_{S}^{*},\phi_{S}) &= KL(p(\bm{s}|\bm{x})\parallel
+q_{\phi_{S}}(\bm{y}|\bm{z}_{S}))
+\end{align}
+
+- To ensure no sensitive info leaking into the target representation, we
+  maximimze "the entropy of the sensitive discriminator given the target
+  representation".
+\begin{equation}
+\label{eq:entropy-loss}
+\mathcal{L}_{E}(\phi_{S},\theta_{T}) =
+KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s}))
+\end{equation}
+
+- To ensure disantanglement we "enforce some sort of  independence among latent
+  factors". This is achieved by using Variational Inference, more specifically
+  the re-paramaterization trick [cite repar. trick], and try to minimize the KL
+  divergence between posterior (formula) and prior (formula):
+
+\begin{align}
+\label{eq:od-losses}
+\mathcal{L}_{z_{T}}(\theta_{T}) &= KL(q_{\theta_{T}}(\bm{z}_{T} \vert \bm{x}) \parallel
+  p(\bm{z}_{T})) \\
+\mathcal{L}_{z_{S}}(\theta_{S}) &= KL(q_{\theta_{S}}(\bm{z}_{S} \vert \bm{x}) \parallel
+  p(\bm{z}_{S}))
+\end{align}
+
+- Total loss becomes:
+\begin{equation}
+\label{eq:total-loss}
+\underset{\theta_{T},\theta_{S},\phi{T},\phi{S}}{argmin}
+\mathcal{L}_{T}(\theta_{T},\phi_{T}) +
+\mathcal{L}_{S}(\theta_{S^{*}},\phi_{S}) \lambda_{E}\mathcal{L}_{E}(\theta_{T},
+\phi_{S})  + \lambda_{OD}\mathcal{L}_{OD}(\phi_{T},\phi_{S})
+\end{equation}
+
+- $\lambda_{OD}$ and $\lambda_E$ are hyperparameters that we set.
+
+** 3.3 Datasets
 - For every dataset list:
   - Number of examples and label distributions
   - Train/test split details
   - Pre-processing description
   - Link to download data (do not know if this is really something we want to
-    do here, we can make sure the reference includes the link)
-** 3.3 Hyperparameters
+    do here, we can make sure the reference includes the reference.
+  - Encoder and decoder network details
+** 3.4 Hyperparameters
 - Describe process of setting hyperparameters
 - If hyperparameter search was performed, denote the details (amount of
   searches, what space, etc.)
-** 3.4 Experimental setup and code
+** 3.5 Experimental setup and code
 :PROPERTIES:
 :CUSTOM_ID: sec:exp-setup
 :END:
 - Setup description that allows for replication
 - Explain evaluation metric
-** 3.5 Computational Requirements
+** 3.6 Computational Requirements
 - Include Hardware used (CPU/GPU used)
 - For each model, include average run-time
 - Include /total hours of GPU time/

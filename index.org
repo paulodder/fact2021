@@ -10,5 +10,7 @@ terms.
 Documents any of paul's experiences during the project.
 * [[./reports/jeroen.org][=reports/jeroen.org=]]
 Documents any of jeroen's experiences during the project.
+* [[=reports/siem.org=]]
+Documents any of siem's experiences during the project.
 * [[=reports/report.org=]]
 Report file for eventual hand-in

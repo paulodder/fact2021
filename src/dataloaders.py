@@ -19,6 +19,13 @@ DATA_DIR = Path(DOTENV["DATA_DIR"])
 norm_df = lambda df: (df - df.mean()) / df.std()
 
 
+def norm_non_cat_columns(df, cat_columns):
+    """normalize all columns in a dataframe that are not in cat_columns"""
+    non_cat_columns = list(set(df.columns) - set(cat_columns))
+    df[non_cat_columns] = norm_df(df[non_cat_columns])
+    return df
+
+
 def categorical_series_labels_to_index(series):
     return series.astype("category").cat.codes
 
@@ -150,8 +157,8 @@ class AdultDataset(Dataset):
         # n of labels in each categorical column
         self.cat_columns_n = [9, 16, 7, 15, 6, 5, 2, 42]
 
-        self.non_cat_columns = list(set(df.columns) - set(self.cat_columns))
-        df[self.non_cat_columns] = norm_df(df[self.non_cat_columns])
+        # normalize all numerical columns
+        df = norm_non_cat_columns(df, self.cat_columns)
 
         # represent the categorical columns as indices, not strings
         df = df_categorical_columns_to_indices(df, self.cat_columns)
@@ -201,10 +208,15 @@ class GermanDataset(Dataset):
         # remove it.
         self.sensitive_attrs = torch.Tensor(df[8].isin(["A92", "A95"]).values)
 
-        # represent the categorical columns as indices, not strings
         self.cat_columns = [0, 2, 3, 5, 6, 8, 9, 11, 13, 14, 16, 18, 19]
         self.cat_columns_n = [4, 5, 10, 5, 5, 4, 3, 4, 3, 3, 4, 2, 2]
+
+        # normalize all numerical columns
+        df = norm_non_cat_columns(df, self.cat_columns)
+
+        # represent the categorical columns as indices, not strings
         df = df_categorical_columns_to_indices(df, self.cat_columns)
+
         self.x = torch.Tensor(df.values)
         self.x = tensor_cols_to_flat_onehot(
             self.x, self.cat_columns, self.cat_columns_n
@@ -313,7 +325,8 @@ class YalebDataset(Dataset):
             if not os.path.isfile(path):
                 path += ".bad"
             self.images.append(np.array(Image.open(path)))
-        self.images = torch.from_numpy(np.stack(self.images, axis=0))
+        to_tensor = transforms.ToTensor()
+        self.images = to_tensor(np.stack(self.images, axis=0))
 
     def __getitem__(self, i):
         return self.images[i], self.targets[i], self.sensitive_attrs[i]

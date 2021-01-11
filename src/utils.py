@@ -18,6 +18,10 @@ def sample_reparameterize(mean, std):
     return z
 
 
+def bce_loss(x, y):
+    return nn.functional.binary_cross_entropy(x.squeeze(), y.squeeze())
+
+
 def loss_representation(y_pred, y_true):
     # print("HERE", y_pred, y_true)
     out = nn.functional.binary_cross_entropy(y_pred, y_true, reduction="none")

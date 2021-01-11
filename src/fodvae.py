@@ -3,16 +3,13 @@ import torch.nn as nn
 import numpy as np
 import itertools as it
 import pytorch_lightning as pl
-from models import MLPEncoder, MLPDiscriminator
+from models import MLPEncoder, MLP
 from utils import (
     loss_representation,
     loss_entropy_binary,
     sample_reparameterize,
     KLD,
 )
-
-
-# fr
 
 
 class FODVAE(pl.LightningModule):
@@ -208,3 +205,49 @@ class FODVAE(pl.LightningModule):
             print("loss_entropy\t", loss_entropy.item())
             loss = loss_repr_sensitive.item() + remaining_loss.item()
             print("loss", loss)
+
+
+def get_sensitive_discriminator(args):
+    if args.dataset in {"adult", "german"}:
+        model = MLP(input_dim=args.z_dim, hidden_dims=[64, 64], output_dim=1)
+    return model
+
+
+def get_fodvae(args):
+    "gets FODVAE according to args"
+    if args.dataset in "adult":
+        input_dim = 108
+        encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
+        disc_target = MLP(
+            input_dim=args.z_dim, hidden_dims=[64, 64], output_dim=1
+        )
+        disc_sensitive = get_sensitive_discriminator(args)
+        fvae = FODVAE(
+            encoder,
+            disc_target,
+            disc_sensitive,
+            lambda_od=0.036,
+            lambda_entropy=0.55,
+            gamma_od=0.8,
+            gamma_entropy=1.33,
+            step_size=1000,
+        )
+        return fvae
+    elif args.dataset == "german":
+        input_dim = 61
+        encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
+        disc_target = MLP(
+            input_dim=args.z_dim, hidden_dims=[64, 64], output_dim=1
+        )
+        disc_sensitive = get_sensitive_discriminator(args)
+        fvae = FODVAE(
+            encoder,
+            disc_target,
+            disc_sensitive,
+            lambda_od=0.036,
+            lambda_entropy=0.55,
+            gamma_od=0.8,
+            gamma_entropy=1.33,
+            step_size=1000,
+        )
+        return fvae

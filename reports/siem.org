@@ -1,0 +1,22 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: siem
+#+AUTHOR: Siem Teusink
+#+EMAIL: <siemteusink@hotmail.com>
+#+DATE: January 11, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session siem :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+
+* Accuracies not exactly reported
+I found that the accuracies of the experiments conducted on the YaleB dataset
+were only reported graphically and that no exact number was given. The same is
+true for the target accuracies of the CIFAR-10 and CIFAR-100
+datasets. Furthermore, none of the datasets included standard deviation
+intervals.

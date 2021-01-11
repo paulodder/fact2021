@@ -16,6 +16,16 @@ DOTENV = dotenv_values()
 DATA_DIR = Path(DOTENV["DATA_DIR"])
 
 
+norm_df = lambda df: (df - df.mean()) / (df.std() + 1e-6)
+
+
+def norm_non_cat_columns(df, cat_columns):
+    """normalize all columns in a dataframe that are not in cat_columns"""
+    non_cat_columns = list(set(df.columns) - set(cat_columns))
+    df[non_cat_columns] = norm_df(df[non_cat_columns])
+    return df
+
+
 def categorical_series_labels_to_index(series):
     return series.astype("category").cat.codes
 
@@ -147,6 +157,9 @@ class AdultDataset(Dataset):
         # n of labels in each categorical column
         self.cat_columns_n = [9, 16, 7, 15, 6, 5, 2, 42]
 
+        # normalize all numerical columns
+        df = norm_non_cat_columns(df, self.cat_columns)
+
         # represent the categorical columns as indices, not strings
         df = df_categorical_columns_to_indices(df, self.cat_columns)
         self.x = torch.Tensor(df.values)
@@ -195,10 +208,15 @@ class GermanDataset(Dataset):
         # remove it.
         self.sensitive_attrs = torch.Tensor(df[8].isin(["A92", "A95"]).values)
 
-        # represent the categorical columns as indices, not strings
         self.cat_columns = [0, 2, 3, 5, 6, 8, 9, 11, 13, 14, 16, 18, 19]
         self.cat_columns_n = [4, 5, 10, 5, 5, 4, 3, 4, 3, 3, 4, 2, 2]
+
+        # normalize all numerical columns
+        df = norm_non_cat_columns(df, self.cat_columns)
+
+        # represent the categorical columns as indices, not strings
         df = df_categorical_columns_to_indices(df, self.cat_columns)
+
         self.x = torch.Tensor(df.values)
         self.x = tensor_cols_to_flat_onehot(
             self.x, self.cat_columns, self.cat_columns_n
@@ -307,7 +325,8 @@ class YalebDataset(Dataset):
             if not os.path.isfile(path):
                 path += ".bad"
             self.images.append(np.array(Image.open(path)))
-        self.images = torch.from_numpy(np.stack(self.images, axis=0))
+        to_tensor = transforms.ToTensor()
+        self.images = to_tensor(np.stack(self.images, axis=0))
 
     def __getitem__(self, i):
         return self.images[i], self.targets[i], self.sensitive_attrs[i]
@@ -332,6 +351,48 @@ def load_data(dataset, batch_size, num_workers=0):
     dataset_class = dataset_registrar[dataset]
     train_set = dataset_class(train=True)
     valid_set = dataset_class(train=False)
+    train_loader = DataLoader(
+        train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers
+    )
+    valid_loader = DataLoader(
+        valid_set,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+    )
+    return train_loader, valid_loader
+
+
+class Target2SensitiveDataset(Dataset):
+    def __init__(self, dataloader, model):
+        self.targets_latent = []
+        self.targets = []
+        self.s = []
+        for data, target, s in dataloader:
+            # BxD
+            output = model(data)
+            self.targets_latent.append(output)
+            self.targets.append(target)
+            self.s.append(s)
+        self.targets_latent = torch.cat(self.targets_latent, dim=0)
+        self.targets = torch.cat(self.targets, dim=0)
+        self.s = torch.cat(self.s, dim=0)
+
+    def __getitem__(self, i):
+        return self.targets_latent[i], self.targets[i], self.s[i]
+
+    def __len__(self):
+        return len(self.s)
+
+
+def target2sensitive_loader(dataset, batch_size, model, num_workers=0):
+    train_loader, valid_loader = load_data(
+        dataset, batch_size, num_workers=num_workers
+    )
+
+    dataset_class = dataset_registrar[dataset]
+    train_set = Target2SensitiveDataset(train_loader, model)
+    valid_set = Target2SensitiveDataset(valid_loader, model)
     train_loader = DataLoader(
         train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers
     )

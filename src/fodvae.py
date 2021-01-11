@@ -4,7 +4,6 @@ import numpy as np
 import itertools as it
 import pytorch_lightning as pl
 from utils import (
-    # loss_od,
     loss_representation,
     loss_entropy_binary,
     sample_reparameterize,
@@ -52,7 +51,7 @@ class MLPDiscriminator(nn.Module):
         )
         layers = layers[:-1]
         self.net = nn.Sequential(*layers)
-        self.nonlinear = nn.Sigmoid()
+        self.nonlinear = nn.Softmax()
 
     def forward(self, X):
         return self.nonlinear(self.net(X))
@@ -152,15 +151,11 @@ class FODVAE(pl.LightningModule):
         #
 
     def manual_backward(self, loss, retain_graph=False):
-        # print(loss)
         loss.backward(retain_graph=retain_graph)
 
     @property
     def automatic_optimization(self):
         return False
-
-    # def yield_target_encoder_params(self):
-    #     "assumes final two parameter sets are last weights and last biases"
 
     def set_grad_target_encoder(self, to):
         """Sets requires_grad of the parameters of the target encoder accordingly"""
@@ -194,10 +189,7 @@ class FODVAE(pl.LightningModule):
         # self.decay_lambdas()
         optim_all = self.optimizers()
         # X, y = batch
-        X, y = batch["feat"], batch["label"]
-        # tmp solution to get a sensitive value
-        s = (X[:, 0] > 0).float()
-        X = X[:, 1:]
+        X, y, s = batch
         (
             mean_target,
             std_target,
@@ -209,6 +201,7 @@ class FODVAE(pl.LightningModule):
         sample_sensitive = sample_reparameterize(mean_sensitive, std_sensitive)
         # Predict using discriminators
         pred_y = self.discriminator_target(sample_target).squeeze()
+        # print("sample_sensitive", sample_sensitive)
         pred_s = self.discriminator_sensitive(sample_sensitive).squeeze()
         # Compute "crossover" posterior, i.e. to what extent is the sensitive
         # discriminator able to predict the sensitive attribute based on the
@@ -220,23 +213,9 @@ class FODVAE(pl.LightningModule):
         loss_repr_target = loss_representation(pred_y, y).mean()
         loss_repr_sensitive = loss_representation(pred_s, s).mean()
         # OD losses
-        # print("mean_target", mean_target)
-        # print("std_target", std_target)
         loss_od_target = KLD(
             mean_target, std_target, self.prior_mean_target
         ).mean()
-        # print(
-        #     "mean_target, std_target, self.prior_mean_target",
-        #     mean_target,
-        #     std_target,
-        #     self.prior_mean_target,
-        # )
-        # print(
-        #     "mean_sensitive, std_sensitive, self.prior_mean_sensitive",
-        #     mean_sensitive,
-        #     std_sensitive,
-        #     self.prior_mean_sensitive,
-        # )
         loss_od_sensitive = KLD(
             mean_sensitive, std_sensitive, self.prior_mean_sensitive
         ).mean()
@@ -247,11 +226,11 @@ class FODVAE(pl.LightningModule):
         )
         optim_all.zero_grad()
         # Freeze target encoder
-        # self.set_grad_target_encoder(False)
+        self.set_grad_target_encoder(False)
         # Backprop sensitive representation loss
         loss_repr_sensitive.backward(retain_graph=True)
         # Unfreeze target encoder
-        # self.set_grad_target_encoder(True)
+        self.set_grad_target_encoder(True)
         # Backprop remaining loss
         remaining_loss = loss_repr_target + loss_od + loss_entropy
         remaining_loss.backward()
@@ -264,65 +243,3 @@ class FODVAE(pl.LightningModule):
             print("loss_entropy\t", loss_entropy.item())
             loss = loss_repr_sensitive.item() + remaining_loss.item()
             print("loss", loss)
-
-        # print((y == (pred_y > 0.5).int()).float().mean())
-        # print((y == pred_y).sum() / len(pred_y))
-        # representation losses
-        # print("pred_y", pred_y.shape)
-        # print("pred_s", pred_s.shape)
-
-        # print("loss_repr_target", loss_repr_target.shape)
-        # print("loss_repr_target", loss_repr_target)
-        # loss_repr_sensitive = loss_representation(pred_s, s)
-        # # print("loss_repr_sensitive", loss_repr_sensitive.shape)
-        # # print("loss_repr_sensitive", loss_repr_sensitive)
-        # # od losses
-        # loss_od_target = KLD(mean_target, std_target, self.prior_mean_target)
-        # # print("loss_od_target", loss_od_target.shape)
-        # loss_od_sensitive = KLD(
-        #     mean_sensitive, std_sensitive, self.prior_mean_sensitive
-        # )
-        # # print("loss_od_sensitive", loss_od_sensitive.shape)
-        # loss_entropy = loss_entropy_binary(crossover_posterior).squeeze()
-        # # print("loss_entropy", loss_entropy.shape)
-
-        # remaining_loss = (
-        #     loss_repr_sensitive.sum()
-        #     + loss_repr_target.sum()
-        #     # + loss_od_target.sum()
-        #     # + loss_od_sensitive.sum()
-        #     + loss_entropy.sum()
-        # )
-        # print(
-        #     (
-        #         loss_repr_target
-        #         + loss_od_target
-        #         + loss_od_sensitive
-        #         + loss_entropy
-        #     )
-        # )
-        # print("loss", remaining_loss.sum())
-
-        # self.manual_backward(loss_repr_sensitive.sum(), retain_graph=True)
-        # self.set_requires_grad_theta_t(False)
-        # optim_sensitive.step()
-        # self.manual_backward(remaining_loss.mean())
-        # self.set_requires_grad_theta_t(True)
-        # optim_sensitive.zero_grad()
-        # optim_sensitive.zero_grad()
-
-    def set_requires_grad_theta_t(self, to=False):
-        for p in list(self.encoder.parameters()):
-            p.requires_grad = to
-        for p in self.yield_sensitive_repr_parameters():
-            p.requires_grad = True
-
-        #     "train_reconstruction_loss", L_rec, on_step=False, on_epoch=True
-        # )
-        # self.log(
-        #     "train_regularization_loss", L_reg, on_step=False, on_epoch=True
-        # )
-        # return {
-        #     "remaining_loss": loss,
-        #     "loss_repr_sensitive": loss_repr_sensitive,
-        # }

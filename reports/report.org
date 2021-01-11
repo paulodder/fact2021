@@ -18,9 +18,11 @@
 #+BEGIN_SRC emacs-lisp :exports none
 (setq org-export-with-toc nil)
 (setq org-export-with-section-numbers nil)
+(setq org-export-latex-hyperref-format "\\ref{%s}")
 #+END_SRC
 
 #+RESULTS:
+: \ref{%s}
 
 
 * Reproducibility Summary
@@ -50,12 +52,39 @@ via maximum entropy.
 * 2 Scope of reproducibility
 - Introduce problems work addresses
 - Introduce claims of paper that we will try to reproduce
+[cite Sarhan] aimed to answer to questions with their experiments. 1) how does
+the learned target representation perform when predicting target attributes,
+and 2) how much information of the sensitive attributes is still present in the
+learned target representation? To answer these questions they reported the a
+/target accuracy/ and a /sensitive accuracy/ respectively, which we define in
+section [[#sec:exp-setup]]. The authors' reported values can be found in
+table [[tab:sarhan_accuracies]]. Note that some of the accuracies were not reported
+exactly and have therefore been read of graphs. It is therefore our aim to
+reproduce these accuracies found by the authors.
+
+
+#+ATTR_LATEX: :width 0.8\linewidth :float nil
+#+attr_latex: :align c|c|c
+#+CAPTION: Accuracies aquired by [cite Sarhan]. \textbf{Accuracies in bold} were not reported exactly and have been read of a figure.
+#+label: tab:sarhan_accuracies
+|-----------+-----------------+--------------------|
+| dataset   | target accuracy | sensitive accuracy |
+|-----------+-----------------+--------------------|
+| Adult     | $\bm{0.68}$     | $0.6826$           |
+| German    | $\bm{0.77}$     | $0.71$             |
+| CIFAR-10  | $0.9725$        | $0.1907$           |
+| CIFAR-100 | $0.7074$        | $0.1447$           |
+| YaleB     | $\bm{0.92}$     | $\bm{0.52}$        |
+|-----------+-----------------+--------------------|
 
 * 3 Methodology
 The code of the author's implementation of this project was not
 available. Therefore, it was our goal to reproduce the implementation from the
 description in the paper.
-- Summarise resources used (GPU, other documentation or code)
+- Summarise resources used (GPU, other documentation (perhaps documentation for
+  datasets?) or code)
+The essential elements of the model are described in
+the next section.
 ** 3.1 Model descriptions
 - Give explanation of the model
   - Alterations for different data-sets
@@ -72,6 +101,9 @@ description in the paper.
 - If hyperparameter search was performed, denote the details (amount of
   searches, what space, etc.)
 ** 3.4 Experimental setup and code
+:PROPERTIES:
+:CUSTOM_ID: sec:exp-setup
+:END:
 - Setup description that allows for replication
 - Explain evaluation metric
 ** 3.5 Computational Requirements

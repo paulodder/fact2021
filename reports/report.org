@@ -1,0 +1,97 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: report
+#+AUTHOR: Jeroen Jagt, Paul Lodder, Pim Meerdink, Siem Teusink
+#+EMAIL: <paul_lodder@live.nl>
+#+DATE: January 8, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER: \usepackage{bm}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session report :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+
+#+BEGIN_SRC emacs-lisp :exports none
+(setq org-export-with-toc nil)
+(setq org-export-with-section-numbers nil)
+#+END_SRC
+
+#+RESULTS:
+
+
+* Reproducibility Summary
+Summary can be a page long max and needs to be included
+** Scope of Reproducibility
+** Methodology
+** Results
+** What was easy
+** What was difficult
+** Communication with original authors
+
+\newpage
+* 1 Introduction
+- Shortly introduce the work at high level (few paragraphs AT MOST, guidelines
+  talk about a couple of sentences).
+
+The work of [cite Sarhan] introduces a new way of learning representations that
+are useful for a specified task while robust against sensitive attributes. They
+propose a method that decomposes the latent representation into a target and
+sensitive representation. The representations are made to be orthogonal to
+prevent sensitive information leaking into the target
+representation. Furthermore, they introduce the disentanglement property to
+"split the generative factors of each learned code" [cite Sarhan]. Last, they
+ensure that the target representation is agnostic to the sensitive information
+via maximum entropy.
+
+* 2 Scope of reproducibility
+- Introduce problems work addresses
+- Introduce claims of paper that we will try to reproduce
+
+* 3 Methodology
+The code of the author's implementation of this project was not
+available. Therefore, it was our goal to reproduce the implementation from the
+description in the paper.
+- Summarise resources used (GPU, other documentation or code)
+** 3.1 Model descriptions
+- Give explanation of the model
+  - Alterations for different data-sets
+  - /Is this a good place to give details of all the losses?/
+** 3.2 Datasets
+- For every dataset list:
+  - Number of examples and label distributions
+  - Train/test split details
+  - Pre-processing description
+  - Link to download data (do not know if this is really something we want to
+    do here, we can make sure the reference includes the link)
+** 3.3 Hyperparameters
+- Describe process of setting hyperparameters
+- If hyperparameter search was performed, denote the details (amount of
+  searches, what space, etc.)
+** 3.4 Experimental setup and code
+- Setup description that allows for replication
+- Explain evaluation metric
+** 3.5 Computational Requirements
+- Include Hardware used (CPU/GPU used)
+- For each model, include average run-time
+- Include /total hours of GPU time/
+
+* 4 Results
+- High-level overview. Do our results support the paper's claims? Keep
+  discussion for next section.
+** 4.1 Results reproducing original paper
+- Report results and make clear which claim they support (if they do). Should
+  be done in logical sections.
+** 4.2 Results beyond original paper
+- Report additional results we acquired, if relevant.
+
+* 5 Discussion
+- Discuss whether we think our results support the claims of the paper. Discuss
+  strengths and/or weaknesses of our approach.
+** 5.1 What was easy
+** 5.2 What was difficult
+** 5.3 Communication with original authors
+* References

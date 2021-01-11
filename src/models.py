@@ -35,13 +35,13 @@ class MLP(nn.Module):
         input_dim=2,
         hidden_dims=[64, 64],
         output_dim=1,
-        nonlinearity=nn.ReLU,
+        nonlinearity=nn.Sigmoid,
     ):
         super().__init__()
         layers = list(
             it.chain.from_iterable(
                 [
-                    (nn.Linear(inp_dim, out_dim), nonlinearity())
+                    (nn.Linear(inp_dim, out_dim), nn.ReLU())
                     for (inp_dim, out_dim) in zip(
                         [input_dim] + hidden_dims, hidden_dims + [output_dim]
                     )
@@ -50,7 +50,12 @@ class MLP(nn.Module):
         )
         layers = layers[:-1]
         self.net = nn.Sequential(*layers)
-        self.nonlinear = nn.Sigmoid()
+        self.nonlinear = (
+            nonlinearity(dim=1)
+            if nonlinearity == nn.Softmax
+            else nonlinearity()
+        )
+        # print(self.nonlinear)
 
     def forward(self, X):
         return self.nonlinear(self.net(X))

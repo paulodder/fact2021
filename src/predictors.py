@@ -97,8 +97,10 @@ def cifar100_target_predictor(args):
 
 
 def get_target_predictor(args):
-    if args.dataset in ["adult", "german", "yaleb"]:
+    if args.dataset in ["adult", "german"]:
         return LRPredictor.predict_targets()
+    if args.dataset == "yaleb":
+        return LRPredictor(lambda ds: ds.targets.argmax(1))
     if args.dataset == "cifar10":
         return MLPPredictorTrainer(
             cifar10_target_predictor(args), args.max_epochs

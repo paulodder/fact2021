@@ -1,4 +1,5 @@
 import torch
+from random import choices
 import torch.nn as nn
 import numpy as np
 import itertools as it
@@ -14,11 +15,22 @@ from utils import (
 
 class FODVAE(pl.LightningModule):
     def __init__(
-        self, encoder, discriminator_target, discriminator_sensitive, **kwargs
+        self,
+        encoder,
+        discriminator_target,
+        discriminator_sensitive,
+        z_dim,
+        **kwargs
     ):
         super().__init__()
-        self.prior_mean_target = torch.Tensor([0, 1])
-        self.prior_mean_sensitive = torch.Tensor([1, 0])
+        self.prior_mean_target = torch.Tensor(choices([0, 1], k=z_dim))
+        self.prior_mean_sensitive = -(self.prior_mean_target - 1)
+        self.prior_mean_target = self.prior_mean_target / sum(
+            self.prior_mean_target ** 2
+        )
+        self.prior_mean_sensitive = self.prior_mean_sensitive / sum(
+            self.prior_mean_sensitive ** 2
+        )
         self.encoder = encoder
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
@@ -96,7 +108,7 @@ class FODVAE(pl.LightningModule):
 
     def configure_optimizers(self):
         optim_all = torch.optim.Adam(
-            self.parameters(), lr=1 * 10e-4, weight_decay=5 * 10e-4
+            self.parameters(), lr=1 * 10e-4, weight_decay=5 * 10e-2
         )
         # optim_all = torch.optim.Adam(
         #     self.parameters(), lr=1 * 10e-3, weight_decay=5 * 10e-4
@@ -157,6 +169,7 @@ class FODVAE(pl.LightningModule):
             mean_sensitive,
             std_sensitive,
         ) = self.forward(X)
+        # print(mean_target)
         # Sample from latent distributions
         sample_target = sample_reparameterize(mean_target, std_target)
         sample_sensitive = sample_reparameterize(mean_sensitive, std_sensitive)
@@ -171,8 +184,8 @@ class FODVAE(pl.LightningModule):
 
         ## Compute losses
         # Representation losses
-        loss_repr_target = loss_representation(pred_y, y).mean()
-        loss_repr_sensitive = loss_representation(pred_s, s).mean()
+        loss_repr_target = loss_representation(pred_y, y.float()).mean()
+        loss_repr_sensitive = loss_representation(pred_s, s.float()).mean()
         # OD losses
         loss_od_target = KLD(
             mean_target, std_target, self.prior_mean_target
@@ -209,17 +222,32 @@ class FODVAE(pl.LightningModule):
 
 def get_sensitive_discriminator(args):
     if args.dataset in {"adult", "german"}:
-        model = MLP(input_dim=args.z_dim, hidden_dims=[64, 64], output_dim=1)
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[64, 64],
+            output_dim=1,
+            nonlinearity=nn.Sigmoid,
+        )
+    elif args.dataset == "yaleb":
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[100, 100],
+            output_dim=65,
+            nonlinearity=nn.Softmax,
+        )
     return model
 
 
 def get_fodvae(args):
     "gets FODVAE according to args"
-    if args.dataset in "adult":
+    if args.dataset == "adult":
         input_dim = 108
         encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
         disc_target = MLP(
-            input_dim=args.z_dim, hidden_dims=[64, 64], output_dim=1
+            input_dim=args.z_dim,
+            hidden_dims=[64, 64],
+            output_dim=1,
+            nonlinearity=nn.Sigmoid,
         )
         disc_sensitive = get_sensitive_discriminator(args)
         fvae = FODVAE(
@@ -231,13 +259,17 @@ def get_fodvae(args):
             gamma_od=0.8,
             gamma_entropy=1.33,
             step_size=1000,
+            z_dim=args.z_dim,
         )
         return fvae
     elif args.dataset == "german":
         input_dim = 61
         encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
         disc_target = MLP(
-            input_dim=args.z_dim, hidden_dims=[64, 64], output_dim=1
+            input_dim=args.z_dim,
+            hidden_dims=[64, 64],
+            output_dim=1,
+            nonlinearity=nn.Sigmoid,
         )
         disc_sensitive = get_sensitive_discriminator(args)
         fvae = FODVAE(
@@ -249,5 +281,30 @@ def get_fodvae(args):
             gamma_od=0.8,
             gamma_entropy=1.33,
             step_size=1000,
+            z_dim=args.z_dim,
+        )
+        return fvae
+    elif args.dataset == "yaleb":
+        input_dim = 32256
+        encoder = MLPEncoder(
+            input_dim=input_dim, hidden_dims=[64, 64], z_dim=args.z_dim
+        )
+        disc_target = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[100, 100],
+            output_dim=38,
+            nonlinearity=nn.Softmax,
+        )
+        disc_sensitive = get_sensitive_discriminator(args)
+        fvae = FODVAE(
+            encoder,
+            disc_target,
+            disc_sensitive,
+            lambda_od=0.036,
+            lambda_entropy=0.55,
+            gamma_od=0.8,
+            gamma_entropy=1.33,
+            step_size=1000,
+            z_dim=args.z_dim,
         )
         return fvae

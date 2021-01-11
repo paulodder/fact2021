@@ -99,7 +99,7 @@ if __name__ == "__main__":
         args.dataset, args.batch_size, get_embs
     )
 
-    # Get predictors
+    # Gept predictors
     target_predictor = get_target_predictor(args)
     sensitive_predictor = get_sensitive_predictor(
         get_sensitive_discriminator(args), args
@@ -112,14 +112,15 @@ if __name__ == "__main__":
     sensitive_predictor.fit(train_dl_target_emb)
 
     with torch.no_grad():
-        y_test = test_dl_target_emb.dataset.targets
-        y_pred = target_predictor.predict(test_dl_target_emb)
+        y_test = train_dl_target_emb.dataset.targets
+        y_pred = target_predictor.predict(train_dl_target_emb)
 
         s_test = test_dl_target_emb.dataset.s
         s_pred = sensitive_predictor.predict(test_dl_target_emb)
 
         print("target classification report")
-        print(classification_report(y_test, y_pred > 0.5))
-
+        print(classification_report(y_test, y_pred))
         print("sensitive classification report")
+        print(s_test)
+        print(s_pred)
         print(classification_report(s_test, s_pred > 0.5))

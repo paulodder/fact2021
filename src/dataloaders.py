@@ -326,7 +326,9 @@ class YalebDataset(Dataset):
                 path += ".bad"
             self.images.append(np.array(Image.open(path)))
         to_tensor = transforms.ToTensor()
-        self.images = to_tensor(np.stack(self.images, axis=0))
+        self.images = to_tensor(np.stack(self.images, axis=0)).view(
+            len(self.images), -1
+        )
 
     def __getitem__(self, i):
         return self.images[i], self.targets[i], self.sensitive_attrs[i]

@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 import itertools as it
 import pytorch_lightning as pl
+from models import MLPEncoder, MLPDiscriminator
 from utils import (
     loss_representation,
     loss_entropy_binary,
@@ -11,65 +12,28 @@ from utils import (
 )
 
 
-class MLPEncoder(nn.Module):
-    def __init__(self, input_dim=784, hidden_dims=[64], z_dim=2):
-        super().__init__()
-        self.z_dim = z_dim
-        output_dim = z_dim * 4  # 2 means and 2 covariances for each dim
-        layers = list(
-            it.chain.from_iterable(
-                [
-                    (nn.Linear(inp_dim, out_dim), nn.ReLU())
-                    for (inp_dim, out_dim) in zip(
-                        [input_dim] + hidden_dims, hidden_dims + [output_dim],
-                    )
-                ]
-            )
-        )
-        layers = layers[:-1]
-        self.net = nn.Sequential(*layers)
-
-    def forward(self, X):
-        vals = self.net(X)
-        return [
-            vals[:, i * self.z_dim : (i + 1) * self.z_dim] for i in range(4)
-        ]
-
-
-class MLPDiscriminator(nn.Module):
-    def __init__(self, z_dim=2, hidden_dims=[64, 64], output_dim=1):
-        super().__init__()
-        layers = list(
-            it.chain.from_iterable(
-                [
-                    (nn.Linear(inp_dim, out_dim), nn.ReLU())
-                    for (inp_dim, out_dim) in zip(
-                        [z_dim] + hidden_dims, hidden_dims + [output_dim]
-                    )
-                ]
-            )
-        )
-        layers = layers[:-1]
-        self.net = nn.Sequential(*layers)
-        self.nonlinear = nn.Softmax()
-
-    def forward(self, X):
-        return self.nonlinear(self.net(X))
+# fr
 
 
 class FODVAE(pl.LightningModule):
-    def __init__(self, encoder, discriminator_target, discriminator_sensitive):
+    def __init__(
+        self, encoder, discriminator_target, discriminator_sensitive, **kwargs
+    ):
         super().__init__()
         self.prior_mean_target = torch.Tensor([0, 1])
         self.prior_mean_sensitive = torch.Tensor([1, 0])
         self.encoder = encoder
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
-        self.lambda_od = 0.036
-        self.lambda_entropy = 0.55
-        self.gamma_od = 0.8
-        self.gamma_entropy = 1.33
-        self.step_size = 1000
+        param2default = {
+            "lambda_od": 0.036,
+            "lambda_entropy": 0.55,
+            "gamma_od": 0.8,
+            "gamma_entropy": 1.33,
+            "step_size": 1000,
+        }
+        for param, default in param2default.items():
+            setattr(self, param, kwargs.get(param, default))
 
     def forward(self, x):
         """
@@ -221,8 +185,9 @@ class FODVAE(pl.LightningModule):
         ).mean()
         loss_od = self.lambda_od * (loss_od_target + loss_od_sensitive)
         # Entropy loss
+        # print("crossover_posterior", crossover_posterior)
         loss_entropy = self.lambda_entropy * (
-            loss_entropy_binary(crossover_posterior).squeeze().mean()
+            loss_entropy_binary(crossover_posterior).mean()
         )
         optim_all.zero_grad()
         # Freeze target encoder

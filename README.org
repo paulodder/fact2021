@@ -1,6 +1,7 @@
 #+BIND: org-export-use-babel nil
 #+TITLE: FACT 2021
-This repository contains all work relating to the UvA FACT 2021 course.
+This repository contains all work relating to the UvA FACT 2021
+course.
 * Setup
 ** Virtualenv
 Fire up a =python3.8= virtualenvironment and install the requirements accordingly:
@@ -13,6 +14,7 @@ values defined:
 #+BEGIN_SRC sh
 PROJECT_DIR=/path/to/this/project
 DATA_DIR=/path/to/this/project/data
+MODELS_DIR=/path/to/this/project/models
 #+END_SRC
 ** Data
 To get the data, make sure to have =DATA_DIR= set in your =.env= and run

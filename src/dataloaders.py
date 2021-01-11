@@ -16,7 +16,7 @@ DOTENV = dotenv_values()
 DATA_DIR = Path(DOTENV["DATA_DIR"])
 
 
-norm_df = lambda df: (df - df.mean()) / df.std()
+norm_df = lambda df: (df - df.mean()) / (df.std() + 1e-6)
 
 
 def norm_non_cat_columns(df, cat_columns):

@@ -1,0 +1,98 @@
+ #+BIND: org-export-use-babel nil
+#+TITLE: Experiments
+#+AUTHOR: Pim Meerdink
+#+EMAIL: <pimmeerdink@hotmail.com>
+#+DATE: January 8, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session experiments :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+
+
+* Introduction
+
+This file describes the experiments that were preformed in the paper. As such,
+it also describes the experiments that we will need to replicate.
+
+In general, assesment is done through training two classifiers
+1) maps from z_T to T (dubbed the /target predictor/)
+1) maps from z_T to S (same architecture as the discriminator)
+* Adult Dataset
+** data
+We predict whether income exceeds $50K/yr based on census data, on the adult
+dataset. The task is binary classification, and the sensitive attribute is the
+gender of the person.
+
+** encoder
+1 hidden layer neural network as encoder, mapping to a 2 dimensional latent
+space for both the target and sensitive representation.
+
+** discriminator
+The discriminators have two hidden layers, Each hidden layer contains 64 units
+
+** target prediction
+logistic regression
+** hyperparameters
+
+The learning rate for all components is 10−3 and weight decay is 5 × 10−4
+
+* German Dataset
+
+** data
+Binary classification for good/bad credit risk, the sensitive attribute is the
+gender of the person.
+** encoder
+1 hidden layer neural network as encoder, mapping to a 2 dimensional latent
+space for both the target and sensitive representation.
+
+** discriminator
+
+The discriminators have two hidden layers, with a logistic regression output
+layer. Each hidden layer contains 64 units
+
+** target prediciton
+logistic regression
+** hyperparameters
+
+The learning rate for all components is 10−3 and weight decay is 5 × 10−4
+
+* Yaleb Dataset
+** data
+The target task is the identification of the subject while the light source
+condition is considered the sensitive attribute
+** encoder
+ encoder consisted of one layer
+** discriminator
+ and the discriminator is neural network
+with two hidden layers each contains 100 units.
+** target prediction
+target predictor is one linear layer
+** hyperparameters
+ The parameters are trained using Adam optimizer with a
+learning rate of 10−4 and weight decay of 5 × 10−2
+* CIFAR
+** data
+The original dataset contains 10 classes we refer to as fine classes, we divide
+the 10 classes into two categories living and non-living classes and refer to
+this split as coarse classes.  The target task is the classification of the
+coarse classes while not revealing information about the fine classes.
+
+For cifar 100 a similar task except the coarse classes are as defined in
+[[https://arxiv.org/pdf/1904.05514.pdf][this paper]] in table 1.
+** encoder
+ResNet-18 [7] architecture for training the encoder
+** discriminator
+a neural network with two hidden layers (256 and 128 neurons).
+** target predictor
+a neural network with two hidden layers (256 and 128 neurons).
+** hyperparameters
+For the encoder, we set the learning rate to 10−4 and weight decay to 10−2. For the
+target and discriminator networks, the learning rate and weight decay were set
+to 10−2 and 10−3
+,respectively.

@@ -16,6 +16,9 @@ DOTENV = dotenv_values()
 DATA_DIR = Path(DOTENV["DATA_DIR"])
 
 
+norm_df = lambda df: (df - df.mean()) / df.std()
+
+
 def categorical_series_labels_to_index(series):
     return series.astype("category").cat.codes
 
@@ -146,6 +149,9 @@ class AdultDataset(Dataset):
         self.cat_columns = [1, 3, 5, 6, 7, 8, 9, 13]
         # n of labels in each categorical column
         self.cat_columns_n = [9, 16, 7, 15, 6, 5, 2, 42]
+
+        self.non_cat_columns = list(set(df.columns) - set(self.cat_columns))
+        df[self.non_cat_columns] = norm_df(df[self.non_cat_columns])
 
         # represent the categorical columns as indices, not strings
         df = df_categorical_columns_to_indices(df, self.cat_columns)

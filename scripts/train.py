@@ -79,7 +79,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     torch.manual_seed(args.seed)
-    # Init model
+    # Initial model
     # enc = MLPEncoder(input_dim=args.input_dim, z_dim=args.z_dim)
     # disc_target = MLPDiscriminator(z_dim=args.z_dim, output_dim=1)
     # disc_sens = MLPDiscriminator(z_dim=args.z_dim, output_dim=1)
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         args.dataset, args.batch_size, get_embs
     )
 
-    # Gept predictors
+    # Get predictors
     target_predictor = get_target_predictor(args)
     sensitive_predictor = get_sensitive_predictor(
         get_sensitive_discriminator(args), args

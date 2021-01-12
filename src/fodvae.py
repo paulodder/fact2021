@@ -5,6 +5,7 @@ import numpy as np
 import itertools as it
 import pytorch_lightning as pl
 from models import MLPEncoder, MLP
+from resnet import ResNetEncoder
 from utils import (
     loss_representation,
     loss_entropy_binary,
@@ -236,6 +237,52 @@ def get_sensitive_discriminator(args):
             output_dim=65,
             nonlinearity=nn.Softmax,
         )
+    elif args.dataset == "cifar10":
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[256, 128],
+            output_dim=10,
+            nonlinearity=nn.Sigmoid,
+        )
+    else:
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[256, 128],
+            output_dim=100,
+            nonlinearity=nn.Sigmoid,
+        )
+    return model
+
+
+def get_target_discriminator(args):
+    if args.dataset in {"adult", "german"}:
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[64, 64],
+            output_dim=1,
+            nonlinearity=nn.Sigmoid,
+        )
+    elif args.dataset == "yaleb":
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[100, 100],
+            output_dim=65,
+            nonlinearity=nn.Softmax,
+        )
+    elif args.dataset == "cifar10":
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[256, 128],
+            output_dim=2,
+            nonlinearity=nn.Sigmoid,
+        )
+    else:
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[256, 128],
+            output_dim=20,
+            nonlinearity=nn.Sigmoid,
+        )
     return model
 
 
@@ -320,4 +367,20 @@ def get_fodvae(args):
             z_dim=args.z_dim,
         )
 
+        return fvae
+    else:
+        encoder = ResNetEncoder(z_dim=args.z_dim)
+        disc_target = get_target_discriminator(args)
+        disc_sensitive = get_sensitive_discriminator(args)
+        fvae = FODVAE(
+            encoder,
+            disc_target,
+            disc_sensitive,
+            lambda_od=0.036,
+            lambda_entropy=0.55,
+            gamma_od=0.8,
+            gamma_entropy=1.33,
+            step_size=1000,
+            z_dim=args.z_dim,
+        )
         return fvae

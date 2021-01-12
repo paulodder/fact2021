@@ -329,7 +329,7 @@ class YalebDataset(Dataset):
 
     def __getitem__(self, i):
         img = Image.fromarray(self.images[i])
-        img = self.to_tensor(img)
+        img = self.to_tensor(img).view(-1)
         return img, self.targets[i], self.sensitive_attrs[i]
 
     def __len__(self):

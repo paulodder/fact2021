@@ -1,0 +1,23 @@
+import torchvision.models as models
+import torch.nn.functional as F
+import torch
+import torch.nn as nn
+import numpy as np
+import pytorch_lightning as pl
+
+
+class ResNetEncoder(nn.Module):
+    def __init__(self, z_dim=2):
+        super().__init__()
+        self.z_dim = z_dim
+        output_dim = z_dim * 4  # 2 means and 2 covariances for each dim
+        self.net = models.resnet18(pretrained=True)
+        fc_size = list(self.resnet_model.children())[-1].in_features
+        self.resnet_model.fc = nn.Linear(fc_size, num_classes)
+        self.nonlinear = nn.Sigmoid()
+
+      def forward(self, X):
+        vals = self.nonlinear(self.resnet_model(X))
+        return [
+            vals[:, i * self.z_dim : (i + 1) * self.z_dim] for i in range(4)
+        ]

@@ -29,38 +29,47 @@ class MLPEncoder(nn.Module):
         ]
 
 
-class MLPDiscriminator(pl.LightningModule):
-    def __init__(self, z_dim=2, hidden_dims=[64, 64], output_dim=1):
+class MLP(nn.Module):
+    def __init__(
+        self,
+        input_dim=2,
+        hidden_dims=[64, 64],
+        output_dim=1,
+        nonlinearity=nn.Sigmoid,
+    ):
         super().__init__()
         layers = list(
             it.chain.from_iterable(
                 [
                     (nn.Linear(inp_dim, out_dim), nn.ReLU())
                     for (inp_dim, out_dim) in zip(
-                        [z_dim] + hidden_dims, hidden_dims + [output_dim]
+                        [input_dim] + hidden_dims, hidden_dims + [output_dim]
                     )
                 ]
             )
         )
         layers = layers[:-1]
         self.net = nn.Sequential(*layers)
-        self.nonlinear = nn.Sigmoid()
+        self.nonlinear = (
+            nonlinearity(dim=1)
+            if nonlinearity == nn.Softmax
+            else nonlinearity()
+        )
+        # print(self.nonlinear)
 
     def forward(self, X):
         return self.nonlinear(self.net(X))
 
-    @property
-    def automatic_optimization(self):
-        return False
+    # automatic_optimization = False
 
-    def training_step(self, batch, batch_idx):
-        X, y, s = batch
-        y_pred = self.forward(X)
-        loss = loss_entropy_binary(y, y_pred)
-        loss.backward()
+    # def training_step(self, batch, batch_idx):
+    #     X, y, s = batch
+    #     output = self.forward(X)
+    #     loss = loss_entropy_binary(s, output)
+    #     loss.backward()
 
-    def configure_optimizers(self):
-        optim_all = torch.optim.Adam(
-            self.parameters(), lr=1 * 10e-4, weight_decay=5 * 10e-4
-        )
-        return optim_all
+    # def configure_optimizers(self):
+    #     optim_all = torch.optim.Adam(
+    #         self.parameters(), lr=1 * 10e-4, weight_decay=5 * 10e-4
+    #     )
+    #     return optim_all

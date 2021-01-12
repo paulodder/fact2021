@@ -325,11 +325,12 @@ class YalebDataset(Dataset):
             if not os.path.isfile(path):
                 path += ".bad"
             self.images.append(np.array(Image.open(path)))
-        to_tensor = transforms.ToTensor()
-        self.images = to_tensor(np.stack(self.images, axis=0))
+        self.to_tensor = transforms.ToTensor()
 
     def __getitem__(self, i):
-        return self.images[i], self.targets[i], self.sensitive_attrs[i]
+        img = Image.fromarray(self.images[i])
+        img = self.to_tensor(img)
+        return img, self.targets[i], self.sensitive_attrs[i]
 
     def __len__(self):
         return len(self.images)

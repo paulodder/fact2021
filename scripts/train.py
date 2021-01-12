@@ -66,7 +66,11 @@ def parse_args():
         help="Latent dimensionality",
     )
     parser.add_argument(
-        "--seed", "-r", type=int, default=420, help="Random seed",
+        "--seed",
+        "-r",
+        type=int,
+        default=420,
+        help="Random seed",
     )
     args = parser.parse_args()
     return args
@@ -121,6 +125,9 @@ if __name__ == "__main__":
         print("target classification report")
         print(classification_report(y_test, y_pred))
         print("sensitive classification report")
-        print(s_test)
-        print(s_pred)
-        print(classification_report(s_test, s_pred > 0.5))
+        print(classification_report(s_test, s_pred > 1))
+
+        # print("target classification report")
+        # print(classification_report(y_test.argmax(1), y_pred))
+        # print("sensitive classification report")
+        # print(classification_report(s_test.argmax(1), s_pred.argmax(1)))

@@ -23,7 +23,8 @@ class FODVAE(pl.LightningModule):
         **kwargs
     ):
         super().__init__()
-        self.prior_mean_target = torch.Tensor(choices([0, 1], k=z_dim))
+        self.prior_mean_target = torch.ones(z_dim)
+        self.prior_mean_target[int(z_dim / 2) :] = 0
         self.prior_mean_sensitive = -(self.prior_mean_target - 1)
         self.prior_mean_target = self.prior_mean_target / sum(
             self.prior_mean_target ** 2
@@ -287,7 +288,7 @@ def get_fodvae(args):
     elif args.dataset == "yaleb":
         input_dim = 32256
         encoder = MLPEncoder(
-            input_dim=input_dim, hidden_dims=[64, 64], z_dim=args.z_dim
+            input_dim=input_dim, hidden_dims=[], z_dim=args.z_dim
         )
         disc_target = MLP(
             input_dim=args.z_dim,
@@ -296,15 +297,27 @@ def get_fodvae(args):
             nonlinearity=nn.Softmax,
         )
         disc_sensitive = get_sensitive_discriminator(args)
+        # fvae = FODVAE(
+        #     encoder,
+        #     disc_target,
+        #     disc_sensitive,
+        #     lambda_od=0.036,
+        #     lambda_entropy=0.5,
+        #     gamma_od=0.8,
+        #     gamma_entropy=1.33,
+        #     step_size=1000,
+        #     z_dim=args.z_dim,
+        # )
         fvae = FODVAE(
             encoder,
             disc_target,
             disc_sensitive,
-            lambda_od=0.036,
-            lambda_entropy=0.55,
+            lambda_od=0.1,
+            lambda_entropy=0.1,
             gamma_od=0.8,
             gamma_entropy=1.33,
             step_size=1000,
             z_dim=args.z_dim,
         )
+
         return fvae

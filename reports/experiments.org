@@ -76,6 +76,11 @@ target predictor is one linear layer
 ** hyperparameters
  The parameters are trained using Adam optimizer with a
 learning rate of 10−4 and weight decay of 5 × 10−2
+
+** from other paper
+We use a one-layer neural network for the encoder and a one-layer neural network for prediction. γ is
+set to 2. The discriminator is a two-layer neural network with batch normalization. The batch size is
+set to 16 and the hidden size is set to 100.
 * CIFAR
 ** data
 The original dataset contains 10 classes we refer to as fine classes, we divide

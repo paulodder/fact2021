@@ -25,9 +25,7 @@ def bce_loss(x, y):
 
 
 def loss_representation(y_pred, y_true):
-    # print("HERE", y_pred, y_true)
     out = nn.functional.binary_cross_entropy(y_pred, y_true, reduction="none")
-    # print("HERE OUT", out)
     return out
 
 
@@ -47,9 +45,13 @@ def KLD(mean, std, mean_prior):
 def loss_entropy_binary(crossover_posterior):
     """Given the sensitive approximated posterior conditioned on the target latent
     representation (i.e. p(s|z_{t})), returns the entropy"""
-    other_prob = 1 - crossover_posterior
-    return (
-        other_prob * (other_prob + 1e-8).log()
-        + (crossover_posterior + 1e-8).log() * crossover_posterior
-    )
-    # return (probs * probs.log()).sum(1)
+    if len(crossover_posterior.shape) == 1:
+        other_prob = 1 - crossover_posterior
+        return (
+            other_prob * (other_prob + 1e-8).log()
+            + (crossover_posterior + 1e-8).log() * crossover_posterior
+        )
+    else:
+        return (crossover_posterior * (crossover_posterior + 1e-8).log()).sum(
+            1
+        )

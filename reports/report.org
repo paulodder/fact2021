@@ -144,18 +144,41 @@ KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s}))
 
 - $\lambda_{OD}$ and $\lambda_E$ are hyperparameters that we set.
 
-** 3.3 Datasets
+** 3.2 Datasets
 - For every dataset list:
   - Number of examples and label distributions
+  - Type of sensitive attribute
   - Train/test split details
   - Pre-processing description
   - Link to download data (do not know if this is really something we want to
-    do here, we can make sure the reference includes the reference.
-  - Encoder and decoder network details
+    do here, we can make sure the reference includes the references
+
+** 3.3 Implementation details
+Following the paper of [Sarhan], we implement the following networks for the
+several datasets.
+(Maybe better to put all of these in tables and give only short description in
+paragraphs?)
+*** Adult and German
+For the Adult and German dataset we implement a MLP with one hidden layer as
+encoder and a MLP with two hidden layers as discriminators. The two
+discriminators are followed by a logistic regression layer to make a
+prediction. All hidden layers contain 64 units. Last, the latent
+representations have size 2.
+*** YaleB
+For the extended YaleB dataset we implement a MLP with one hidden layer as
+encoder and a MLP with two hidden layers as discriminators. The two
+discriminators are followed by a linear layer to make a prediction. All hidden
+layers contain 100 units. Last, the latent representations have size 2 (?).
+*** CIFAR
+For the CIFAR datasets we implement a ResNet-18 [cite resnet] architecture for
+the encoder. For the discriminator and the target classifier we use an MLP with
+two hidden layers, with 256 and 128 neurons. (z size?? maybe in resnet 18
+paper)
+
 ** 3.4 Hyperparameters
 - Describe process of setting hyperparameters
 - If hyperparameter search was performed, denote the details (amount of
-  searches, what space, etc.)
+  searches, what space, etc.
 ** 3.5 Experimental setup and code
 :PROPERTIES:
 :CUSTOM_ID: sec:exp-setup

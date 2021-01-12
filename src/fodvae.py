@@ -21,6 +21,7 @@ class FODVAE(pl.LightningModule):
         discriminator_target,
         discriminator_sensitive,
         z_dim,
+        dataset,
         **kwargs
     ):
         super().__init__()
@@ -36,6 +37,7 @@ class FODVAE(pl.LightningModule):
         self.encoder = encoder
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
+        self.dataset = dataset
         param2default = {
             "lambda_od": 0.036,
             "lambda_entropy": 0.55,
@@ -109,21 +111,32 @@ class FODVAE(pl.LightningModule):
         )
 
     def configure_optimizers(self):
-        optim_all = torch.optim.Adam(
-            self.parameters(), lr=1 * 10e-4, weight_decay=5 * 10e-2
-        )
-        # optim_all = torch.optim.Adam(
-        #     self.parameters(), lr=1 * 10e-3, weight_decay=5 * 10e-4
-        # )
-        # only concerns itself with parameters
-        return optim_all
-        # optim_sensitive = torch.optim.Adam(
-        #     self.yield_sensitive_repr_parameters(),
-        #     lr=1 * 10e-3,
-        #     weight_decay=5 * 10e-4,
-        # )
-        # return [optim_all, optim_sensitive]
-        #
+        # Optimizer for CIFAR datasets
+        if self.dataset in {"cifar10", "cifar100"}:
+            optim_encoder = torch.optim.Adam(
+                self.encoder.parameters(), lr=1e-4, weight_decay=1e-2
+            )
+            disc_params = list(self.discriminator_target.parameters()) + list(
+                self.discriminator_sensitive.parameters()
+            )
+            optim_disc = torch.optim.Adam(
+                disc_params, lr=1e-2, weight_decay=5e-2
+            )
+
+            return optim_encoder, optim_disc
+
+        # Optimizer for YaleB dataset
+        elif self.dataset == "yaleb":
+            optim = torch.optim.Adam(
+                self.parameters(), lr=1e-4, weight_decay=5e-2
+            )
+            return optim
+
+        # Optimizer for Adult and German datasets
+        else:
+            optim = torch.optim.Adam(
+                self.parameters, lr=1e-3, weight_decay=5e-4
+            )
 
     def manual_backward(self, loss, retain_graph=False):
         loss.backward(retain_graph=retain_graph)
@@ -159,7 +172,7 @@ class FODVAE(pl.LightningModule):
         else:
             self.total_nof_batches += 1
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx, optimizer_idx):
         self.update_total_nof_batches(batch_idx)
         # self.decay_lambdas()
         optim_all = self.optimizers()
@@ -308,6 +321,7 @@ def get_fodvae(args):
             gamma_entropy=1.33,
             step_size=1000,
             z_dim=args.z_dim,
+            dataset=args.dataset,
         )
         return fvae
     elif args.dataset == "german":
@@ -330,6 +344,7 @@ def get_fodvae(args):
             gamma_entropy=1.33,
             step_size=1000,
             z_dim=args.z_dim,
+            dataset=args.dataset,
         )
         return fvae
     elif args.dataset == "yaleb":
@@ -365,6 +380,7 @@ def get_fodvae(args):
             gamma_entropy=1.33,
             step_size=1000,
             z_dim=args.z_dim,
+            dataset=args.dataset,
         )
 
         return fvae
@@ -382,5 +398,6 @@ def get_fodvae(args):
             gamma_entropy=1.33,
             step_size=1000,
             z_dim=args.z_dim,
+            dataset=args.dataset,
         )
         return fvae

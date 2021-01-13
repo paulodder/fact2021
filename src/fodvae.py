@@ -135,7 +135,7 @@ class FODVAE(pl.LightningModule):
         # Optimizer for Adult and German datasets
         else:
             optim = torch.optim.Adam(
-                self.parameters, lr=1e-3, weight_decay=5e-4
+                self.parameters(), lr=1e-3, weight_decay=5e-4
             )
 
     def manual_backward(self, loss, retain_graph=False):
@@ -214,7 +214,8 @@ class FODVAE(pl.LightningModule):
         loss_entropy = self.lambda_entropy * (
             loss_entropy_binary(crossover_posterior).mean()
         )
-        optim_all.zero_grad()
+        optim_all = optim_all if type(optim_all) == list else [optim_all]
+        [optim.zero_grad() for optim in optim_all]
         # Freeze target encoder
         self.set_grad_target_encoder(False)
         # Backprop sensitive representation loss
@@ -224,8 +225,10 @@ class FODVAE(pl.LightningModule):
         # Backprop remaining loss
         remaining_loss = loss_repr_target + loss_od + loss_entropy
         remaining_loss.backward()
-        optim_all.step()
-
+        # Step for all optimizers
+        for optim in optim_all:
+            optim.step()
+        # Print losses
         if batch_idx % 100 == 0 or batch_idx == 1:
             print("loss_repr_sensitive\t", loss_repr_sensitive.item())
             print("loss_repr_target\t", loss_repr_target.item())
@@ -286,7 +289,7 @@ def get_target_discriminator(args):
         model = MLP(
             input_dim=args.z_dim,
             hidden_dims=[256, 128],
-            output_dim=2,
+            output_dim=1,
             nonlinearity=nn.Sigmoid,
         )
     else:

@@ -254,7 +254,6 @@ class FODVAE(pl.LightningModule):
                     "loss_entropy", round(loss_entropy.item(), PRECISION)
                 )
             )
->>>>>>> 2bd7b86d65f162a746370a1f782b56f62c866073
             loss = loss_repr_sensitive.item() + remaining_loss.item()
             print("{:<20}{:>5}".format("loss", round(loss, PRECISION)))
 

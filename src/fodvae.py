@@ -131,12 +131,12 @@ class FODVAE(pl.LightningModule):
                 self.parameters(), lr=1e-4, weight_decay=5e-2
             )
             return optim
-
         # Optimizer for Adult and German datasets
-        else:
+        elif self.dataset in {"adult", "german"}:
             optim = torch.optim.Adam(
-                self.parameters, lr=1e-3, weight_decay=5e-4
+                self.parameters(), lr=1e-3, weight_decay=5e-4
             )
+            return optim
 
     def manual_backward(self, loss, retain_graph=False):
         loss.backward(retain_graph=retain_graph)
@@ -172,7 +172,7 @@ class FODVAE(pl.LightningModule):
         else:
             self.total_nof_batches += 1
 
-    def training_step(self, batch, batch_idx, optimizer_idx):
+    def training_step(self, batch, batch_idx, optimizer_idx=None):
         self.update_total_nof_batches(batch_idx)
         # self.decay_lambdas()
         optim_all = self.optimizers()

@@ -22,6 +22,7 @@ DEFAULT_Z_DIM = 2
 DEFAULT_INPUT_DIM = 108
 DEFAULT_BATCH_SIZE = 64
 DEFAULT_MAX_EPOCHS = 1
+DEFAULT_LEARNING_RATE = 10e-4
 
 
 def parse_args():
@@ -48,6 +49,14 @@ def parse_args():
         default=DEFAULT_Z_DIM,
         help="Latent dimensionality",
     )
+    parser.add_argument(
+        "--learning_rate",
+        "-l",
+        type=float,
+        default=DEFAULT_LEARNING_RATE,
+        help="Learning rate",
+    )
+
     parser.add_argument(
         "--batch_size",
         "-b",
@@ -116,18 +125,25 @@ if __name__ == "__main__":
     sensitive_predictor.fit(train_dl_target_emb)
 
     with torch.no_grad():
-        y_test = train_dl_target_emb.dataset.targets
-        y_pred = target_predictor.predict(train_dl_target_emb)
+        if False:  # test on train DL, should be false except for debugging
+            y_test = train_dl_target_emb.dataset.targets
+            y_pred = target_predictor.predict(train_dl_target_emb)
 
-        s_test = test_dl_target_emb.dataset.s
-        s_pred = sensitive_predictor.predict(test_dl_target_emb)
+            s_test = train_dl_target_emb.dataset.s
+            s_pred = sensitive_predictor.predict(train_dl_target_emb)
+        else:
+            y_test = test_dl_target_emb.dataset.targets
+            y_pred = target_predictor.predict(test_dl_target_emb)
 
-        print("target classification report")
-        print(classification_report(y_test, y_pred))
-        print("sensitive classification report")
-        print(classification_report(s_test, s_pred > 1))
+            s_test = test_dl_target_emb.dataset.s
+            s_pred = sensitive_predictor.predict(test_dl_target_emb)
 
         # print("target classification report")
-        # print(classification_report(y_test.argmax(1), y_pred))
+        # print(classification_report(y_test, y_pred))
         # print("sensitive classification report")
-        # print(classification_report(s_test.argmax(1), s_pred.argmax(1)))
+        # print(classification_report(s_test, s_pred > 1))
+
+        print("target classification report")
+        print(classification_report(y_test.argmax(1), y_pred))
+        print("sensitive classification report")
+        print(classification_report(s_test.argmax(1), s_pred.argmax(1)))

@@ -20,6 +20,7 @@ class FODVAE(pl.LightningModule):
         discriminator_target,
         discriminator_sensitive,
         z_dim,
+        learning_rate,
         **kwargs
     ):
         super().__init__()
@@ -35,6 +36,7 @@ class FODVAE(pl.LightningModule):
         self.encoder = encoder
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
+        self.learning_rate = learning_rate
         param2default = {
             "lambda_od": 0.036,
             "lambda_entropy": 0.55,
@@ -109,7 +111,7 @@ class FODVAE(pl.LightningModule):
 
     def configure_optimizers(self):
         optim_all = torch.optim.Adam(
-            self.parameters(), lr=1 * 10e-4, weight_decay=5 * 10e-2
+            self.parameters(), lr=self.learning_rate, weight_decay=5 * 10e-2
         )
         # optim_all = torch.optim.Adam(
         #     self.parameters(), lr=1 * 10e-3, weight_decay=5 * 10e-4
@@ -233,7 +235,7 @@ def get_sensitive_discriminator(args):
         model = MLP(
             input_dim=args.z_dim,
             hidden_dims=[100, 100],
-            output_dim=65,
+            output_dim=5,
             nonlinearity=nn.Softmax,
         )
     return model
@@ -255,6 +257,7 @@ def get_fodvae(args):
             encoder,
             disc_target,
             disc_sensitive,
+            learning_rate=args.learning_rate,
             lambda_od=0.036,
             lambda_entropy=0.55,
             gamma_od=0.8,
@@ -278,6 +281,7 @@ def get_fodvae(args):
             disc_target,
             disc_sensitive,
             lambda_od=0.036,
+            learning_rate=args.learning_rate,
             lambda_entropy=0.55,
             gamma_od=0.8,
             gamma_entropy=1.33,
@@ -312,8 +316,9 @@ def get_fodvae(args):
             encoder,
             disc_target,
             disc_sensitive,
-            lambda_od=0.1,
-            lambda_entropy=0.1,
+            learning_rate=args.learning_rate,
+            lambda_od=0.036,
+            lambda_entropy=0.5,
             gamma_od=0.8,
             gamma_entropy=1.33,
             step_size=1000,

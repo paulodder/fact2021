@@ -1,4 +1,5 @@
 import pickle
+import pandas as pd
 import matplotlib.pyplot as plt
 import argparse
 from sklearn.metrics import classification_report
@@ -8,7 +9,9 @@ import sys
 import copy
 from dotenv import dotenv_values
 from pathlib import Path
+import warnings
 
+warnings.filterwarnings("ignore")
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
 sys.path.insert(0, str(PROJECT_DIR / "src"))
 from fodvae import get_fodvae, get_sensitive_discriminator
@@ -62,24 +65,15 @@ def parse_args():
     return args
 
 
-if __name__ == "__main__":
-    args = parse_args()
+def main(args, return_accuracy=False):
     torch.manual_seed(args.seed)
     # Initial model
-    # enc = MLPEncoder(input_dim=args.input_dim, z_dim=args.z_dim)
-    # disc_target = MLPDiscriminator(z_dim=args.z_dim, output_dim=1)
-    # disc_sens = MLPDiscriminator(z_dim=args.z_dim, output_dim=1)
-    # fvae = FODVAE(enc, disc_target, disc_sens)
     fvae = get_fodvae(args)
     # Init dataloaders
     train_dl, val_dl = load_data(args.dataset, args.batch_size, num_workers=0)
     # Train model
     trainer = pl.Trainer(max_epochs=args.max_epochs)
     trainer.fit(fvae, train_dl, val_dl)
-
-    # with open(MODELS_DIR / "adult_model", "wb") as f:
-    #     pickle.dump(fvae, f)
-
     # Get embeddings for train and test
     @torch.no_grad()
     def get_embs(X):
@@ -88,7 +82,6 @@ if __name__ == "__main__":
     train_dl_target_emb, test_dl_target_emb = target2sensitive_loader(
         args.dataset, args.batch_size, get_embs
     )
-
     # Get predictors
     target_predictor = get_target_predictor(args)
     sensitive_predictor = get_sensitive_predictor(
@@ -107,13 +100,19 @@ if __name__ == "__main__":
 
         s_test = test_dl_target_emb.dataset.s
         s_pred = sensitive_predictor.predict(test_dl_target_emb)
+        # print("target classification report")
+        # print(classification_report(y_test, y_pred))
+        # print("sensitive classification report")
+        # print(classification_report(s_test, s_pred > 1))
 
         print("target classification report")
-        print(classification_report(y_test, y_pred))
+        print(classification_report(y_test.argmax(1), y_pred))
+        print("y_pred", pd.Series(y_pred).value_counts())
         print("sensitive classification report")
-        print(classification_report(s_test, s_pred > 1))
+        print("s_pred", pd.Series(s_pred.argmax(1)).value_counts())
+        print(classification_report(s_test.argmax(1), s_pred.argmax(1)))
 
-        # print("target classification report")
-        # print(classification_report(y_test.argmax(1), y_pred))
-        # print("sensitive classification report")
-        # print(classification_report(s_test.argmax(1), s_pred.argmax(1)))
+
+if __name__ == "__main__":
+    args = parse_args()
+    main(args)

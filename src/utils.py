@@ -1,5 +1,12 @@
+import math
 import torch
 import torch.nn as nn
+from dotenv import dotenv_values, find_dotenv
+from pathlib import Path
+import re
+
+DOTENV = dotenv_values(find_dotenv())
+DATA_DIR = Path(DOTENV["DATA_DIR"])
 
 
 def sample_reparameterize(mean, std):
@@ -55,3 +62,42 @@ def loss_entropy_binary(crossover_posterior):
         return (crossover_posterior * (crossover_posterior + 1e-8).log()).sum(
             1
         )
+
+
+def get_yaleb_poses():
+    root = DATA_DIR / "yaleb" / "CroppedYale"
+    filepaths = root.glob("**/*")
+    reg = "A(.\d+)E(.\d+)"
+    poses = []
+    for filepath in filepaths:
+        s = re.search(reg, str(filepath))
+        if s:
+            x, y = s.groups()
+            poses.append((float(x), float(y), s.groups()))
+    return set(poses)
+
+
+def cluster_yaleb_poses():
+    poses = get_yaleb_poses()
+    cluster_names = [
+        "front",
+        "upper_left",
+        "upper_right",
+        "lower_left",
+        "lower_right",
+    ]
+    clusters = {name: [] for name in cluster_names}
+    for pose in poses:
+        azimuth, elevation, orig_pose = pose
+        cluster = "front"
+        # horizontally centered poses and poses within a certain radius
+        # of the origin should be kept in the front cluster
+        if (
+            abs(azimuth) > 0.001
+            and math.sqrt(elevation ** 2 + azimuth ** 2) > 25
+        ):
+            vertical_side = "upper" if elevation > 0 else "lower"
+            horizontal_side = "left" if azimuth < 0 else "right"
+            cluster = f"{vertical_side}_{horizontal_side}"
+        clusters[cluster].append((azimuth, elevation, orig_pose))
+    return clusters

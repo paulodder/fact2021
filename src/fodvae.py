@@ -131,12 +131,12 @@ class FODVAE(pl.LightningModule):
                 self.parameters(), lr=1e-4, weight_decay=5e-2
             )
             return optim
-
         # Optimizer for Adult and German datasets
-        else:
+        elif self.dataset in {"adult", "german"}:
             optim = torch.optim.Adam(
                 self.parameters(), lr=1e-3, weight_decay=5e-4
             )
+            return optim
 
     def manual_backward(self, loss, retain_graph=False):
         loss.backward(retain_graph=retain_graph)
@@ -161,7 +161,7 @@ class FODVAE(pl.LightningModule):
         self.lambda_entropy *= self.gamma_entropy ** (
             self.current_epoch / self.step_size
         )
-        print(self.lambda_od, self.lambda_entropy)
+        # print(self.lambda_od, self.lambda_entropy)
 
     def training_epoch_end(self, outputs):
         self.decay_lambdas()
@@ -172,7 +172,7 @@ class FODVAE(pl.LightningModule):
         else:
             self.total_nof_batches += 1
 
-    def training_step(self, batch, batch_idx, optimizer_idx):
+    def training_step(self, batch, batch_idx, optimizer_idx=None):
         self.update_total_nof_batches(batch_idx)
         # self.decay_lambdas()
         optim_all = self.optimizers()
@@ -225,17 +225,38 @@ class FODVAE(pl.LightningModule):
         # Backprop remaining loss
         remaining_loss = loss_repr_target + loss_od + loss_entropy
         remaining_loss.backward()
+<<<<<<< HEAD
         # Step for all optimizers
         for optim in optim_all:
             optim.step()
-        # Print losses
-        if batch_idx % 100 == 0 or batch_idx == 1:
-            print("loss_repr_sensitive\t", loss_repr_sensitive.item())
-            print("loss_repr_target\t", loss_repr_target.item())
-            print("loss_od\t", loss_od.item())
-            print("loss_entropy\t", loss_entropy.item())
+=======
+        if batch_idx == 0:
+            PRECISION = 3
+            print(
+                "\n{:<20}{:>5}".format(
+                    "loss_repr_sensitive",
+                    round(loss_repr_sensitive.item(), PRECISION),
+                )
+            )
+            print(
+                "{:<20}{:>5}".format(
+                    "loss_repr_target",
+                    round(loss_repr_target.item(), PRECISION),
+                )
+            )
+            print(
+                "{:<20}{:>5}".format(
+                    "loss_od", round(loss_od.item(), PRECISION)
+                )
+            )
+            print(
+                "{:<20}{:>5}".format(
+                    "loss_entropy", round(loss_entropy.item(), PRECISION)
+                )
+            )
+>>>>>>> 2bd7b86d65f162a746370a1f782b56f62c866073
             loss = loss_repr_sensitive.item() + remaining_loss.item()
-            print("loss", loss)
+            print("{:<20}{:>5}".format("loss", round(loss, PRECISION)))
 
 
 def get_sensitive_discriminator(args):
@@ -250,7 +271,7 @@ def get_sensitive_discriminator(args):
         model = MLP(
             input_dim=args.z_dim,
             hidden_dims=[100, 100],
-            output_dim=65,
+            output_dim=5,
             nonlinearity=nn.Softmax,
         )
     elif args.dataset == "cifar10":
@@ -378,9 +399,9 @@ def get_fodvae(args):
             disc_target,
             disc_sensitive,
             lambda_od=0.1,
-            lambda_entropy=0.1,
+            lambda_entropy=1,
             gamma_od=0.8,
-            gamma_entropy=1.33,
+            gamma_entropy=1,
             step_size=1000,
             z_dim=args.z_dim,
             dataset=args.dataset,

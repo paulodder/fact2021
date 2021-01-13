@@ -55,22 +55,8 @@ def parse_args():
         default=DEFAULT_BATCH_SIZE,
         help="Batch size",
     )
-    # parser.add_argument(
-    #     "--output_dim_sens", "-o", type=int, help="Latent dimensionality",
-    # )
     parser.add_argument(
-        "--output_dim_sens",
-        "-s",
-        type=int,
-        default=None,
-        help="Latent dimensionality",
-    )
-    parser.add_argument(
-        "--seed",
-        "-r",
-        type=int,
-        default=420,
-        help="Random seed",
+        "--seed", "-r", type=int, default=420, help="Random seed",
     )
     args = parser.parse_args()
     return args

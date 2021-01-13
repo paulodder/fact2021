@@ -225,11 +225,11 @@ class FODVAE(pl.LightningModule):
         # Backprop remaining loss
         remaining_loss = loss_repr_target + loss_od + loss_entropy
         remaining_loss.backward()
-<<<<<<< HEAD
+
         # Step for all optimizers
         for optim in optim_all:
             optim.step()
-=======
+
         if batch_idx == 0:
             PRECISION = 3
             print(

@@ -12,6 +12,12 @@ from torchvision import transforms
 import pandas as pd
 from PIL import Image
 
+try:
+    import utils
+except ModuleNotFoundError:
+    import src.utils as utils
+
+
 DOTENV = dotenv_values()
 DATA_DIR = Path(DOTENV["DATA_DIR"])
 
@@ -235,16 +241,26 @@ class YalebDataset(Dataset):
     # the light source positions corresponding to the train samples
     train_positions = {
         (-110, 65),
-        (0, 90),
+        (0, 0),
         (110, 65),
         (110, -20),
         (-110, -20),
     }
-    n_lighting_positions = 65
+    n_lighting_position_clusters = 5
 
     # convert a numerical coord to the format used by the filenames
     x_to_coord = lambda self, n: f"{'+' if n >= 0 else '-'}{abs(n):03}"
     y_to_coord = lambda self, n: f"{'+' if n >= 0 else '-'}{abs(n):02}"
+
+    def get_cluster(self, path):
+        if not hasattr(self, "coords2cluster"):
+            self.coords2cluster = {}
+            for name, groups in utils.cluster_yaleb_poses().items():
+                for group in groups:
+                    self.coords2cluster[group[-1]] = name
+        return self.coords2cluster[
+            re.match(".*/yaleB\d\d_P00A(.\d\d\d)E(.\d\d).*", path).groups()
+        ]
 
     def __init__(self, train):
         super(YalebDataset, self).__init__()
@@ -290,31 +306,17 @@ class YalebDataset(Dataset):
         ).long()
         self.targets = F.one_hot(self.targets, len(self.people_ids))
 
-        # same with the sensitive attributes, which here is the camera position,
-        # i.e. the coords in the filename. the format does not matter, as we are
-        # representing them by categorical indices, i.e. {0, 1, ..., K-1}
-        # for K unique positions.
+        # sensitive attrs are the cluster labels of the lighting position.
+        # this position is embedded in the path/filename, so we convert the
+        # path to a cluster label and then turn it into categorical indices.
         self.sensitive_attrs = torch.from_numpy(
             categorical_series_labels_to_index(
-                pd.Series(
-                    [
-                        re.match(
-                            ".*/yaleB\d\d_P00(A.\d\d\dE.\d\d).*", path
-                        ).groups()[0]
-                        for path in self.paths
-                    ]
-                )
+                pd.Series([self.get_cluster(path) for path in self.paths])
             ).values
         ).long()
-        # sensitive attrs are disjoint between train and test, so we need to
-        # make sure we don't reuse indices between them by accident
-        # by shifting the non-train attributes.
-        if not self.train:
-            self.sensitive_attrs = self.sensitive_attrs + len(
-                self.train_positions
-            )
+
         self.sensitive_attrs = F.one_hot(
-            self.sensitive_attrs, self.n_lighting_positions
+            self.sensitive_attrs, self.n_lighting_position_clusters
         )
 
         # load all the images

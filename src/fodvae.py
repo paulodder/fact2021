@@ -265,7 +265,7 @@ def get_sensitive_discriminator(args):
         model = MLP(
             input_dim=args.z_dim,
             hidden_dims=[100, 100],
-            output_dim=65,
+            output_dim=5,
             nonlinearity=nn.Softmax,
         )
     elif args.dataset == "cifar10":

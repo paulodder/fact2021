@@ -22,7 +22,7 @@ DEFAULT_Z_DIM = 2
 DEFAULT_INPUT_DIM = 108
 DEFAULT_BATCH_SIZE = 64
 DEFAULT_MAX_EPOCHS = 1
-DEFAULT_LEARNING_RATE = 10e-4
+# DEFAULT_LEARNING_RATE = 10e-4
 
 
 def parse_args():
@@ -49,13 +49,13 @@ def parse_args():
         default=DEFAULT_Z_DIM,
         help="Latent dimensionality",
     )
-    parser.add_argument(
-        "--learning_rate",
-        "-l",
-        type=float,
-        default=DEFAULT_LEARNING_RATE,
-        help="Learning rate",
-    )
+    # parser.add_argument(
+    #     "--learning_rate",
+    #     "-l",
+    #     type=float,
+    #     default=DEFAULT_LEARNING_RATE,
+    #     help="Learning rate",
+    # )
 
     parser.add_argument(
         "--batch_size",
@@ -63,16 +63,6 @@ def parse_args():
         type=int,
         default=DEFAULT_BATCH_SIZE,
         help="Batch size",
-    )
-    # parser.add_argument(
-    #     "--output_dim_sens", "-o", type=int, help="Latent dimensionality",
-    # )
-    parser.add_argument(
-        "--output_dim_sens",
-        "-s",
-        type=int,
-        default=None,
-        help="Latent dimensionality",
     )
     parser.add_argument(
         "--seed",
@@ -88,7 +78,7 @@ def parse_args():
 if __name__ == "__main__":
     args = parse_args()
     torch.manual_seed(args.seed)
-    # Init model
+    # Initial model
     # enc = MLPEncoder(input_dim=args.input_dim, z_dim=args.z_dim)
     # disc_target = MLPDiscriminator(z_dim=args.z_dim, output_dim=1)
     # disc_sens = MLPDiscriminator(z_dim=args.z_dim, output_dim=1)
@@ -112,7 +102,7 @@ if __name__ == "__main__":
         args.dataset, args.batch_size, get_embs
     )
 
-    # Gept predictors
+    # Get predictors
     target_predictor = get_target_predictor(args)
     sensitive_predictor = get_sensitive_predictor(
         get_sensitive_discriminator(args), args

@@ -5,6 +5,7 @@ import numpy as np
 import itertools as it
 import pytorch_lightning as pl
 from models import MLPEncoder, MLP
+from resnet import ResNetEncoder
 from utils import (
     loss_representation,
     loss_entropy_binary,
@@ -20,7 +21,7 @@ class FODVAE(pl.LightningModule):
         discriminator_target,
         discriminator_sensitive,
         z_dim,
-        learning_rate,
+        dataset,
         **kwargs
     ):
         super().__init__()
@@ -36,7 +37,7 @@ class FODVAE(pl.LightningModule):
         self.encoder = encoder
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
-        self.learning_rate = learning_rate
+        self.dataset = dataset
         param2default = {
             "lambda_od": 0.036,
             "lambda_entropy": 0.55,
@@ -110,21 +111,32 @@ class FODVAE(pl.LightningModule):
         )
 
     def configure_optimizers(self):
-        optim_all = torch.optim.Adam(
-            self.parameters(), lr=self.learning_rate, weight_decay=5 * 10e-2
-        )
-        # optim_all = torch.optim.Adam(
-        #     self.parameters(), lr=1 * 10e-3, weight_decay=5 * 10e-4
-        # )
-        # only concerns itself with parameters
-        return optim_all
-        # optim_sensitive = torch.optim.Adam(
-        #     self.yield_sensitive_repr_parameters(),
-        #     lr=1 * 10e-3,
-        #     weight_decay=5 * 10e-4,
-        # )
-        # return [optim_all, optim_sensitive]
-        #
+        # Optimizer for CIFAR datasets
+        if self.dataset in {"cifar10", "cifar100"}:
+            optim_encoder = torch.optim.Adam(
+                self.encoder.parameters(), lr=1e-4, weight_decay=1e-2
+            )
+            disc_params = list(self.discriminator_target.parameters()) + list(
+                self.discriminator_sensitive.parameters()
+            )
+            optim_disc = torch.optim.Adam(
+                disc_params, lr=1e-2, weight_decay=5e-2
+            )
+
+            return optim_encoder, optim_disc
+
+        # Optimizer for YaleB dataset
+        elif self.dataset == "yaleb":
+            optim = torch.optim.Adam(
+                self.parameters(), lr=1e-4, weight_decay=5e-2
+            )
+            return optim
+        # Optimizer for Adult and German datasets
+        elif self.dataset in {"adult", "german"}:
+            optim = torch.optim.Adam(
+                self.parameters(), lr=1e-3, weight_decay=5e-4
+            )
+            return optim
 
     def manual_backward(self, loss, retain_graph=False):
         loss.backward(retain_graph=retain_graph)
@@ -160,7 +172,7 @@ class FODVAE(pl.LightningModule):
         else:
             self.total_nof_batches += 1
 
-    def training_step(self, batch, batch_idx):
+    def training_step(self, batch, batch_idx, optimizer_idx=None):
         self.update_total_nof_batches(batch_idx)
         # self.decay_lambdas()
         optim_all = self.optimizers()
@@ -238,6 +250,52 @@ def get_sensitive_discriminator(args):
             output_dim=5,
             nonlinearity=nn.Softmax,
         )
+    elif args.dataset == "cifar10":
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[256, 128],
+            output_dim=10,
+            nonlinearity=nn.Sigmoid,
+        )
+    else:
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[256, 128],
+            output_dim=100,
+            nonlinearity=nn.Sigmoid,
+        )
+    return model
+
+
+def get_target_discriminator(args):
+    if args.dataset in {"adult", "german"}:
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[64, 64],
+            output_dim=1,
+            nonlinearity=nn.Sigmoid,
+        )
+    elif args.dataset == "yaleb":
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[100, 100],
+            output_dim=65,
+            nonlinearity=nn.Softmax,
+        )
+    elif args.dataset == "cifar10":
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[256, 128],
+            output_dim=2,
+            nonlinearity=nn.Sigmoid,
+        )
+    else:
+        model = MLP(
+            input_dim=args.z_dim,
+            hidden_dims=[256, 128],
+            output_dim=20,
+            nonlinearity=nn.Sigmoid,
+        )
     return model
 
 
@@ -257,13 +315,13 @@ def get_fodvae(args):
             encoder,
             disc_target,
             disc_sensitive,
-            learning_rate=args.learning_rate,
             lambda_od=0.036,
             lambda_entropy=0.55,
             gamma_od=0.8,
             gamma_entropy=1.33,
             step_size=1000,
             z_dim=args.z_dim,
+            dataset=args.dataset,
         )
         return fvae
     elif args.dataset == "german":
@@ -281,12 +339,12 @@ def get_fodvae(args):
             disc_target,
             disc_sensitive,
             lambda_od=0.036,
-            learning_rate=args.learning_rate,
             lambda_entropy=0.55,
             gamma_od=0.8,
             gamma_entropy=1.33,
             step_size=1000,
             z_dim=args.z_dim,
+            dataset=args.dataset,
         )
         return fvae
     elif args.dataset == "yaleb":
@@ -316,13 +374,30 @@ def get_fodvae(args):
             encoder,
             disc_target,
             disc_sensitive,
-            learning_rate=args.learning_rate,
             lambda_od=0.036,
             lambda_entropy=0.5,
             gamma_od=0.8,
             gamma_entropy=1.33,
             step_size=1000,
             z_dim=args.z_dim,
+            dataset=args.dataset,
         )
 
+        return fvae
+    else:
+        encoder = ResNetEncoder(z_dim=args.z_dim)
+        disc_target = get_target_discriminator(args)
+        disc_sensitive = get_sensitive_discriminator(args)
+        fvae = FODVAE(
+            encoder,
+            disc_target,
+            disc_sensitive,
+            lambda_od=0.036,
+            lambda_entropy=0.55,
+            gamma_od=0.8,
+            gamma_entropy=1.33,
+            step_size=1000,
+            z_dim=args.z_dim,
+            dataset=args.dataset,
+        )
         return fvae

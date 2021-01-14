@@ -103,12 +103,13 @@ The learning rate for all components is 10−3 and weight decay is 5 × 10−4
 | =lambda_od= |   |
 | =gamma_od=  |   |
 ** scripts to reproduce
-If we run it for 30 epochs, we get a 0.72 accuracy on the target embeddings and
+If we run it for 30 epochs, we get a 0.76 accuracy on the target embeddings and
 a simple majority vote by the sensitive predictor, strongly suggesting there is
 nothing to learn in the target embeddings to predict the sensitive attributes
 #+BEGIN_SRC sh
-python scripts/train.py --dataset german --max_epochs 30 --z_dim 2 \
-       --batch_size 64 --seed 420 --
+python scripts/train.py --dataset german --max_epochs 20 --z_dim 2 \
+        --seed 420 --lambda_entropy 0.45 --gamma_entropy 2 \
+       --lambda_od 0.15 --gamma_od 0.1
 #+END_SRC
 * Yaleb Dataset
 *** data

@@ -14,7 +14,8 @@ class MLPEncoder(nn.Module):
                 [
                     (nn.Linear(inp_dim, out_dim), nn.ReLU())
                     for (inp_dim, out_dim) in zip(
-                        [input_dim] + hidden_dims, hidden_dims + [output_dim],
+                        [input_dim] + hidden_dims,
+                        hidden_dims + [output_dim],
                     )
                 ]
             )
@@ -35,41 +36,26 @@ class MLP(nn.Module):
         input_dim=2,
         hidden_dims=[64, 64],
         output_dim=1,
+        batch_norm=False,
         nonlinearity=nn.Sigmoid,
     ):
         super().__init__()
-        layers = list(
-            it.chain.from_iterable(
-                [
-                    (nn.Linear(inp_dim, out_dim), nn.ReLU())
-                    for (inp_dim, out_dim) in zip(
-                        [input_dim] + hidden_dims, hidden_dims + [output_dim]
-                    )
-                ]
+        dims = [input_dim] + hidden_dims + [output_dim]
+        modules = []
+        for i in range(len(dims) - 1):
+            modules.append(
+                nn.Linear(dims[i], dims[i + 1]),
             )
-        )
-        layers = layers[:-1]
-        self.net = nn.Sequential(*layers)
+            if i < len(dims) - 2:
+                modules.append(nn.ReLU())
+                if batch_norm:
+                    modules.append(nn.BatchNorm1d(dims[i + 1]))
+        self.net = nn.Sequential(*modules)
         self.nonlinear = (
             nonlinearity(dim=1)
             if nonlinearity is nn.Softmax
             else nonlinearity()
         )
-        # print(self.nonlinear)
 
     def forward(self, X):
         return self.nonlinear(self.net(X))
-
-    # automatic_optimization = False
-
-    # def training_step(self, batch, batch_idx):
-    #     X, y, s = batch
-    #     output = self.forward(X)
-    #     loss = loss_entropy_binary(s, output)
-    #     loss.backward()
-
-    # def configure_optimizers(self):
-    #     optim_all = torch.optim.Adam(
-    #         self.parameters(), lr=1 * 10e-4, weight_decay=5 * 10e-4
-    #     )
-    #     return optim_all

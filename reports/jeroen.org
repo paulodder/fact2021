@@ -51,6 +51,20 @@ based on this plot of these coordinates present in the dataset:
 #+label: fig:yaleb_lighting_positions
 [[file:../plots/yaleb_lighting_positions.png]]
 
+update: so we have inferred that these five positions count for all
+coordinates, and that we should thus cluster all coordinates into five main
+positions ("top left, top, top right, bottom left, bottom right"). we have done
+so empirically, as no clusters were predefined.
+
+one snippet of info that we can infer from the results plot is the majority
+vote baseline in the sensitive attribute classification accuracy (Fig 2b),
+which for the yaleb dataset sits around =0.51=. this suggests that one single
+class (out of five) accounts for 51% of the test samples.
+
+also, their test size is 1096; together with =38x5 = 190= train samples, that's
+have a total size of 1286. however, our dataset contains a total of =2433=
+samples (190 train, 2243 test). there are a total of 18 corrupted (".bad")
+images in the set, so the difference can't have to do with that.
 
 ** cifar100
 

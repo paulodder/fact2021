@@ -128,7 +128,7 @@ class FODVAE(pl.LightningModule):
         # Optimizer for YaleB dataset
         elif self.dataset == "yaleb":
             optim = torch.optim.Adam(
-                self.parameters(), lr=1e-4, weight_decay=5e-2
+                self.parameters(), lr=1e-4, weight_decay=5 * (10 ** -2)
             )
             return optim
         # Optimizer for Adult and German datasets
@@ -379,6 +379,7 @@ def get_fodvae(args):
             input_dim=args.z_dim,
             hidden_dims=[100, 100],
             output_dim=38,
+            batch_norm=True,
             nonlinearity=nn.Softmax,
         )
         disc_sensitive = get_sensitive_discriminator(args)

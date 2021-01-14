@@ -14,12 +14,16 @@ import warnings
 warnings.filterwarnings("ignore")
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
 sys.path.insert(0, str(PROJECT_DIR / "src"))
-from fodvae import get_fodvae, get_sensitive_discriminator
-from dataloaders import load_data, target2sensitive_loader, dataset_registrar
-from predictors import (
+from initializers import (
+    get_fodvae,
+    get_sensitive_discriminator,
     get_target_predictor,
     get_sensitive_predictor,
 )
+
+from dataloaders import load_data, target2sensitive_loader, dataset_registrar
+
+# from predictors import
 
 DEFAULT_Z_DIM = 2
 DEFAULT_INPUT_DIM = 108
@@ -53,22 +57,31 @@ def parse_args():
         help="Latent dimensionality",
     )
     parser.add_argument(
-        "--lambda_od", type=float, default=1, help="Lambda for OD loss",
+        "--lambda_od", type=float, default=None, help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_od", type=float, default=1, help="Gamma for OD loss",
+        "--gamma_od", type=float, default=None, help="Gamma for OD loss",
     )
     parser.add_argument(
-        "--lambda_entropy", type=float, default=1, help="Lambda for OD loss",
+        "--lambda_entropy",
+        type=float,
+        default=None,
+        help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_entropy", type=float, default=1, help="Gamma for OD loss",
+        "--gamma_entropy", type=float, default=None, help="Gamma for OD loss",
     )
     parser.add_argument(
         "--eval_on_test",
         type=bool,
         default=True,
         help="Evaluate predictors on test set",
+    )
+    parser.add_argument(
+        "--step_size",
+        type=int,
+        default=1000,
+        help="Number of epochs for which lambda's decay exactly by the corresponding gamma",
     )
     # parser.add_argument(
     #     "--learning_rate",

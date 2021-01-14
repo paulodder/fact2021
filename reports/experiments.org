@@ -41,12 +41,46 @@ The discriminators have two hidden layers, Each hidden layer contains 64 units
 logistic regression
 *** hyperparameters
 The learning rate for all components is 10−3 and weight decay is 5 × 10−4
+**** VAE opti
+**** Sensitive discriminator
+#+BEGIN_SRC text
+MLP(
+  (net): Sequential(
+    (0): Linear(in_features=2, out_features=64, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=64, out_features=64, bias=True)
+    (3): ReLU()
+    (4): Linear(in_features=64, out_features=1, bias=True)
+  )
+  (nonlinear): Sigmoid()
+)
+#+END_SRC
+**** Target discriminator
+#+BEGIN_SRC text
+MLP(
+  (net): Sequential(
+    (0): Linear(in_features=2, out_features=64, bias=True)
+    (1): ReLU()
+    (2): Linear(in_features=64, out_features=64, bias=True)
+    (3): ReLU()
+    (4): Linear(in_features=64, out_features=1, bias=True)
+  )
+  (nonlinear): Sigmoid()
+)
+#+END_SRC
+**** Target predictor
+The target predictor is a =sklearn.linear_model.LogisticRegression= initialized
+with default parameters.
+**** Sensitive predictor
+
 ** scripts to reproduce
 Within one epoch everything works fine already, so we can just run
 #+BEGIN_SRC sh
 python scripts/train.py --dataset adult --max_epochs 1 --z_dim 2 \
        --batch_size 64 --seed 420
 #+END_SRC
+
+
 * German Dataset
 ** methodology
 *** data
@@ -66,14 +100,15 @@ logistic regression
 *** hyperparameters
 
 The learning rate for all components is 10−3 and weight decay is 5 × 10−4
-
+| =lambda_od= |   |
+| =gamma_od=  |   |
 ** scripts to reproduce
 If we run it for 30 epochs, we get a 0.72 accuracy on the target embeddings and
 a simple majority vote by the sensitive predictor, strongly suggesting there is
 nothing to learn in the target embeddings to predict the sensitive attributes
 #+BEGIN_SRC sh
 python scripts/train.py --dataset german --max_epochs 30 --z_dim 2 \
-       --batch_size 64 --seed 420
+       --batch_size 64 --seed 420 --
 #+END_SRC
 * Yaleb Dataset
 *** data

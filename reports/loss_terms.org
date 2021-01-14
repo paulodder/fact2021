@@ -17,6 +17,7 @@
 #+PROPERTY: header-args :exports both :session loss_terms :cache :results value
 #+OPTIONS: ^:nil
 #+LATEX_COMPILER: pdflatex
+
 * Introduction
 This file serves the purpose of documenting our initial current understanding
 of the loss terms presented in [[https://arxiv.org/pdf/2003.05707.pdf][our paper]]. We provide names for each of the loss
@@ -157,8 +158,9 @@ q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
  is different from the regular output of the sensitive discriminator.
 ** *Orthogonal-disentangled losses*
 $$\mathcal{L}_{OD}(\phi_{T},\phi_{S}) = \mathcal{L}_{z_{T}}(\theta_{T}) +
-\mathcal{L}_{z_{S}}(\theta_{T})$$This term is called the orthogonal
-disentangled loss (or OD loss) as it enforces disentanglement
+\mathcal{L}_{z_{S}}(\theta_{T})$$
+This term is called the orthogonal
+disentangled loss (or OD loss) as it enforces disentangledment
 (i.e. independence among dimensions) and orthogonality of the approximated
 target $q_{\phi_{T}}(z_{T}|x)$ vs. sensitive $q_{\phi_{T}}(z_{S}|x)$ latent
 distributions. Both of these conditions are enforced through the choice of the

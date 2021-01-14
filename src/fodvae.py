@@ -214,7 +214,8 @@ class FODVAE(pl.LightningModule):
         loss_entropy = self.lambda_entropy * (
             loss_entropy_binary(crossover_posterior).mean()
         )
-        optim_all.zero_grad()
+        optim_all = optim_all if type(optim_all) == list else [optim_all]
+        [optim.zero_grad() for optim in optim_all]
         # Freeze target encoder
         self.set_grad_target_encoder(False)
         # Backprop sensitive representation loss
@@ -224,7 +225,11 @@ class FODVAE(pl.LightningModule):
         # Backprop remaining loss
         remaining_loss = loss_repr_target + loss_od + loss_entropy
         remaining_loss.backward()
-        optim_all.step()
+
+        # Step for all optimizers
+        for optim in optim_all:
+            optim.step()
+
         if batch_idx == 0:
             PRECISION = 3
             print(
@@ -304,7 +309,7 @@ def get_target_discriminator(args):
         model = MLP(
             input_dim=args.z_dim,
             hidden_dims=[256, 128],
-            output_dim=2,
+            output_dim=1,
             nonlinearity=nn.Sigmoid,
         )
     else:

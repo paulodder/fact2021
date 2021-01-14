@@ -11,6 +11,7 @@ from utils import (
     loss_entropy_binary,
     sample_reparameterize,
     KLD,
+    reshape_tensor,
 )
 
 
@@ -76,20 +77,6 @@ class FODVAE(pl.LightningModule):
             mean_sensitive,
             std_sensitive,
         )
-
-        # return (
-        #     mean_target,
-        #     std_target,
-        #     pred_target,
-        #     mean_sensitive,
-        #     std_sensitive,
-        #     pred_sensitive,
-        #     crossover_posterior,
-        # )
-
-        # # # print(torch.log(self.std(x)))
-        # # log_std = self.std(x)
-        # return mean, log_std
 
     def yield_sensitive_repr_parameters(self):
         """Return generator with parameters that should be updated according to the
@@ -170,11 +157,21 @@ class FODVAE(pl.LightningModule):
     def training_epoch_end(self, outputs):
         self.decay_lambdas()
 
+    def accuracy(self, y, y_pred):
+        y = reshape_tensor(y)
+        y_pred = reshape_tensor(y_pred)
+        acc = (y == y_pred).float().mean().item()
+        return acc
+
     def update_total_nof_batches(self, batch_idx):
         if self.current_epoch == 0 and batch_idx == 0:
             self.total_nof_batches = 0
         else:
             self.total_nof_batches += 1
+
+    def set_logger(self, logger):
+        if logger is not None:
+            self.logger = logger
 
     def training_step(self, batch, batch_idx, optimizer_idx=None):
         self.update_total_nof_batches(batch_idx)
@@ -212,12 +209,11 @@ class FODVAE(pl.LightningModule):
         loss_od_sensitive = KLD(
             mean_sensitive, std_sensitive, self.prior_mean_sensitive
         ).mean()
-        loss_od = self.lambda_od * (loss_od_target + loss_od_sensitive)
+        loss_od = loss_od_target + loss_od_sensitive
         # Entropy loss
         # print("crossover_posterior", crossover_posterior)
-        loss_entropy = self.lambda_entropy * (
-            loss_entropy_binary(crossover_posterior).mean()
-        )
+        loss_entropy = loss_entropy_binary(crossover_posterior).mean()
+
         optim_all = optim_all if type(optim_all) == list else [optim_all]
         [optim.zero_grad() for optim in optim_all]
         # Freeze target encoder
@@ -227,14 +223,36 @@ class FODVAE(pl.LightningModule):
         # Unfreeze target encoder
         self.set_grad_target_encoder(True)
         # Backprop remaining loss
-        remaining_loss = loss_repr_target + loss_od + loss_entropy
+        remaining_loss = (
+            loss_repr_target
+            + self.lambda_od * loss_od
+            + self.lambda_entropy * loss_entropy
+        )
         remaining_loss.backward()
+
+        loss_total = loss_repr_sensitive + remaining_loss
+
+        train_target_acc = self.accuracy(y, pred_y)
+        train_sens_acc = self.accuracy(s, pred_s)
+
+        if hasattr(self, "logger"):
+            self.logger.log_metrics(
+                {
+                    "train_loss_total": loss_total.item(),
+                    "train_loss_od": loss_od.item(),
+                    "train_loss_entropy": loss_entropy.item(),
+                    "train_loss_repr_sensitive": loss_repr_sensitive.item(),
+                    "train_loss_repr_target": loss_repr_target.item(),
+                    "train_target_acc": train_target_acc,
+                    "train_sens_acc": train_sens_acc,
+                }
+            )
 
         # Step for all optimizers
         for optim in optim_all:
             optim.step()
 
-        if batch_idx == 0:
+        if batch_idx == 0 and not hasattr(self, "logger"):
             PRECISION = 3
             print(
                 "\n{:<20}{:>5}".format(

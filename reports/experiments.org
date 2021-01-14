@@ -94,6 +94,37 @@ learning rate of 10−4 and weight decay of 5 × 10−2
 We use a one-layer neural network for the encoder and a one-layer neural network for prediction. γ is
 set to 2. The discriminator is a two-layer neural network with batch normalization. The batch size is
 set to 16 and the hidden size is set to 100.
+
+** param sweep
+
+these are the hyperparameters we keep constant:
+- fodvae_learning_rate: 1e-4
+- fodvae_weight_decay: 5 * (10 ** -2)
+- z_dim: 100
+- max_epochs: ??
+(architectural hparams:)
+# - encoder_input_dim: 32256
+# - discriminator_target_output_dim: 38
+# - discriminator_sens_output_dim: 5
+- encoder_hidden_dims: []
+- encoder_hidden_nonlinearity: ReLU
+- discriminator_target_hidden_dims: [100, 100]
+- discriminator_target_hidden_nonlinearity: ReLU
+- discriminator_sens_hidden_dims: [100, 100]
+- discriminator_sens_hidden_nonlinearity: ReLU
+- batch_size: 16
+
+these are the hyperparameters that we will vary (between ranges):
+- lambda_od
+- lambda_entropy
+- gamma_od
+- gamma_entropy
+- step_size
+
+right now, these hyperparameters are not implemented even:
+- sensitive_predictor_learning_rate
+- sensitive_predictor_weight_decay
+
 ** scripts to reproduce
 * CIFAR
 ** methodology
@@ -117,4 +148,3 @@ target and discriminator networks, the learning rate and weight decay were set
 to 10−2 and 10−3
 ,respectively.
 ** scripts to reproduce
-

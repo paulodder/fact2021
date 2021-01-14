@@ -53,7 +53,7 @@ class MLP(nn.Module):
         self.net = nn.Sequential(*modules)
         self.nonlinear = (
             nonlinearity(dim=1)
-            if nonlinearity == nn.Softmax
+            if nonlinearity is nn.Softmax
             else nonlinearity()
         )
 

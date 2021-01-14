@@ -68,7 +68,7 @@ logistic regression
 The learning rate for all components is 10−3 and weight decay is 5 × 10−4
 
 ** scripts to reproduce
-If we run it for 30 epochs, we get a 0.89 accuracy on the target embeddings and
+If we run it for 30 epochs, we get a 0.72 accuracy on the target embeddings and
 a simple majority vote by the sensitive predictor, strongly suggesting there is
 nothing to learn in the target embeddings to predict the sensitive attributes
 #+BEGIN_SRC sh

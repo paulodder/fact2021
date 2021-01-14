@@ -1,6 +1,7 @@
 import pytorch_lightning as pl
 from sklearn.linear_model import LogisticRegression
 from torch import optim, nn
+from models import MLP
 import utils
 
 
@@ -80,7 +81,7 @@ class MLPPredictorTrainer:
 
 def cifar10_target_predictor(args):
     z_dim = args.z_dim
-    output_dim = 2
+    output_dim = 1
     optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictor.init_without_model(
         input_dim=z_dim, output_dim=output_dim, optim_init_fn=optim_init_fn

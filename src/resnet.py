@@ -12,6 +12,8 @@ class ResNetEncoder(nn.Module):
         self.z_dim = z_dim
         output_dim = z_dim * 4  # 2 means and 2 covariances for each dim
         self.net = models.resnet18(pretrained=True)
+        for params in self.parameters():
+            params.requires_grad = False
         fc_size = list(self.net.children())[-1].in_features
         self.net.fc = nn.Linear(fc_size, output_dim)
         self.nonlinear = nn.Sigmoid()

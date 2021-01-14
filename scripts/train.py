@@ -59,10 +59,16 @@ def parse_args():
         "--gamma_od", type=float, default=1, help="Gamma for OD loss",
     )
     parser.add_argument(
-        "--lambda_od", type=float, default=1, help="Lambda for OD loss",
+        "--lambda_entropy", type=float, default=1, help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_od", type=float, default=1, help="Gamma for OD loss",
+        "--gamma_entropy", type=float, default=1, help="Gamma for OD loss",
+    )
+    parser.add_argument(
+        "--eval_on_test",
+        type=bool,
+        default=True,
+        help="Evaluate predictors on test set",
     )
     # parser.add_argument(
     #     "--learning_rate",
@@ -84,6 +90,27 @@ def parse_args():
     )
     args = parser.parse_args()
     return args
+
+
+def get_classification_report(test, pred):
+    def reshape_tensor(t):
+        s = t.shape
+        if len(s) == 1:
+            if (t.max() <= 1) and (0 >= t.min()):
+                return t > 0.5
+            else:
+                return t
+        elif len(s) == 2:
+            b, d = s
+            return t.argmax(1)
+
+    # print("test", test)
+    # print("reshape_tensor(test)", reshape_tensor(test))
+    # print("pred", pred)
+    # print("reshape_tensor(pred)", reshape_tensor(pred))
+    return classification_report(reshape_tensor(test), reshape_tensor(pred))
+
+    # test.view(1, -1)
 
 
 def main(args, return_accuracy=False):
@@ -128,17 +155,21 @@ def main(args, return_accuracy=False):
 
         s_test = test_dl_target_emb.dataset.s
         s_pred = sensitive_predictor.predict(test_dl_target_emb)
-        # print("target classification report")
-        # print(classification_report(y_test, y_pred))
-        # print("sensitive classification report")
-        # print(classification_report(s_test, s_pred > 1))
-
+        # print("s_test", s_test)
+        # print("s_pred", s_pred)
+        # print("y_test", y_test)
+        # print("y_pred", y_pred)
         print("target classification report")
-        print(classification_report(y_test.argmax(1), y_pred))
-        # print("y_pred", pd.Series(y_pred).value_counts())
+        print(get_classification_report(y_test, y_pred))
         print("sensitive classification report")
-        # print("s_pred", pd.Series(s_pred.argmax(1)).value_counts())
-        print(classification_report(s_test.argmax(1), s_pred.argmax(1)))
+        print(get_classification_report(s_test, s_pred))
+
+        # print("target classification report")
+        # print(classification_report(y_test.argmax(1), y_pred))
+        # # print("y_pred", pd.Series(y_pred).value_counts())
+        # print("sensitive classification report")
+        # # print("s_pred", pd.Series(s_pred.argmax(1)).value_counts())
+        # print(classification_report(s_test.argmax(1), s_pred.argmax(1)))
 
 
 if __name__ == "__main__":

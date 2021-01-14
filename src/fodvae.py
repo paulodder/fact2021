@@ -148,8 +148,12 @@ class FODVAE(pl.LightningModule):
     def set_grad_target_encoder(self, to):
         """Sets requires_grad of the parameters of the target encoder accordingly"""
         params = list(self.encoder.parameters())
-        for param in params[:-2]:
-            param.requires_grad = to
+        if self.dataset in {"yaleb", "german", "adult"}:
+            for param in params[:-2]:
+                param.requires_grad = to
+        # if self.dataset in {"cifar10", "cifar100"}:
+        #     print(params[:-2][)
+        # param.requires_grad = to
         # w, b = list(self.encoder.parameters())[-2:]
         # target_w = nn.Parameter(w[: int(w.shape[0] / 2), :]).requires_grad = to
         # target_b = nn.Parameter(b[: int(b.shape[0] / 2)]).requires_grad = to

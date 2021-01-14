@@ -52,6 +52,18 @@ def parse_args():
         default=DEFAULT_Z_DIM,
         help="Latent dimensionality",
     )
+    parser.add_argument(
+        "--lambda_od", type=float, default=1, help="Lambda for OD loss",
+    )
+    parser.add_argument(
+        "--gamma_od", type=float, default=1, help="Gamma for OD loss",
+    )
+    parser.add_argument(
+        "--lambda_od", type=float, default=1, help="Lambda for OD loss",
+    )
+    parser.add_argument(
+        "--gamma_od", type=float, default=1, help="Gamma for OD loss",
+    )
     # parser.add_argument(
     #     "--learning_rate",
     #     "-l",
@@ -104,7 +116,13 @@ def main(args, return_accuracy=False):
     sensitive_predictor.fit(train_dl_target_emb)
 
     with torch.no_grad():
-        if False:  # test on train DL, should be false except for debugging
+        EVAL_ON_TEST = True
+        if (
+            EVAL_ON_TEST
+        ):  # test on train DL, should be false except for debugging
+            y_test = test_dl_target_emb.dataset.targets
+            y_pred = target_predictor.predict(test_dl_target_emb)
+        else:
             y_test = train_dl_target_emb.dataset.targets
             y_pred = target_predictor.predict(train_dl_target_emb)
 
@@ -117,9 +135,9 @@ def main(args, return_accuracy=False):
 
         print("target classification report")
         print(classification_report(y_test.argmax(1), y_pred))
-        print("y_pred", pd.Series(y_pred).value_counts())
+        # print("y_pred", pd.Series(y_pred).value_counts())
         print("sensitive classification report")
-        print("s_pred", pd.Series(s_pred.argmax(1)).value_counts())
+        # print("s_pred", pd.Series(s_pred.argmax(1)).value_counts())
         print(classification_report(s_test.argmax(1), s_pred.argmax(1)))
 
 

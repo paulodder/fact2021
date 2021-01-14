@@ -41,3 +41,6 @@ seems like an oversimplifying assumption: if your accuracy is about the same as
 the label ratio, that does not imply no info is leaked, it could just be that
 certain information is indeed leaked but it just performs even worse on other
 parts of the data.
+* parameters sensitivity unclear
+Although they report a sensitivity analysis, they do not report what the
+parameter values are of the parameters that are not being varied.

@@ -392,15 +392,14 @@ def get_fodvae(args):
             encoder,
             disc_target,
             disc_sensitive,
-            lambda_od=0.1,
-            lambda_entropy=1,
-            gamma_od=0.8,
-            gamma_entropy=1,
+            lambda_od=args.lambda_od,
+            lambda_entropy=args.lambda_entropy,
+            gamma_od=args.gamma_od,
+            gamma_entropy=args.gamma_entropy,
             step_size=1000,
             z_dim=args.z_dim,
             dataset=args.dataset,
         )
-
         return fvae
     else:
         encoder = ResNetEncoder(z_dim=args.z_dim)

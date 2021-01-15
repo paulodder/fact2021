@@ -52,16 +52,16 @@ def KLD(mean, std, mean_prior):
 def loss_entropy_binary(crossover_posterior):
     """Given the sensitive approximated posterior conditioned on the target latent
     representation (i.e. p(s|z_{t})), returns the entropy"""
-    if len(crossover_posterior.shape) == 1:
-        other_prob = 1 - crossover_posterior
+    normalized = crossover_posterior / crossover_posterior.sum(1).view(-1, 1)
+    if len(normalized.shape) == 1:
+        other_prob = 1 - normalized
         return (
             other_prob * (other_prob + 1e-8).log()
-            + (crossover_posterior + 1e-8).log() * crossover_posterior
+            + (normalized + 1e-8).log() * normalized
         )
     else:
-        return (crossover_posterior * (crossover_posterior + 1e-8).log()).sum(
-            1
-        )
+        # breakpoint()
+        return (normalized * (normalized + 1e-8).log()).sum(1)
 
 
 def get_yaleb_poses():

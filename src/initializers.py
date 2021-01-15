@@ -24,13 +24,30 @@ def _cifar100_target_predictor(args):
     )
 
 
+def _yaleb_target_predictor(args):
+    """Gets target predictor for the yaleb dataset"""
+    z_dim = args.z_dim
+    output_dim = 38
+    hidden_dims = [50]
+    optim_init_fn = lambda model: optim.Adam(model.parameters())
+    return MLPPredictor.init_with_model(
+        input_dim=z_dim,
+        hidden_dims=hidden_dims,
+        output_dim=output_dim,
+        optim_init_fn=optim_init_fn,
+    )
+
+
 def get_target_predictor(args):
     """Gets target predictor depending on the args.dataset value and
     potentially relevant parameters defined in args"""
     if args.dataset in ["adult", "german"]:
         return LRPredictor.predict_targets()
     if args.dataset == "yaleb":
-        return LRPredictor(lambda ds: ds.targets.argmax(1))
+        return MLPPredictorTrainer(
+            _yaleb_target_predictor(args),
+            max_epochs=args.max_epochs,
+        )
     if args.dataset == "cifar10":
         return MLPPredictorTrainer(
             _cifar10_target_predictor(args),

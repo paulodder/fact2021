@@ -284,3 +284,13 @@ class FODVAE(pl.LightningModule):
             )
             loss = loss_repr_sensitive.item() + remaining_loss.item()
             print("{:<20}{:>5}".format("loss", round(loss, PRECISION)))
+            print(
+                "{:<20}{:>5}".format(
+                    "train_target_acc", round(train_target_acc, PRECISION)
+                )
+            )
+            print(
+                "{:<20}{:>5}".format(
+                    "train_sens_acc", round(train_sens_acc, PRECISION)
+                )
+            )

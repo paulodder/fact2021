@@ -29,7 +29,7 @@ from dataloaders import load_data, target2sensitive_loader, dataset_registrar
 DEFAULT_Z_DIM = 2
 DEFAULT_INPUT_DIM = 108
 DEFAULT_BATCH_SIZE = 64
-DEFAULT_MAX_EPOCHS = 1
+DEFAULT_FODVAE_MAX_EPOCHS = 1
 # DEFAULT_LEARNING_RATE = 10e-4
 
 
@@ -44,11 +44,11 @@ def get_argparser():
         required=True,
     )
     parser.add_argument(
-        "--max_epochs",
+        "--fodvae_max_epochs",
         "-e",
         type=int,
-        help="Max number of epochs",
-        default=DEFAULT_MAX_EPOCHS,
+        help="Max number of epochs for FODVAE",
+        default=DEFAULT_FODVAE_MAX_EPOCHS,
     )
     parser.add_argument(
         "--z_dim",

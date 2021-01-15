@@ -115,7 +115,8 @@ class FODVAE(pl.LightningModule):
         # Optimizer for YaleB dataset
         elif self.dataset == "yaleb":
             optim = torch.optim.Adam(
-                self.parameters(), lr=1e-4, weight_decay=5 * (10 ** -2)
+                self.parameters(),
+                lr=1e-4,  # weight_decay=5 * (10 ** -2)
             )
             return optim
         # Optimizer for Adult and German datasets
@@ -235,7 +236,8 @@ class FODVAE(pl.LightningModule):
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
 
-        if hasattr(self, "logger"):
+        use_logger = hasattr(self, "logger") and self.logger is not None
+        if use_logger:
             self.logger.log_metrics(
                 {
                     "train_loss_total": loss_total.item(),
@@ -252,7 +254,7 @@ class FODVAE(pl.LightningModule):
         for optim in optim_all:
             optim.step()
 
-        if batch_idx == 0 and not hasattr(self, "logger"):
+        if batch_idx == 0 and not use_logger:
             PRECISION = 3
             print(
                 "\n{:<20}{:>5}".format(
@@ -268,12 +270,16 @@ class FODVAE(pl.LightningModule):
             )
             print(
                 "{:<20}{:>5}".format(
-                    "loss_od", round(loss_od.item(), PRECISION)
+                    "loss_od",
+                    round(self.lambda_od * loss_od.item(), PRECISION),
                 )
             )
             print(
                 "{:<20}{:>5}".format(
-                    "loss_entropy", round(loss_entropy.item(), PRECISION)
+                    "loss_entropy",
+                    round(
+                        self.lambda_entropy * loss_entropy.item(), PRECISION
+                    ),
                 )
             )
             loss = loss_repr_sensitive.item() + remaining_loss.item()

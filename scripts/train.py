@@ -1,7 +1,6 @@
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
-import argparse
 from sklearn.metrics import classification_report
 import torch
 import pytorch_lightning as pl
@@ -35,7 +34,7 @@ DEFAULT_MAX_EPOCHS = 1
 
 
 def get_argparser():
-    parser = argparse.ArgumentParser()
+    parser = utils.ArgumentParser()
     parser.add_argument(
         "--dataset",
         "-d",
@@ -196,8 +195,10 @@ def main(args, logger=None, return_accuracy=False):
             )
         print("target classification report")
         print(target_classification_report)
+        print("accuracy", target_classification_report["accuracy"])
         print("sensitive classification report")
         print(sens_classification_report)
+        print("accuracy", sens_classification_report["accuracy"])
 
 
 if __name__ == "__main__":

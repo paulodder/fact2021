@@ -4,6 +4,7 @@ import torch.nn as nn
 from dotenv import dotenv_values, find_dotenv
 from pathlib import Path
 import re
+import argparse
 
 DOTENV = dotenv_values(find_dotenv())
 DATA_DIR = Path(DOTENV["DATA_DIR"])
@@ -114,3 +115,25 @@ def reshape_tensor(t):
         b, d = s
         return t.argmax(1)
     raise ValueError(f"cannot reshape tensor in a smart way")
+
+
+class NamespaceWithGet:
+    def __init__(self, namespace):
+        self.namespace = namespace
+
+    def __getattr__(self, name):
+        return getattr(self.namespace, name)
+
+    def get(self, key, default):
+        if key not in self.namespace:
+            return default
+        attr = getattr(self.namespace, key)
+        if attr is None:
+            return default
+        return attr
+
+
+class ArgumentParser(argparse.ArgumentParser):
+    def parse_args(self):
+        namespace = super().parse_args()
+        return NamespaceWithGet(namespace)

@@ -123,11 +123,11 @@ def get_target_discriminator(args):
 def get_fodvae(args):
     "gets FODVAE according to args"
     if args.dataset == "adult":
-        lambda_od = args.lambda_od or 0.036
-        lambda_entropy = args.lambda_entropy or 0.55
-        gamma_od = args.gamma_od or 0.8
-        gamma_entropy = args.gamma_entropy or 0.133
-        step_size = args.step_size or 1000
+        lambda_od = args.get("lambda_od", 0.036)
+        lambda_entropy = args.get("lambda_entropy", 0.55)
+        gamma_od = args.get("gamma_od", 0.8)
+        gamma_entropy = args.get("gamma_entropy", 0.133)
+        step_size = args.get("step_size", 1000)
         input_dim = 108
         encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
         disc_target = MLP(
@@ -151,12 +151,11 @@ def get_fodvae(args):
         )
         return fvae
     elif args.dataset == "german":
-        lambda_od = args.lambda_od or 0.036
-        lambda_entropy = args.lambda_entropy or 0.55
-        gamma_od = args.gamma_od or 0.8
-        gamma_entropy = args.gamma_entropy or 0.133
-        step_size = args.step_size or 1000
-        print(lambda_od, lambda_entropy)
+        lambda_od = args.get("lambda_od", 0.036)
+        lambda_entropy = args.get("lambda_entropy", 0.55)
+        gamma_od = args.get("gamma_od", 0.8)
+        gamma_entropy = args.get("gamma_entropy", 0.133)
+        step_size = args.get("step_size", 1000)
         input_dim = 61
         encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
         disc_target = MLP(
@@ -180,11 +179,11 @@ def get_fodvae(args):
         )
         return fvae
     elif args.dataset == "yaleb":
-        lambda_od = args.lambda_od or 0.036
-        lambda_entropy = args.lambda_entropy or 0.55
-        gamma_od = args.gamma_od or 0.8
-        gamma_entropy = args.gamma_entropy or 0.133
-        step_size = args.step_size or 1000
+        lambda_od = args.get("lambda_od", 0.036)
+        lambda_entropy = args.get("lambda_entropy", 0.55)
+        gamma_od = args.get("gamma_od", 0.8)
+        gamma_entropy = args.get("gamma_entropy", 0.133)
+        step_size = args.get("step_size", 1000)
         input_dim = 32256
         encoder = MLPEncoder(
             input_dim=input_dim, hidden_dims=[], z_dim=args.z_dim
@@ -222,11 +221,11 @@ def get_fodvae(args):
         )
         return fvae
     else:
-        lambda_od = args.lambda_od or 0.036
-        lambda_entropy = args.lambda_entropy or 0.55
-        gamma_od = args.gamma_od or 0.8
-        gamma_entropy = args.gamma_entropy or 0.133
-        step_size = args.step_size or 1000
+        lambda_od = args.get("lambda_od", 0.036)
+        lambda_entropy = args.get("lambda_entropy", 0.55)
+        gamma_od = args.get("gamma_od", 0.8)
+        gamma_entropy = args.get("gamma_entropy", 0.133)
+        step_size = args.get("step_size", 1000)
         encoder = ResNetEncoder(z_dim=args.z_dim)
         disc_target = get_target_discriminator(args)
         disc_sensitive = get_sensitive_discriminator(args)

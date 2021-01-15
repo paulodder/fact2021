@@ -1,7 +1,6 @@
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
-import argparse
 from sklearn.metrics import classification_report
 import torch
 import pytorch_lightning as pl
@@ -10,6 +9,7 @@ import copy
 from dotenv import dotenv_values
 from pathlib import Path
 import warnings
+import wandb
 
 warnings.filterwarnings("ignore")
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
@@ -21,6 +21,7 @@ from initializers import (
     get_sensitive_predictor,
 )
 
+import utils
 from dataloaders import load_data, target2sensitive_loader, dataset_registrar
 
 # from predictors import
@@ -32,8 +33,8 @@ DEFAULT_MAX_EPOCHS = 1
 # DEFAULT_LEARNING_RATE = 10e-4
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
+def get_argparser():
+    parser = utils.ArgumentParser()
     parser.add_argument(
         "--dataset",
         "-d",
@@ -57,10 +58,16 @@ def parse_args():
         help="Latent dimensionality",
     )
     parser.add_argument(
-        "--lambda_od", type=float, default=None, help="Lambda for OD loss",
+        "--lambda_od",
+        type=float,
+        default=None,
+        help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_od", type=float, default=None, help="Gamma for OD loss",
+        "--gamma_od",
+        type=float,
+        default=None,
+        help="Gamma for OD loss",
     )
     parser.add_argument(
         "--lambda_entropy",
@@ -69,7 +76,10 @@ def parse_args():
         help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_entropy", type=float, default=None, help="Gamma for OD loss",
+        "--gamma_entropy",
+        type=float,
+        default=None,
+        help="Gamma for OD loss",
     )
     parser.add_argument(
         "--eval_on_test",
@@ -99,41 +109,44 @@ def parse_args():
         help="Batch size",
     )
     parser.add_argument(
-        "--seed", "-r", type=int, default=420, help="Random seed",
+        "--seed",
+        "-r",
+        type=int,
+        default=420,
+        help="Random seed",
     )
+    return parser
+
+
+def parse_args():
+    parser = get_argparser()
     args = parser.parse_args()
     return args
 
 
-def get_classification_report(test, pred):
-    def reshape_tensor(t):
-        s = t.shape
-        if len(s) == 1:
-            if (t.max() <= 1) and (0 >= t.min()):
-                return t > 0.5
-            else:
-                return t
-        elif len(s) == 2:
-            b, d = s
-            return t.argmax(1)
-
-    # print("test", test)
-    # print("reshape_tensor(test)", reshape_tensor(test))
-    # print("pred", pred)
-    # print("reshape_tensor(pred)", reshape_tensor(pred))
-    return classification_report(reshape_tensor(test), reshape_tensor(pred))
-
-    # test.view(1, -1)
+def get_classification_report(test, pred, output_dict):
+    return classification_report(
+        utils.reshape_tensor(test),
+        utils.reshape_tensor(pred),
+        output_dict=output_dict,
+    )
 
 
-def main(args, return_accuracy=False):
+def get_n_gpus():
+    return torch.cuda.device_count()
+
+
+def main(args, logger=None, return_accuracy=False):
     torch.manual_seed(args.seed)
     # Initial model
     fvae = get_fodvae(args)
+    fvae.set_logger(logger)
     # Init dataloaders
     train_dl, val_dl = load_data(args.dataset, args.batch_size, num_workers=0)
     # Train model
-    trainer = pl.Trainer(max_epochs=args.max_epochs)
+    trainer = pl.Trainer(
+        max_epochs=args.max_epochs, logger=logger, gpus=get_n_gpus()
+    )
     trainer.fit(fvae, train_dl, val_dl)
     # Get embeddings for train and test
     @torch.no_grad()
@@ -168,21 +181,28 @@ def main(args, return_accuracy=False):
 
         s_test = test_dl_target_emb.dataset.s
         s_pred = sensitive_predictor.predict(test_dl_target_emb)
-        # print("s_test", s_test)
-        # print("s_pred", s_pred)
-        # print("y_test", y_test)
-        # print("y_pred", y_pred)
-        print("target classification report")
-        print(get_classification_report(y_test, y_pred))
-        print("sensitive classification report")
-        print(get_classification_report(s_test, s_pred))
 
-        # print("target classification report")
-        # print(classification_report(y_test.argmax(1), y_pred))
-        # # print("y_pred", pd.Series(y_pred).value_counts())
-        # print("sensitive classification report")
-        # # print("s_pred", pd.Series(s_pred.argmax(1)).value_counts())
-        # print(classification_report(s_test.argmax(1), s_pred.argmax(1)))
+        if logger is not None:
+            logger.log_metrics(
+                {
+                    "target_classification_report": get_classification_report(
+                        y_test, y_pred, True
+                    ),
+                    "sens_classification_report": get_classification_report(
+                        s_test, s_pred, True
+                    ),
+                }
+            )
+        target_classification_report = get_classification_report(
+            y_test, y_pred, False
+        )
+        sens_classification_report = get_classification_report(
+            s_test, s_pred, False
+        )
+        print("target classification report")
+        print(target_classification_report)
+        print("sensitive classification report")
+        print(sens_classification_report)
 
 
 if __name__ == "__main__":

@@ -158,8 +158,8 @@ class FODVAE(pl.LightningModule):
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):
-        y = reshape_tensor(y)
-        y_pred = reshape_tensor(y_pred)
+        y = reshape_tensor(y).long()
+        y_pred = reshape_tensor(y_pred).long()
         acc = (y == y_pred).float().mean().item()
         return acc
 
@@ -282,12 +282,14 @@ class FODVAE(pl.LightningModule):
             )
             print(
                 "{:<20}{:>5}".format(
-                    "train_target_acc", round(train_target_acc, PRECISION),
+                    "train_target_acc",
+                    round(train_target_acc, PRECISION),
                 )
             )
             print(
                 "{:<20}{:>5}".format(
-                    "train_sens_acc", round(train_sens_acc, PRECISION),
+                    "train_sens_acc",
+                    round(train_sens_acc, PRECISION),
                 )
             )
             loss = loss_repr_sensitive.item() + remaining_loss.item()

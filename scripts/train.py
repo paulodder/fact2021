@@ -124,11 +124,11 @@ def parse_args():
     return args
 
 
-def get_classification_report(test, pred):
+def get_classification_report(test, pred, output_dict):
     return classification_report(
         utils.reshape_tensor(test),
         utils.reshape_tensor(pred),
-        output_dict=True,
+        output_dict=output_dict,
     )
 
 
@@ -182,23 +182,27 @@ def main(args, logger=None, return_accuracy=False):
         s_test = test_dl_target_emb.dataset.s
         s_pred = sensitive_predictor.predict(test_dl_target_emb)
 
-        target_classification_report = get_classification_report(
-            y_test, y_pred
-        )
-        sens_classification_report = get_classification_report(s_test, s_pred)
         if logger is not None:
             logger.log_metrics(
                 {
-                    "target_classification_report": target_classification_report,
-                    "sens_classification_report": sens_classification_report,
+                    "target_classification_report": get_classification_report(
+                        y_test, y_pred, True
+                    ),
+                    "sens_classification_report": get_classification_report(
+                        s_test, s_pred, True
+                    ),
                 }
             )
+        target_classification_report = get_classification_report(
+            y_test, y_pred, False
+        )
+        sens_classification_report = get_classification_report(
+            s_test, s_pred, False
+        )
         print("target classification report")
         print(target_classification_report)
-        print("accuracy", target_classification_report["accuracy"])
         print("sensitive classification report")
         print(sens_classification_report)
-        print("accuracy", sens_classification_report["accuracy"])
 
 
 if __name__ == "__main__":

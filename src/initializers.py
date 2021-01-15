@@ -1,16 +1,19 @@
 from fodvae import FODVAE
 from torch import optim, nn
-from models import MLP, MLPEncoder
+from models import MLP, MLPEncoder, ResNetEncoder
 from predictors import MLPPredictor, LRPredictor, MLPPredictorTrainer
 
 
 def _cifar10_target_predictor(args):
     """Gets target predictor for the cifar10 dataset"""
     z_dim = args.z_dim
-    output_dim = 2
+    output_dim = 1
     optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictor.init_without_model(
-        input_dim=z_dim, output_dim=output_dim, optim_init_fn=optim_init_fn
+        input_dim=z_dim,
+        output_dim=output_dim,
+        hidden_dims=[128, 256],
+        optim_init_fn=optim_init_fn,
     )
 
 
@@ -20,7 +23,10 @@ def _cifar100_target_predictor(args):
     output_dim = 20
     optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictor.init_with_model(
-        input_dim=z_dim, output_dim=output_dim, optim_init_fn=optim_init_fn
+        input_dim=z_dim,
+        output_dim=output_dim,
+        optim_init_fn=optim_init_fn,
+        hidden_dims=[128, 256],
     )
 
 
@@ -68,7 +74,7 @@ def get_sensitive_discriminator(args):
     elif args.dataset == "cifar10":
         model = MLP(
             input_dim=args.z_dim,
-            hidden_dims=[256, 128],
+            hidden_dims=[128, 256],
             output_dim=10,
             nonlinearity=nn.Sigmoid,
         )
@@ -100,7 +106,7 @@ def get_target_discriminator(args):
     elif args.dataset == "cifar10":
         model = MLP(
             input_dim=args.z_dim,
-            hidden_dims=[256, 128],
+            hidden_dims=[128, 256],
             output_dim=1,
             nonlinearity=nn.Sigmoid,
         )
@@ -150,6 +156,7 @@ def get_fodvae(args):
         gamma_od = args.gamma_od or 0.8
         gamma_entropy = args.gamma_entropy or 0.133
         step_size = args.step_size or 1000
+        print(lambda_od, lambda_entropy)
         input_dim = 61
         encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
         disc_target = MLP(

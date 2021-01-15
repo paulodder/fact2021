@@ -77,7 +77,8 @@ with default parameters.
 Within one epoch everything works fine already, so we can just run
 #+BEGIN_SRC sh
 python scripts/train.py --dataset adult --max_epochs 1 --z_dim 2 \
-       --batch_size 64 --seed 420
+       --batch_size 64 --seed 420 --lambda_od 0.037 \
+       --lambda_entropy 0.55 --gamma_od 0.8 --gamma_entropy 1.66
 #+END_SRC
 
 
@@ -106,11 +107,20 @@ The learning rate for all components is 10−3 and weight decay is 5 × 10−4
 If we run it for 30 epochs, we get a 0.76 accuracy on the target embeddings and
 a simple majority vote by the sensitive predictor, strongly suggesting there is
 nothing to learn in the target embeddings to predict the sensitive attributes
+# this is our own found solution with 0.76 acc
+# #+BEGIN_SRC sh
+# python scripts/train.py --dataset german --max_epochs 20 --z_dim 2 \
+#         --seed 420 --lambda_entropy 0.45 --gamma_entropy 2 \
+#        --lambda_od 0.15 --gamma_od 0.1
+# #+END_SRC
+
+According to their paper
 #+BEGIN_SRC sh
 python scripts/train.py --dataset german --max_epochs 20 --z_dim 2 \
-        --seed 420 --lambda_entropy 0.45 --gamma_entropy 2 \
-       --lambda_od 0.15 --gamma_od 0.1
+        --seed 420 --lambda_entropy 1 --gamma_entropy 2 \
+       --lambda_od 0.01 --gamma_od 1.4 --max_epochs 12
 #+END_SRC
+
 * Yaleb Dataset
 *** data
 The target task is the identification of the subject while the light source
@@ -162,6 +172,10 @@ right now, these hyperparameters are not implemented even:
 - sensitive_predictor_weight_decay
 
 ** scripts to reproduce
+#+BEGIN_SRC python
+python scripts/train.py --dataset yaleb --lambda_od 0.037 --lambda_entropy 1 \
+    --gamma_od 1.1 --gamma_entropy 2 --z_dim 100
+#+END_SRC
 * CIFAR
 ** methodology
 *** data

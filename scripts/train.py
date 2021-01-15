@@ -58,10 +58,16 @@ def get_argparser():
         help="Latent dimensionality",
     )
     parser.add_argument(
-        "--lambda_od", type=float, default=None, help="Lambda for OD loss",
+        "--lambda_od",
+        type=float,
+        default=None,
+        help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_od", type=float, default=None, help="Gamma for OD loss",
+        "--gamma_od",
+        type=float,
+        default=None,
+        help="Gamma for OD loss",
     )
     parser.add_argument(
         "--lambda_entropy",
@@ -70,7 +76,10 @@ def get_argparser():
         help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_entropy", type=float, default=None, help="Gamma for OD loss",
+        "--gamma_entropy",
+        type=float,
+        default=None,
+        help="Gamma for OD loss",
     )
     parser.add_argument(
         "--eval_on_test",
@@ -100,7 +109,11 @@ def get_argparser():
         help="Batch size",
     )
     parser.add_argument(
-        "--seed", "-r", type=int, default=420, help="Random seed",
+        "--seed",
+        "-r",
+        type=int,
+        default=420,
+        help="Random seed",
     )
     return parser
 
@@ -120,7 +133,9 @@ def get_classification_report(test, pred, output_dict):
 
 
 def get_n_gpus():
-    return torch.cuda.device_count()
+    n = torch.cuda.device_count()
+    print(f"n. gpus available: {n}")
+    return n
 
 
 def main(args, logger=None, return_accuracy=False):
@@ -135,6 +150,8 @@ def main(args, logger=None, return_accuracy=False):
         max_epochs=args.max_epochs, logger=logger, gpus=get_n_gpus()
     )
     trainer.fit(fvae, train_dl, val_dl)
+    # we want a fixed n. of epochs to train the eval predictors
+    args.max_epochs = 20
     # Get embeddings for train and test
     @torch.no_grad()
     def get_embs(X):

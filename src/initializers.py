@@ -12,7 +12,7 @@ def _cifar10_target_predictor(args):
     return MLPPredictor.init_without_model(
         input_dim=z_dim,
         output_dim=output_dim,
-        hidden_dims=[128, 256],
+        hidden_dims=[256, 128],
         optim_init_fn=optim_init_fn,
     )
 
@@ -26,7 +26,7 @@ def _cifar100_target_predictor(args):
         input_dim=z_dim,
         output_dim=output_dim,
         optim_init_fn=optim_init_fn,
-        hidden_dims=[128, 256],
+        hidden_dims=[256, 128],
     )
 
 
@@ -36,6 +36,19 @@ def get_target_predictor(args):
     if args.dataset in ["adult", "german"]:
         return LRPredictor.predict_targets()
     if args.dataset == "yaleb":
+        # optim_init_fn = lambda model: optim.Adam(model.parameters())
+        # return MLPPredictorTrainer(
+        #     MLPPredictor(
+        #         MLP(
+        #             input_dim=args.z_dim,
+        #             hidden_dims=[],
+        #             output_dim=38,
+        #             batch_norm=False,
+        #         ),
+        #         optim_init_fn,
+        #     ),
+        #     30,
+        # )
         return LRPredictor(lambda ds: ds.targets.argmax(1))
     if args.dataset == "cifar10":
         return MLPPredictorTrainer(
@@ -74,7 +87,7 @@ def get_sensitive_discriminator(args):
     elif args.dataset == "cifar10":
         model = MLP(
             input_dim=args.z_dim,
-            hidden_dims=[128, 256],
+            hidden_dims=[256, 128],
             output_dim=10,
             nonlinearity=nn.Sigmoid,
         )
@@ -106,7 +119,7 @@ def get_target_discriminator(args):
     elif args.dataset == "cifar10":
         model = MLP(
             input_dim=args.z_dim,
-            hidden_dims=[128, 256],
+            hidden_dims=[256, 128],
             output_dim=1,
             nonlinearity=nn.Sigmoid,
         )
@@ -179,11 +192,11 @@ def get_fodvae(args):
         )
         return fvae
     elif args.dataset == "yaleb":
-        lambda_od = args.get("lambda_od", 0.036)
-        lambda_entropy = args.get("lambda_entropy", 0.55)
-        gamma_od = args.get("gamma_od", 0.8)
-        gamma_entropy = args.get("gamma_entropy", 0.133)
-        step_size = args.get("step_size", 1000)
+        lambda_od = args.get("lambda_od", 0.037)
+        lambda_entropy = args.get("lambda_entropy", 1)
+        gamma_od = args.get("gamma_od", 1.1)
+        gamma_entropy = args.get("gamma_entropy", 2)
+        step_size = args.get("step_size", 100)
         input_dim = 32256
         encoder = MLPEncoder(
             input_dim=input_dim, hidden_dims=[], z_dim=args.z_dim

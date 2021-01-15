@@ -58,16 +58,10 @@ def get_argparser():
         help="Latent dimensionality",
     )
     parser.add_argument(
-        "--lambda_od",
-        type=float,
-        default=None,
-        help="Lambda for OD loss",
+        "--lambda_od", type=float, default=None, help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_od",
-        type=float,
-        default=None,
-        help="Gamma for OD loss",
+        "--gamma_od", type=float, default=None, help="Gamma for OD loss",
     )
     parser.add_argument(
         "--lambda_entropy",
@@ -76,10 +70,7 @@ def get_argparser():
         help="Lambda for OD loss",
     )
     parser.add_argument(
-        "--gamma_entropy",
-        type=float,
-        default=None,
-        help="Gamma for OD loss",
+        "--gamma_entropy", type=float, default=None, help="Gamma for OD loss",
     )
     parser.add_argument(
         "--eval_on_test",
@@ -109,11 +100,7 @@ def get_argparser():
         help="Batch size",
     )
     parser.add_argument(
-        "--seed",
-        "-r",
-        type=int,
-        default=420,
-        help="Random seed",
+        "--seed", "-r", type=int, default=420, help="Random seed",
     )
     return parser
 
@@ -169,9 +156,8 @@ def main(args, logger=None, return_accuracy=False):
     sensitive_predictor.fit(train_dl_target_emb)
 
     with torch.no_grad():
-        EVAL_ON_TEST = True
         if (
-            EVAL_ON_TEST
+            args.eval_on_test
         ):  # test on train DL, should be false except for debugging
             y_test = test_dl_target_emb.dataset.targets
             y_pred = target_predictor.predict(test_dl_target_emb)

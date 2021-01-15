@@ -1,4 +1,5 @@
 import torch
+import torchvision
 import torch.nn as nn
 import itertools as it
 import pytorch_lightning as pl
@@ -14,8 +15,7 @@ class MLPEncoder(nn.Module):
                 [
                     (nn.Linear(inp_dim, out_dim), nn.ReLU())
                     for (inp_dim, out_dim) in zip(
-                        [input_dim] + hidden_dims,
-                        hidden_dims + [output_dim],
+                        [input_dim] + hidden_dims, hidden_dims + [output_dim],
                     )
                 ]
             )
@@ -43,9 +43,7 @@ class MLP(nn.Module):
         dims = [input_dim] + hidden_dims + [output_dim]
         modules = []
         for i in range(len(dims) - 1):
-            modules.append(
-                nn.Linear(dims[i], dims[i + 1]),
-            )
+            modules.append(nn.Linear(dims[i], dims[i + 1]),)
             if i < len(dims) - 2:
                 modules.append(nn.ReLU())
                 if batch_norm:
@@ -59,3 +57,22 @@ class MLP(nn.Module):
 
     def forward(self, X):
         return self.nonlinear(self.net(X))
+
+
+class ResNetEncoder(nn.Module):
+    def __init__(self, z_dim=2):
+        super().__init__()
+        self.z_dim = z_dim
+        output_dim = z_dim * 4  # 2 means and 2 covariances for each dim
+        self.net = torchvision.models.resnet18(pretrained=True)
+        for params in self.parameters():
+            params.requires_grad = False
+        fc_size = list(self.net.children())[-1].in_features
+        self.net.fc = nn.Linear(fc_size, output_dim)
+        self.nonlinear = nn.Sigmoid()
+
+    def forward(self, X):
+        vals = self.nonlinear(self.net(X))
+        return [
+            vals[:, i * self.z_dim : (i + 1) * self.z_dim] for i in range(4)
+        ]

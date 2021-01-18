@@ -12,6 +12,7 @@ from utils import (
     sample_reparameterize,
     KLD,
     reshape_tensor,
+    current_device,
 )
 
 
@@ -26,7 +27,7 @@ class FODVAE(pl.LightningModule):
         **kwargs
     ):
         super().__init__()
-        self.prior_mean_target = torch.ones(z_dim)
+        self.prior_mean_target = torch.ones(z_dim).to(current_device())
         self.prior_mean_target[int(z_dim / 2) :] = 0
         self.prior_mean_sensitive = -(self.prior_mean_target - 1)
         self.prior_mean_target = self.prior_mean_target / sum(

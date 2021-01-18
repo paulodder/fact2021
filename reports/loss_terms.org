@@ -203,10 +203,10 @@ One KL divergence terms can be computed as follows:
     &= - \int q_{\theta_{T}}(z^i_T \vert \bm{x}) \log \frac{q_{\theta_{T}}(z^i_T \vert \bm{x})}
     {p(z^i_T)} d\bm{x} \\
     &= \frac{1}{2} \log (2 \pi \sigma_{p_T}^i)
-    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 \sigma_{p_T}^i}
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 (\sigma_{p_T}^i)^2}
     - \frac{1}{2} (1 + \log 2\pi (\sigma_{q_T}^i)^2) \\
     &= \log \frac{\sigma_{p_T}^i}{\sigma_{q_T}^i}
-    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 \sigma_{p_T}^i}
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 (\sigma_{p_T}^i)^2}
     - \frac{1}{2}
   \end{aligned}
 \end{equation}

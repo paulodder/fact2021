@@ -140,9 +140,9 @@ We can compute the entropy loss as follows:
     &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
     - \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log \mathcal{U}(\bm{s}) \\
     &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
-    - \frac{m}{\log m} \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \\
+    - \log \frac{1}{m} \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \\
     &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
-    - \frac{m}{\log m}
+    + \log m
   \end{aligned}
 \end{equation}
 #+END_EXPORT

@@ -12,6 +12,7 @@ from utils import (
     sample_reparameterize,
     KLD,
     reshape_tensor,
+    current_device,
 )
 
 
@@ -26,7 +27,7 @@ class FODVAE(pl.LightningModule):
         **kwargs
     ):
         super().__init__()
-        self.prior_mean_target = torch.ones(z_dim)
+        self.prior_mean_target = torch.ones(z_dim).to(current_device())
         self.prior_mean_target[int(z_dim / 2) :] = 0
         self.prior_mean_sensitive = -(self.prior_mean_target - 1)
         self.prior_mean_target = self.prior_mean_target / sum(
@@ -101,13 +102,13 @@ class FODVAE(pl.LightningModule):
         # Optimizer for CIFAR datasets
         if self.dataset in {"cifar10", "cifar100"}:
             optim_encoder = torch.optim.Adam(
-                self.encoder.parameters(), lr=1e-4, weight_decay=1e-2
+                self.encoder.parameters(), lr=10 ** -4, weight_decay=10 ** -2
             )
             disc_params = list(self.discriminator_target.parameters()) + list(
                 self.discriminator_sensitive.parameters()
             )
             optim_disc = torch.optim.Adam(
-                disc_params, lr=1e-2, weight_decay=5e-2
+                disc_params, lr=10 ** -2, weight_decay=10 ** -3
             )
 
             return optim_encoder, optim_disc
@@ -115,7 +116,7 @@ class FODVAE(pl.LightningModule):
         # Optimizer for YaleB dataset
         elif self.dataset == "yaleb":
             optim = torch.optim.Adam(
-                self.parameters(), lr=1e-4, weight_decay=5e-2
+                self.parameters(), lr=10 ** -4, weight_decay=5 * (10 ** -2)
             )
             return optim
         # Optimizer for Adult and German datasets

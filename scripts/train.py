@@ -164,7 +164,7 @@ def main(args, logger=None, return_accuracy=False):
     # Get embeddings for train and test
     @torch.no_grad()
     def get_embs(X):
-        return fvae.forward(X)[0]
+        return fvae.encode(X)[0]
 
     train_dl_target_emb, test_dl_target_emb = target2sensitive_loader(
         args.dataset, args.batch_size, get_embs

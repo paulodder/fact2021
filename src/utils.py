@@ -34,7 +34,13 @@ def bce_loss(x, y):
     return nn.functional.binary_cross_entropy(x.float(), y.float())
 
 
+def fillnan(tensor, value):
+    tensor[tensor != tensor] = value
+    return tensor
+
+
 def loss_representation(y_pred, y_true):
+    y_pred = fillnan(torch.clamp(y_pred, 0, 1), 0.0)
     out = nn.functional.binary_cross_entropy(y_pred, y_true, reduction="none")
     return out
 

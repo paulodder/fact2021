@@ -269,6 +269,7 @@ class FODVAE(pl.LightningModule):
 
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
+        train_sens_crossover_acc = self.accuracy(s, crossover_posterior)
         use_logger = hasattr(self, "logger") and self.logger is not None
         if use_logger:
             # Log to WandbLogger
@@ -281,6 +282,7 @@ class FODVAE(pl.LightningModule):
                     "train_loss_repr_target": loss_repr_target.item(),
                     "train_target_acc": train_target_acc,
                     "train_sens_acc": train_sens_acc,
+                    "train_sens_crossover_acc": train_sens_crossover_acc,
                 }
             )
 
@@ -322,6 +324,12 @@ class FODVAE(pl.LightningModule):
                 "{:<20}{:>5}".format(
                     "train_sens_acc",
                     round(train_sens_acc, PRECISION),
+                )
+            )
+            print(
+                "{:<20}{:>5}".format(
+                    "train_sens_crossover_acc",
+                    round(train_sens_crossover_acc, PRECISION),
                 )
             )
             print("{:<20}{:>5}".format("loss", round(loss_total, PRECISION)))

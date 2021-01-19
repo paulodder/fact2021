@@ -68,14 +68,16 @@ def KLD(mean, std, mean_prior, eps=1e-8):
 def loss_entropy_binary(crossover_posterior):
     """Given the sensitive approximated posterior conditioned on the target latent
     representation (i.e. p(s|z_{t})), returns the entropy"""
-    normalized = crossover_posterior / crossover_posterior.sum(1).view(-1, 1)
-    if len(normalized.shape) == 1:
-        other_prob = 1 - normalized
+    if len(crossover_posterior.squeeze().shape) == 1:
+        other_prob = 1 - crossover_posterior
         return (
             other_prob * (other_prob + 1e-8).log()
-            + (normalized + 1e-8).log() * normalized
+            + (crossover_posterior + 1e-8).log() * crossover_posterior
         )
     else:
+        normalized = crossover_posterior / crossover_posterior.sum(1).view(
+            -1, 1
+        )
         return (normalized * (normalized + 1e-8).log()).sum(1)
 
 
@@ -169,7 +171,8 @@ def parse_results_fname(fname):
 
 
 def get_settings2results(experiment_name, dataset):
-    "takes pathlib.Path instance with ablative study results"
+    """Takes experiment name and dataset name and returns pd.Series that maps
+    loss_components-seed combinations"""
     rel_files = [
         f
         for f in (RESULTS_DIR.glob("*json"))

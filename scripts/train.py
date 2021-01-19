@@ -1,4 +1,5 @@
 import pickle
+import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
@@ -13,6 +14,7 @@ import wandb
 
 warnings.filterwarnings("ignore")
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
+RESULTS_DIR = Path(dotenv_values()["RESULTS_DIR"])
 sys.path.insert(0, str(PROJECT_DIR / "src"))
 from initializers import (
     get_fodvae,
@@ -42,6 +44,26 @@ def get_argparser():
         choices=list(dataset_registrar.keys()),
         help="Dataset to ues",
         required=True,
+    )
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        choices=["ablative"],
+        help="Context in which the run takes place",
+    )
+
+    parser.add_argument(
+        "--loss_components",
+        type=str,
+        default="entropy,kl,orth",
+        choices=[
+            "none",
+            "entropy",
+            "kl,orth",
+            "entropy,kl",
+            "entropy,kl,orth",
+        ],
+        help="Comma-separated list of components to include in the loss, the representation losses are included by default",
     )
     parser.add_argument(
         "--max_epochs",
@@ -124,7 +146,7 @@ def parse_args():
     return args
 
 
-def get_classification_report(test, pred, output_dict):
+def get_classification_report(test, pred, output_dict=False):
     return classification_report(
         utils.reshape_tensor(test),
         utils.reshape_tensor(pred),
@@ -138,7 +160,7 @@ def get_n_gpus():
     return n
 
 
-def main(args, logger=None, return_accuracy=False):
+def main(args, logger=None, return_results=False):
     torch.manual_seed(args.seed)
     # Initial model
     fvae = get_fodvae(args)
@@ -146,12 +168,10 @@ def main(args, logger=None, return_accuracy=False):
     # Init dataloaders
     train_dl, val_dl = load_data(args.dataset, args.batch_size, num_workers=0)
     # Train model
-    trainer = pl.Trainer(
-        max_epochs=args.max_epochs, logger=logger, gpus=get_n_gpus()
-    )
+    trainer = pl.Trainer(max_epochs=args.max_epochs, logger=logger, gpus=0)
     trainer.fit(fvae, train_dl, val_dl)
     # we want a fixed n. of epochs to train the eval predictors
-    args.max_epochs = 20
+    args.max_epochs = 5
     # Get embeddings for train and test
     @torch.no_grad()
     def get_embs(X):
@@ -197,17 +217,31 @@ def main(args, logger=None, return_accuracy=False):
                 }
             )
         target_classification_report = get_classification_report(
-            y_test, y_pred, False
+            y_test,
+            y_pred,
         )
         sens_classification_report = get_classification_report(
-            s_test, s_pred, False
+            s_test,
+            s_pred,
         )
         print("target classification report")
         print(target_classification_report)
         print("sensitive classification report")
         print(sens_classification_report)
+        if return_results:
+            return {
+                "target": get_classification_report(y_test, y_pred, True),
+                "sensitive": get_classification_report(s_test, s_pred, True),
+            }
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args)
+    return_results = args.experiment == "ablative"
+    results = main(args, return_results=return_results)
+    if return_results:
+        with open(RESULTS_DIR / utils.get_result_fname(args), "w") as f:
+            f.write(json.dumps(results, indent=2))
+    print(
+        f"Written results to {(RESULTS_DIR / utils.get_result_fname(args)).relative_to(PROJECT_DIR)}"
+    )

@@ -1,4 +1,6 @@
 import math
+import pandas as pd
+import json
 import torch
 import torch.nn as nn
 from dotenv import dotenv_values, find_dotenv
@@ -8,10 +10,17 @@ import argparse
 
 DOTENV = dotenv_values(find_dotenv())
 DATA_DIR = Path(DOTENV["DATA_DIR"])
+RESULTS_DIR = Path(DOTENV["RESULTS_DIR"])
+# constants
+# ENTROPY_wo_KL = "entropy_w/o_kl"
+# KL_ORTH_wo_ENTROPY = "kl_orth_w/o_entropy"
+# wo_ENTROPY_KL = "w/o_entropy_kl"
+# ENTROPY_KL_wo_ORTH = "entropy_kl_w/o_orth"
+# ENTROPY_KL_ORTH = "entropy_kl_orth"
 
 
 def current_device():
-    return "cuda:0" if torch.cuda.is_available() else "cpu:0"
+    return "cuda:0" if False else "cpu:0"  # torch.cuda.is_available()
 
 
 def sample_reparameterize(mean, std):
@@ -31,7 +40,9 @@ def sample_reparameterize(mean, std):
 
 
 def bce_loss(x, y):
-    return nn.functional.binary_cross_entropy(x.float(), y.float())
+    return nn.functional.binary_cross_entropy(
+        x.squeeze().float(), y.squeeze().float()
+    )
 
 
 def loss_representation(y_pred, y_true):
@@ -135,3 +146,41 @@ class ArgumentParser(argparse.ArgumentParser):
     def parse_args(self):
         namespace = super().parse_args()
         return NamespaceWithGet(namespace)
+
+
+def get_result_fname(args):
+    """Given args object, return fname formatted accordingly"""
+    if args.experiment == "ablative":
+        return f"{args.experiment}.{args.dataset}.{args.loss_components}.{args.seed}.json"
+
+
+def parse_results_fname(fname):
+    """given pathlib.Path instance, returns experiment name, dataset name, and the
+    loss components as a comma-separated list (str) of component names, and the
+    random seed
+
+    """
+    return fname.name.split(".")[:-1]
+
+
+def get_settings2results(experiment_name, dataset):
+    "takes pathlib.Path instance with ablative study results"
+    rel_files = [
+        f
+        for f in (RESULTS_DIR.glob("*json"))
+        if f.name.startswith(f"{experiment_name}.{dataset}")
+    ]
+
+    def load_results(fpath):
+        with open(fpath, "r") as f:
+            out = json.loads(f.read())
+        return out
+
+    settings2results = pd.Series(
+        index=pd.MultiIndex.from_tuples(
+            [parse_results_fname(f)[2:] for f in rel_files],
+            names=["loss_components", "seed"],
+        ),
+        data=[load_results(f) for f in rel_files],
+    )
+    return settings2results

@@ -24,18 +24,12 @@ class FODVAE(pl.LightningModule):
         discriminator_sensitive,
         z_dim,
         dataset,
-        **kwargs
+        loss_components=["entropy", "kl", "orth"],
+        **kwargs,
     ):
+        print(loss_components)
         super().__init__()
-        self.prior_mean_target = torch.ones(z_dim).to(current_device())
-        self.prior_mean_target[int(z_dim / 2) :] = 0
-        self.prior_mean_sensitive = -(self.prior_mean_target - 1)
-        self.prior_mean_target = self.prior_mean_target / sum(
-            self.prior_mean_target ** 2
-        )
-        self.prior_mean_sensitive = self.prior_mean_sensitive / sum(
-            self.prior_mean_sensitive ** 2
-        )
+        self.z_dim = z_dim
         self.encoder = encoder
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
@@ -49,6 +43,37 @@ class FODVAE(pl.LightningModule):
         }
         for param, default in param2default.items():
             setattr(self, param, kwargs.get(param, default))
+        self.loss_components = loss_components
+        print(f"Using {loss_components}")
+        self._init_prior_means()
+
+    def _init_prior_means(self):
+        if "orth" in self.loss_components:
+            print("yes orth")
+            self.prior_mean_target = torch.ones(self.z_dim).to(
+                current_device()
+            )
+            self.prior_mean_target[int(self.z_dim / 2) :] = 0
+            self.prior_mean_sensitive = -(self.prior_mean_target - 1)
+            assert self.prior_mean_sensitive.dot(self.prior_mean_target) == 0
+        else:
+            print("no orth")
+            # come back later
+            self.prior_mean_target = torch.ones(self.z_dim).to(
+                current_device()
+            )
+            self.prior_mean_target[int(self.z_dim / 2) :] = -1
+            self.prior_mean_sensitive = self.prior_mean_target[
+                :
+            ]  # -(self.prior_mean_target - 1)
+            assert self.prior_mean_sensitive.dot(self.prior_mean_target) != 0
+            assert (self.prior_mean_sensitive == self.prior_mean_target).all()
+        self.prior_mean_target = self.prior_mean_target / sum(
+            self.prior_mean_target ** 2
+        )
+        self.prior_mean_sensitive = self.prior_mean_sensitive / sum(
+            self.prior_mean_sensitive ** 2
+        )
 
     def forward(self, x):
         """
@@ -101,16 +126,17 @@ class FODVAE(pl.LightningModule):
     def configure_optimizers(self):
         # Optimizer for CIFAR datasets
         if self.dataset in {"cifar10", "cifar100"}:
-            optim_encoder = torch.optim.Adam(
-                self.encoder.parameters(), lr=10 ** -4, weight_decay=10 ** -2
-            )
+            # optim_encoder = torch.optim.Adam(
+            #     self.encoder.parameters(), lr=10 ** -4, weight_decay=10 ** -2
+            # )
+            optim_encoder = torch.optim.Adam(self.encoder.parameters())
             disc_params = list(self.discriminator_target.parameters()) + list(
                 self.discriminator_sensitive.parameters()
             )
-            optim_disc = torch.optim.Adam(
-                disc_params, lr=10 ** -2, weight_decay=10 ** -3
-            )
-
+            # optim_disc = torch.optim.Adam(
+            #     disc_params, lr=10 ** -2, weight_decay=10 ** -3
+            # )
+            optim_disc = torch.optim.Adam(disc_params)
             return optim_encoder, optim_disc
 
         # Optimizer for YaleB dataset
@@ -192,6 +218,8 @@ class FODVAE(pl.LightningModule):
         sample_sensitive = sample_reparameterize(mean_sensitive, std_sensitive)
         # Predict using discriminators
         pred_y = self.discriminator_target(sample_target).squeeze()
+        # print("\n")
+        # print(pred_y)
         # print("sample_sensitive", sample_sensitive)
         pred_s = self.discriminator_sensitive(sample_sensitive).squeeze()
         # Compute "crossover" posterior, i.e. to what extent is the sensitive
@@ -204,16 +232,23 @@ class FODVAE(pl.LightningModule):
         loss_repr_target = loss_representation(pred_y, y.float()).mean()
         loss_repr_sensitive = loss_representation(pred_s, s.float()).mean()
         # OD losses
-        loss_od_target = KLD(
-            mean_target, std_target, self.prior_mean_target
-        ).mean()
-        loss_od_sensitive = KLD(
-            mean_sensitive, std_sensitive, self.prior_mean_sensitive
-        ).mean()
-        loss_od = loss_od_target + loss_od_sensitive
+        if "kl" in self.loss_components:
+            loss_od_target = KLD(
+                mean_target, std_target, self.prior_mean_target
+            ).mean()
+            loss_od_sensitive = KLD(
+                mean_sensitive, std_sensitive, self.prior_mean_sensitive
+            ).mean()
+            loss_od = loss_od_target + loss_od_sensitive
+        else:
+            loss_od = torch.zeros(1)
+
         # Entropy loss
-        # print("crossover_posterior", crossover_posterior)
-        loss_entropy = loss_entropy_binary(crossover_posterior).mean()
+        if "entropy" in self.loss_components:
+            # print("crossover_posterior", crossover_posterior)
+            loss_entropy = loss_entropy_binary(crossover_posterior).mean()
+        else:
+            loss_entropy = torch.zeros(1)
 
         optim_all = optim_all if type(optim_all) == list else [optim_all]
         [optim.zero_grad() for optim in optim_all]
@@ -235,6 +270,7 @@ class FODVAE(pl.LightningModule):
 
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
+        print(f"\ntrain {train_sens_acc}")
         use_logger = hasattr(self, "logger") and self.logger is not None
         if use_logger:
             self.logger.log_metrics(

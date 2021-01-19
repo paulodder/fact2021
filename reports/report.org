@@ -31,7 +31,6 @@
 #+RESULTS:
 | latexmk -pdf %f -shell-escape |
 
-bibliography:report.bib
 * Reproducibility Summary
 Summary can be a page long max and needs to be included
 ** Scope of Reproducibility

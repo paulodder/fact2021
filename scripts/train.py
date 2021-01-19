@@ -113,7 +113,7 @@ def get_argparser():
     parser.add_argument(
         "--step_size",
         type=int,
-        default=1000,
+        default=30,
         help="Number of epochs for which lambda's decay exactly by the corresponding gamma",
     )
     # parser.add_argument(

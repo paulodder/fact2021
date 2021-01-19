@@ -40,10 +40,12 @@ class FODVAE(pl.LightningModule):
             "lambda_entropy": 0.55,
             "gamma_od": 0.8,
             "gamma_entropy": 1.33,
-            "step_size": 1000,
+            "step_size": 30,
         }
         for param, default in param2default.items():
             setattr(self, param, kwargs.get(param, default))
+        self.lambda_od_initial = self.lambda_od * 1
+        self.lambda_entropy_initial = self.lambda_entropy * 1
         self.loss_components = loss_components
         print(f"Using {loss_components}")
         self._init_prior_means()
@@ -161,25 +163,13 @@ class FODVAE(pl.LightningModule):
 
     automatic_optimization = False
 
-    def set_grad_target_encoder(self, to):
-        """Sets requires_grad of the parameters of the target encoder accordingly"""
-        params = list(self.encoder.parameters())
-        if self.dataset in {"german", "adult"}:
-            for param in params[:-2]:
-                param.requires_grad = to
-        # if self.dataset in {"cifar10", "cifar100"}:
-        #     print(params[:-2][)
-        # param.requires_grad = to
-        # w, b = list(self.encoder.parameters())[-2:]
-        # target_w = nn.Parameter(w[: int(w.shape[0] / 2), :]).requires_grad = to
-        # target_b = nn.Parameter(b[: int(b.shape[0] / 2)]).requires_grad = to
-
     def decay_lambdas(self):
-        self.lambda_od = self.lambda_od * self.gamma_od ** (
-            self.current_epoch / self.step_size
-        )
-        self.lambda_entropy = self.lambda_entropy * self.gamma_entropy ** (
-            self.current_epoch / self.step_size
+        # Every step_size epochs, the lambda should be increased by
+        # a factor denoted by corresponding gamma.
+        progress = self.current_epoch / self.step_size
+        self.lambda_od = self.lambda_od_initial * self.gamma_od ** progress
+        self.lambda_entropy = (
+            self.lambda_entropy_initial * self.gamma_entropy ** progress
         )
 
     def training_epoch_end(self, outputs):
@@ -278,11 +268,8 @@ class FODVAE(pl.LightningModule):
         for optimizer in optimizers:
             optimizer.zero_grad()
 
-        # Backprop sensitive representation loss, for which
-        # we want the target encoder to be frozen.
-        self.set_grad_target_encoder(False)
+        # Backprop sensitive representation loss
         loss_repr_sensitive.backward(retain_graph=True)
-        self.set_grad_target_encoder(True)
 
         # Backprop remaining loss
         remaining_loss = (

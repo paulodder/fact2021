@@ -29,10 +29,10 @@ from dataloaders import load_data, target2sensitive_loader, dataset_registrar
 
 # from predictors import
 
-DEFAULT_Z_DIM = 2
+DEFAULT_Z_DIM = None
 DEFAULT_INPUT_DIM = 108
 DEFAULT_BATCH_SIZE = 64
-DEFAULT_MAX_EPOCHS = 1
+DEFAULT_MAX_EPOCHS = None
 # DEFAULT_LEARNING_RATE = 10e-4
 
 
@@ -147,6 +147,24 @@ def parse_args():
     return args
 
 
+def set_defaults(args):
+    dataset2max_epochs = {
+        "adult": 1,
+        "german": 12,
+    }
+    dataset2z_dim = {
+        "cifar10": 1,
+        "cifar100": 1,
+        "adult": 1,
+        "german": 12,
+        "yaleb": 1,
+    }
+    if args.max_epochs is None:
+        args.max_epochs = dataset2max_epochs[args.dataset]
+    if args.z_dim is None:
+        args.z_dim = dataset2z_dim[args.dataset]
+
+
 def get_classification_report(test, pred, output_dict=False):
     return classification_report(
         utils.reshape_tensor(test),
@@ -161,10 +179,11 @@ def get_n_gpus():
     return n
 
 
-def main(args, logger=None, return_accuracy=False):
+def main(args, logger=None, return_results=False):
     if logger is None:
-        wandb.init(project="fact2021", config=vars(args))
-        logger = WandbLogger()
+        pass
+        # wandb.init(project="fact2021", config=vars(args))
+        # logger = WandbLogger()
 
     torch.manual_seed(args.seed)
     # Initial model
@@ -246,11 +265,12 @@ def main(args, logger=None, return_accuracy=False):
 
 if __name__ == "__main__":
     args = parse_args()
+    set_defaults(args)
     return_results = args.experiment == "ablative"
     results = main(args, return_results=return_results)
     if return_results:
         with open(RESULTS_DIR / utils.get_result_fname(args), "w") as f:
             f.write(json.dumps(results, indent=2))
-    print(
-        f"Written results to {(RESULTS_DIR / utils.get_result_fname(args)).relative_to(PROJECT_DIR)}"
-    )
+            print(
+                f"Written results to {(RESULTS_DIR / utils.get_result_fname(args)).relative_to(PROJECT_DIR)}"
+            )

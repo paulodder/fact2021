@@ -140,6 +140,7 @@ def get_target_discriminator(args):
 
 def get_fodvae(args):
     "gets FODVAE according to args"
+    loss_components = args.loss_components.split(",")
     if args.dataset == "adult":
         lambda_od = args.get("lambda_od", 0.036)
         lambda_entropy = args.get("lambda_entropy", 0.55)
@@ -166,6 +167,7 @@ def get_fodvae(args):
             step_size=step_size,
             z_dim=args.z_dim,
             dataset=args.dataset,
+            loss_components=loss_components,
         )
         return fvae
     elif args.dataset == "german":
@@ -194,6 +196,7 @@ def get_fodvae(args):
             step_size=step_size,
             z_dim=args.z_dim,
             dataset=args.dataset,
+            loss_components=loss_components,
         )
         return fvae
     elif args.dataset == "yaleb":
@@ -236,6 +239,7 @@ def get_fodvae(args):
             step_size=step_size,
             z_dim=args.z_dim,
             dataset=args.dataset,
+            loss_components=loss_components,
         )
         return fvae
     elif args.dataset in {"cifar10", "cifar100"}:
@@ -258,5 +262,6 @@ def get_fodvae(args):
             step_size=step_size,
             z_dim=args.z_dim,
             dataset=args.dataset,
+            loss_components=loss_components,
         )
         return fvae

@@ -41,9 +41,8 @@ def loss_representation(y_pred, y_true):
 
 def KLD(mean, std, mean_prior, eps=1e-8):
     "assumes prior unit variance"
-    unit_std = torch.ones(size=std.size()).float().to(current_device())
     val = (
-        torch.log(unit_std / (std + eps))
+        torch.log(1.0 / (std + eps))
         + ((std ** 2 + (mean - mean_prior) ** 2 - 1) / 2)
     ).sum(1)
     return val

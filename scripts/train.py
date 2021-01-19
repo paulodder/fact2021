@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
 import torch
 import pytorch_lightning as pl
+from pytorch_lightning.loggers import WandbLogger
 import sys
 import copy
 from dotenv import dotenv_values
@@ -139,12 +140,20 @@ def get_n_gpus():
 
 
 def main(args, logger=None, return_accuracy=False):
+    if logger is None:
+        wandb.init(project="fact2021", config=vars(args))
+        logger = WandbLogger()
+
     torch.manual_seed(args.seed)
     # Initial model
     fvae = get_fodvae(args)
     fvae.set_logger(logger)
+    print("FODVAE:")
+    print(fvae)
+
     # Init dataloaders
     train_dl, val_dl = load_data(args.dataset, args.batch_size, num_workers=0)
+
     # Train model
     trainer = pl.Trainer(
         max_epochs=args.max_epochs, logger=logger, gpus=get_n_gpus()

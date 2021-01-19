@@ -14,16 +14,22 @@
 #+PROPERTY: header-args :exports both :session report :cache :results value
 #+OPTIONS: ^:nil
 #+LATEX_COMPILER: pdflatex
+#+BIBLIOGRAPHY: refs plain
+
 
 #+BEGIN_SRC emacs-lisp :exports none
 (setq org-export-with-toc nil)
 (setq org-export-with-section-numbers nil)
-(setq org-export-latex-hyperref-format "\\ref{%s}")
+;; (setq org-export-latex-hyperref-format "\\ref{%s}")
+
+(require 'org-ref)
+(setq org-ref-default-bibliography "refs")
+(setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
+
 #+END_SRC
 
 #+RESULTS:
-: \ref{%s}
-
+| latexmk -pdf %f -shell-escape |
 
 * Reproducibility Summary
 Summary can be a page long max and needs to be included
@@ -52,6 +58,11 @@ via maximum entropy.
 * 2 Scope of reproducibility
 - Introduce problems work addresses
 - Introduce claims of paper that we will try to reproduce
+
+< mss hier nog iets over generally wat het doet (robust feature learning) i
+know dat het al in de introduction staat maar '- Introduce problems work
+addresses'
+
 [cite Sarhan] aimed to answer to questions with their experiments. 1) how does
 the learned target representation perform when predicting target attributes,
 and 2) how much information of the sensitive attributes is still present in the
@@ -59,13 +70,13 @@ learned target representation? To answer these questions they reported the a
 /target accuracy/ and a /sensitive accuracy/ respectively, which we define in
 section [[#sec:exp-setup]]. The authors' reported values can be found in
 table [[tab:sarhan_accuracies]]. Note that some of the accuracies were not reported
-exactly and have therefore been read of graphs. It is therefore our aim to
+exactly and have therefore been deduced from figures. It is therefore our aim to
 reproduce these accuracies found by the authors.
 
 
 #+ATTR_LATEX: :width 0.8\linewidth :float nil
 #+attr_latex: :align c|c|c
-#+CAPTION: Accuracies aquired by [cite Sarhan]. \textbf{Accuracies in bold} were not reported exactly and have been read of a figure.
+#+CAPTION: Accuracies aquired by [cite Sarhan]. \textbf{Accuracies in bold} were not reported exactly and have been deduced from a figure.
 #+label: tab:sarhan_accuracies
 |-----------+-----------------+--------------------|
 | dataset   | target accuracy | sensitive accuracy |
@@ -77,12 +88,32 @@ reproduce these accuracies found by the authors.
 | YaleB     | $\bm{0.92}$     | $\bm{0.52}$        |
 |-----------+-----------------+--------------------|
 
+Furthermore, the authors conduct an ablative study, in which specific parts of
+the loss of the model we excluded, in order to observe the models behaviour and
+understand the role of each of the loss terms within the training process. For
+example, Sarhan et al remove the orthogonality constraint of the learned
+sensitive and target embeddings by removing a loss term. Performance on the
+same datasets as lised above in table [[tab:sarhan_accuracies]] is reported. In
+total, the authors describe 6 variants of the model in this section. As such,
+we will attempt to reproduce these results, aswell.
+
+Finally, the authors preform a sensitivity analysis on the parameters that
+weigh the different loss terms. In particular the final target accuracy and
+sensitivty accuracy are reported as a function of the weight assigned to the
+entropy term, and the KL term. These results are displayed as a
+heatmap. Besides this two terms that control the decay of these loss terms are
+also varied and the final sensitivity and target accuracy reported in a
+heatmap.
+
 * 3 Methodology
 The code of the author's implementation of this project was not
 available. Therefore, it was our goal to reproduce the implementation from the
-description in the paper.
-- Summarise resources used (GPU, other documentation (perhaps documentation for
-  datasets?) or code)
+description in the paper. Due to the size of the described models (in
+particular the ResNet-18 implementation that was used for the CIFAR tasks)
+GPU's were utilized in order to train the models. Two GPU's were used, first we
+used Google's Colab to access a Tesla K80. Besides this we used a
+<<<??????pauls gpu??>>>> on a local machine.
+
 The essential elements of the model are described in
 the next section.
 ** 3.1 Model descriptions
@@ -97,12 +128,21 @@ input sample. Each sample has an associated target vector $\bm{y} \in
 latent representations; a target latent representation $\bm{z}_T$ and a
 sensitive latent representation $\bm{z}_S$. These representations are generated
 via a VAE-like encoder network [cite VAE] that outputs the means and variances
-of $\bm{z}_T$ and $\bm{z}_S$.
+of $\bm{z}_T$ and $\bm{z}_S$. The encoder has the following shape:
+The first part of the encoder $f(\bm{x}, \theta)$ is shared between the target
+and sensitive representation. After a data sample $\bm{x}$ is fed through said
+shared encoder, the result is fed through two separate encoders,
+$q_{\theta_T}(\bm{z}_T | \bm{x})$ and $q_{\theta_S}(\bm{z}_S | \bm{x})$, to
+create the target and sensitive representations respectively. Each
+representation is then used as input for the corresponding discriminator,
+either the target discriminator $q_{\phi_T}(\bm{z}_T | \bm{x})$ or the
+sensitive discriminator $q_{\theta_S}(\bm{z}_S | \bm{x})$.
 
-- Beginning encoder shared, splits into two specific encoders
-- Both are fed through specific discriminator
-- Architecture depends on the dataset.
-- Trained in supervised fashion to minimize loss:
+- TO-DO: maybe make use different letter (r? d?) to indicate discriminator
+  probability as it is confusing now.
+
+The encoder and discriminator are trained in supervised fashion to minimize the
+following loss:
 \begin{align}
 \label{eq:recon-losses}
 \mathcal{L}_{T}(\theta_{T},\phi_{T}) &= KL(p(\bm{y}|\bm{x})\parallel
@@ -111,19 +151,23 @@ q_{\phi_{t}}(\bm{y}|\bm{z}_{T})) \\
 q_{\phi_{S}}(\bm{y}|\bm{z}_{S}))
 \end{align}
 
-- To ensure no sensitive info leaking into the target representation, we
-  maximimze "the entropy of the sensitive discriminator given the target
-  representation".
+Here $\theta_S^* = \theta_S \backslash \theta$.
+
+- TO-DO: explain how optimization works with the shared params etc.
+
+To ensure no sensitive info leaking into the target representation, we
+maximimze "the entropy of the sensitive discriminator given the target
+representation". This is achieved by minimising
 \begin{equation}
 \label{eq:entropy-loss}
 \mathcal{L}_{E}(\phi_{S},\theta_{T}) =
 KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s}))
 \end{equation}
 
-- To ensure disantanglement we "enforce some sort of  independence among latent
-  factors". This is achieved by using Variational Inference, more specifically
-  the re-paramaterization trick [cite repar. trick], and try to minimize the KL
-  divergence between posterior (formula) and prior (formula):
+Last, to ensure disantanglement we "enforce some sort of  independence among latent
+factors". This is achieved by using Variational Inference, more specifically
+the re-paramaterization trick [cite repar. trick], and try to minimize the KL
+divergence between posterior (formula) and prior (formula):
 
 \begin{align}
 \label{eq:od-losses}
@@ -133,7 +177,8 @@ KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s}))
   p(\bm{z}_{S}))
 \end{align}
 
-- Total loss becomes:
+We combine all of the aforementioned losses and the objective becomes to
+minimize this combined loss:
 \begin{equation}
 \label{eq:total-loss}
 \underset{\theta_{T},\theta_{S},\phi{T},\phi{S}}{argmin}
@@ -142,16 +187,36 @@ KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s}))
 \phi_{S})  + \lambda_{OD}\mathcal{L}_{OD}(\phi_{T},\phi_{S})
 \end{equation}
 
-- $\lambda_{OD}$ and $\lambda_E$ are hyperparameters that we set.
+Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
+entropy loss respectively. These are hyperparameters that we need to set.
 
 ** 3.2 Datasets
-- For every dataset list:
-  - Number of examples and label distributions
-  - Type of sensitive attribute
-  - Train/test split details
-  - Pre-processing description
-  - Link to download data (do not know if this is really something we want to
-    do here, we can make sure the reference includes the references
+In order to reproduce the results obtained by Sarhan et al. it was necessary to
+apply the model to five datasets. Below, we outline some basic properties of
+the datasets, aswell as outlining steps taken in the pre processing, and we
+explain the sensitive and target attributes that are to be modeled. It is
+important to note that the \verb|get_all.sh| script in our scripts director
+will download all the datasets, and the \verb|load_data| function defined in
+\verb|dataloaders.py| will preprocess the data and provide a pytorch dataloader
+object.
+
+
+
+*** Adult
+The adult dataset was collected from the UCI machine learning repository
+cite:uci. The dataset contains census data, and the task is to predict whether
+a persons income exceeds 50K. In total, it contains 48842 rows and 14
+attributes. These attributes are a mix of categorical and continuous and
+contain information about the persons gender, education and occupation. The
+categorical columns were one-hot encoded
+*** German
+
+*** Yale B
+The yaleb dataset was collected from cite:yaleb_ds
+
+*** cifar 10
+
+*** cifar 100
 
 ** 3.3 Implementation details
 Following the paper of [Sarhan], we implement the following networks for the

@@ -60,6 +60,18 @@ def tensor_cols_to_flat_onehot(tensor, cols, cols_n):
 class CIFAR10Dataset(datasets.CIFAR10):
     n_classes = 2
     n_labels = 10
+    labels = [
+        "airplane",
+        "automobile",
+        "bird",
+        "cat",
+        "deer",
+        "dog",
+        "frog",
+        "horse",
+        "ship",
+        "truck",
+    ]
 
     def __init__(self, train):
         root = DATA_DIR / "cifar10"

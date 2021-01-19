@@ -5,7 +5,6 @@ import numpy as np
 import itertools as it
 import pytorch_lightning as pl
 from models import MLPEncoder, MLP
-from resnet import ResNetEncoder
 from utils import (
     loss_representation,
     loss_entropy_binary,
@@ -34,6 +33,8 @@ class FODVAE(pl.LightningModule):
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
         self.dataset = dataset
+
+        # Configure hyperparameters that have defaults
         param2default = {
             "lambda_od": 0.036,
             "lambda_entropy": 0.55,
@@ -75,26 +76,31 @@ class FODVAE(pl.LightningModule):
             self.prior_mean_sensitive ** 2
         )
 
-    def forward(self, x):
+    def encode(self, x):
         """
-        Inputs:
-            x - Something that fits in our network (batch_size x dim)
+        Encode input as distribution in latent representation space.
+
+        Inputs: x - Something that fits in our network (batch_size x dim)
+
         Outputs:
-            mean - Tensor of shape [B,z_dim] representing the predicted mean of
-              the latent distributions.
-            log_std - Tensor of shape [B,z_dim] representing the predicted log
-              standard deviation of the latent distributions.
+        target_mean - Tensor of shape [B,z_dim] representing the predicted mean
+        of the target partition of the latent representation.
+        std_target - Tensor of shape [B,z_dim]
+        representing the predicted standard deviation of the target partition
+        of the latent representation.
+        sensitive_mean - Tensor of shape [B,z_dim] representing the predicted
+        mean of the sensitive partition of the latent representation.
+        std_sensitive - Tensor of shape [B,z_dim]
+        representing the predicted standard deviation of the sensitive partition
+        of the latent representation.
         """
-        # Remark: Make sure to understand why we are predicting the log_std and
-        # not std
-        # x = x.view(x.shape[0], self.input_dim)
         (
             mean_target,
             log_std_target,
             mean_sensitive,
             log_std_sensitive,
         ) = self.encoder(x)
-        # target
+
         std_target = torch.exp(log_std_target)
         std_sensitive = torch.exp(log_std_sensitive)
         return (
@@ -104,24 +110,24 @@ class FODVAE(pl.LightningModule):
             std_sensitive,
         )
 
-    def yield_sensitive_repr_parameters(self):
-        """Return generator with parameters that should be updated according to the
-        sensitive representation loss, assuming that the second half of the
-        encoder output is used as sensitive latent approximated posterior
-        distribution parameters
-        """
-        final_linear_enc = self.encoder.net[-2]
-        w, b = list(final_linear_enc.parameters())
-        rel_enc_w = nn.Parameter(w[int(w.shape[0] / 2) :, :])
-        rel_enc_b = nn.Parameter(b[int(b.shape[0] / 2) :])
-        return (
-            params
-            for params in (
-                rel_enc_w,
-                rel_enc_b,
-                *self.discriminator_sensitive.parameters(),
-            )
-        )
+    # def yield_sensitive_repr_parameters(self):
+    #     """Return generator with parameters that should be updated according to the
+    #     sensitive representation loss, assuming that the second half of the
+    #     encoder output is used as sensitive latent approximated posterior
+    #     distribution parameters
+    #     """
+    #     final_linear_enc = self.encoder.net[-2]
+    #     w, b = list(final_linear_enc.parameters())
+    #     rel_enc_w = nn.Parameter(w[int(w.shape[0] / 2) :, :])
+    #     rel_enc_b = nn.Parameter(b[int(b.shape[0] / 2) :])
+    #     return (
+    #         params
+    #         for params in (
+    #             rel_enc_w,
+    #             rel_enc_b,
+    #             *self.discriminator_sensitive.parameters(),
+    #         )
+    #     )
 
     def configure_optimizers(self):
         # Optimizer for CIFAR datasets
@@ -145,6 +151,7 @@ class FODVAE(pl.LightningModule):
                 self.parameters(), lr=10 ** -4, weight_decay=5 * (10 ** -2)
             )
             return optim
+
         # Optimizer for Adult and German datasets
         elif self.dataset in {"adult", "german"}:
             optim = torch.optim.Adam(
@@ -152,12 +159,7 @@ class FODVAE(pl.LightningModule):
             )
             return optim
 
-    def manual_backward(self, loss, retain_graph=False):
-        loss.backward(retain_graph=retain_graph)
-
-    @property
-    def automatic_optimization(self):
-        return False
+    automatic_optimization = False
 
     def set_grad_target_encoder(self, to):
         """Sets requires_grad of the parameters of the target encoder accordingly"""
@@ -173,21 +175,26 @@ class FODVAE(pl.LightningModule):
         # target_b = nn.Parameter(b[: int(b.shape[0] / 2)]).requires_grad = to
 
     def decay_lambdas(self):
-        self.lambda_od *= self.gamma_od ** (
+        self.lambda_od = self.lambda_od * self.gamma_od ** (
             self.current_epoch / self.step_size
         )
-        self.lambda_entropy *= self.gamma_entropy ** (
+        self.lambda_entropy = self.lambda_entropy * self.gamma_entropy ** (
             self.current_epoch / self.step_size
         )
-        # print(self.lambda_od, self.lambda_entropy)
 
     def training_epoch_end(self, outputs):
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):
-        y = reshape_tensor(y).long()
-        y_pred = reshape_tensor(y_pred).long()
-        acc = (y == y_pred).float().mean().item()
+        y = reshape_tensor(y)
+        y_pred = reshape_tensor(y_pred)
+        if len(y_pred.size()) >= 2:
+            # multi class accuracy
+            matches = y.argmax(1).long() == y_pred.argmax(1).long()
+        else:
+            # binary class accuracy
+            matches = (y > 0.5).long() == (y_pred > 0.5).long()
+        acc = matches.float().mean().item()
         return acc
 
     def update_total_nof_batches(self, batch_idx):
@@ -201,36 +208,49 @@ class FODVAE(pl.LightningModule):
             self.logger = logger
 
     def training_step(self, batch, batch_idx, optimizer_idx=None):
+        # Keep track of how many batches we've trained with
         self.update_total_nof_batches(batch_idx)
-        # self.decay_lambdas()
-        optim_all = self.optimizers()
-        # X, y = batch
+
+        optimizers = self.optimizers()
+        optimizers = optimizers if type(optimizers) == list else [optimizers]
         X, y, s = batch
+
+        ##############################
+        ## Forward through models
+        ##############################
+
+        # Encode X to latent representation
         (
             mean_target,
             std_target,
             mean_sensitive,
             std_sensitive,
-        ) = self.forward(X)
-        # print(mean_target)
+        ) = self.encode(X)
+
         # Sample from latent distributions
         sample_target = sample_reparameterize(mean_target, std_target)
         sample_sensitive = sample_reparameterize(mean_sensitive, std_sensitive)
+
         # Predict using discriminators
         pred_y = self.discriminator_target(sample_target).squeeze()
         # print("\n")
         # print(pred_y)
         # print("sample_sensitive", sample_sensitive)
         pred_s = self.discriminator_sensitive(sample_sensitive).squeeze()
+
         # Compute "crossover" posterior, i.e. to what extent is the sensitive
         # discriminator able to predict the sensitive attribute based on the
         # target latent representation
         crossover_posterior = self.discriminator_sensitive(sample_target)
 
+        ##############################
         ## Compute losses
+        ##############################
+
         # Representation losses
         loss_repr_target = loss_representation(pred_y, y.float()).mean()
         loss_repr_sensitive = loss_representation(pred_s, s.float()).mean()
+
         # OD losses
         if "kl" in self.loss_components:
             loss_od_target = KLD(
@@ -250,14 +270,20 @@ class FODVAE(pl.LightningModule):
         else:
             loss_entropy = torch.zeros(1)
 
-        optim_all = optim_all if type(optim_all) == list else [optim_all]
-        [optim.zero_grad() for optim in optim_all]
-        # Freeze target encoder
+        ##############################
+        ## Optimization
+        ##############################
+
+        # Reset gradients
+        for optimizer in optimizers:
+            optimizer.zero_grad()
+
+        # Backprop sensitive representation loss, for which
+        # we want the target encoder to be frozen.
         self.set_grad_target_encoder(False)
-        # Backprop sensitive representation loss
         loss_repr_sensitive.backward(retain_graph=True)
-        # Unfreeze target encoder
         self.set_grad_target_encoder(True)
+
         # Backprop remaining loss
         remaining_loss = (
             loss_repr_target
@@ -266,30 +292,39 @@ class FODVAE(pl.LightningModule):
         )
         remaining_loss.backward()
 
-        loss_total = loss_repr_sensitive + remaining_loss
+        # Step for all optimizers
+        for optimizer in optimizers:
+            optimizer.step()
+
+        ##############################
+        ## Logging
+        ##############################
+
+        loss_total = loss_repr_sensitive.item() + remaining_loss.item()
+        print("loss_total", loss_total)
 
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
-        print(f"\ntrain {train_sens_acc}")
+        train_sens_crossover_acc = self.accuracy(s, crossover_posterior)
         use_logger = hasattr(self, "logger") and self.logger is not None
         if use_logger:
+            # Log to WandbLogger
             self.logger.log_metrics(
                 {
-                    "train_loss_total": loss_total.item(),
+                    "train_loss_total": loss_total,
                     "train_loss_od": loss_od.item(),
                     "train_loss_entropy": loss_entropy.item(),
                     "train_loss_repr_sensitive": loss_repr_sensitive.item(),
                     "train_loss_repr_target": loss_repr_target.item(),
                     "train_target_acc": train_target_acc,
                     "train_sens_acc": train_sens_acc,
+                    "train_sens_crossover_acc": train_sens_crossover_acc,
+                    "lambda_od": self.lambda_od,
+                    "lambda_entropy": self.lambda_entropy,
                 }
             )
 
-        # Step for all optimizers
-        for optim in optim_all:
-            optim.step()
-
-        if batch_idx == 0 and not use_logger:
+        if batch_idx % 10 == 0 and not use_logger:
             PRECISION = 3
             print(
                 "\n{:<20}{:>5}".format(
@@ -329,5 +364,10 @@ class FODVAE(pl.LightningModule):
                     round(train_sens_acc, PRECISION),
                 )
             )
-            loss = loss_repr_sensitive.item() + remaining_loss.item()
-            print("{:<20}{:>5}".format("loss", round(loss, PRECISION)))
+            print(
+                "{:<20}{:>5}".format(
+                    "train_sens_crossover_acc",
+                    round(train_sens_crossover_acc, PRECISION),
+                )
+            )
+            print("{:<20}{:>5}".format("loss", round(loss_total, PRECISION)))

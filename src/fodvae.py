@@ -154,13 +154,12 @@ class FODVAE(pl.LightningModule):
         # target_b = nn.Parameter(b[: int(b.shape[0] / 2)]).requires_grad = to
 
     def decay_lambdas(self):
-        self.lambda_od *= self.gamma_od ** (
+        self.lambda_od = self.lambda_od * self.gamma_od ** (
             self.current_epoch / self.step_size
         )
-        self.lambda_entropy *= self.gamma_entropy ** (
+        self.lambda_entropy = self.lambda_entropy * self.gamma_entropy ** (
             self.current_epoch / self.step_size
         )
-        # print(self.lambda_od, self.lambda_entropy)
 
     def training_epoch_end(self, outputs):
         self.decay_lambdas()
@@ -251,8 +250,8 @@ class FODVAE(pl.LightningModule):
         # Backprop remaining loss
         remaining_loss = (
             loss_repr_target
-            # + self.lambda_od * loss_od
-            # + self.lambda_entropy * loss_entropy
+            + self.lambda_od * loss_od
+            + self.lambda_entropy * loss_entropy
         )
         remaining_loss.backward()
 
@@ -283,6 +282,8 @@ class FODVAE(pl.LightningModule):
                     "train_target_acc": train_target_acc,
                     "train_sens_acc": train_sens_acc,
                     "train_sens_crossover_acc": train_sens_crossover_acc,
+                    "lambda_od": self.lambda_od,
+                    "lambda_entropy": self.lambda_entropy,
                 }
             )
 

@@ -165,9 +165,15 @@ class FODVAE(pl.LightningModule):
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):
-        y = reshape_tensor(y).long()
-        y_pred = reshape_tensor(y_pred).long()
-        acc = (y == y_pred).float().mean().item()
+        y = reshape_tensor(y)
+        y_pred = reshape_tensor(y_pred)
+        if len(y_pred.size()) >= 2:
+            # multi class accuracy
+            matches = y.argmax(1).long() == y_pred.argmax(1).long()
+        else:
+            # binary class accuracy
+            matches = (y > 0.5).long() == (y_pred > 0.5).long()
+        acc = matches.float().mean().item()
         return acc
 
     def update_total_nof_batches(self, batch_idx):

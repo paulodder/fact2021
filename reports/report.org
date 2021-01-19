@@ -189,7 +189,12 @@ object.
 
 
 *** Adult
-
+The adult dataset was collected from the UCI machine learning repository
+cite:uci. The dataset contains census data, and the task is to predict whether
+a persons income exceeds 50K. In total, it contains 48842 rows and 14
+attributes. These attributes are a mix of categorical and continuous and
+contain information about the persons gender, education and occupation. The
+categorical columns were one-hot encoded
 *** German
 
 *** Yale B

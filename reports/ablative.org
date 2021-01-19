@@ -1,0 +1,44 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: ablative
+#+AUTHOR: Paul Lodder
+#+EMAIL: <paul_lodder@live.nl>
+#+DATE: January 19, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session ablative :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+* introduction
+This file servers the purpose of documenting the ablative study. An ablative
+experiment for one dataset entails running our model with the default
+parameters for that dataset, i.e. the optimal parameters according to the
+parameter sweeps performed by the original authors, under three different
+random seeds, and plotting the results under =FIGURE_DIR=.
+
+Intermediary results are stored in =RESULTS_DIR= in the format
+=ablative.<dataset>.<loss_components>.<random-seed>.json= and contain a
+sensitive and target train accuracy in a json:
+#+BEGIN_SRC text
+{
+  "target": <output of classification_report output_dict>,
+  "sensitive": <output of classification_report output_dict>
+}
+#+END_SRC
+
+* running
+#+BEGIN_SRC sh
+sh scripts/ablative.sh
+#+END_SRC
+
+This generates the results and stores them under =RESULT_DIR=.
+Now to visualize the results, we run:
+#+BEGIN_SRC python
+python scripts/visualize_ablative.py --dataset adult
+#+END_SRC
+
+

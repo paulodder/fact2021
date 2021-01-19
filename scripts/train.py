@@ -155,8 +155,8 @@ def set_defaults(args):
     dataset2z_dim = {
         "cifar10": 1,
         "cifar100": 1,
-        "adult": 1,
-        "german": 12,
+        "adult": 2,
+        "german": 2,
         "yaleb": 1,
     }
     if args.max_epochs is None:
@@ -221,11 +221,10 @@ def main(args, logger=None, return_results=False):
     sensitive_predictor.fit(train_dl_target_emb)
 
     with torch.no_grad():
-        if (
-            args.eval_on_test
-        ):  # test on train DL, should be false except for debugging
+        if args.eval_on_test:
             y_test = test_dl_target_emb.dataset.targets
             y_pred = target_predictor.predict(test_dl_target_emb)
+            # test on train DL, should be false except for debugging
         else:
             y_test = train_dl_target_emb.dataset.targets
             y_pred = target_predictor.predict(train_dl_target_emb)
@@ -266,6 +265,12 @@ def main(args, logger=None, return_results=False):
 if __name__ == "__main__":
     args = parse_args()
     set_defaults(args)
+    # print(dict(vars(args)["namespace"].it))
+    # for a in vars(args):
+    #     print(a)
+    # print(a, getattr(args, a))
+    # print arg, getattr(args, arg)
+    # print("{:<20}{:>5}".format(k, v))
     return_results = args.experiment == "ablative"
     results = main(args, return_results=return_results)
     if return_results:

@@ -52,7 +52,8 @@ def get_target_predictor(args):
         return LRPredictor(lambda ds: ds.targets.argmax(1))
     if args.dataset == "cifar10":
         return MLPPredictorTrainer(
-            _cifar10_target_predictor(args), max_epochs=args.max_epochs,
+            _cifar10_target_predictor(args),
+            max_epochs=args.max_epochs,
         )
     if args.dataset == "cifar100":
         return MLPPredictorTrainer(
@@ -64,7 +65,11 @@ def get_target_predictor(args):
 def get_sensitive_predictor(model, args):
     optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictorTrainer(
-        MLPPredictor(model, optim_init_fn, train_for_sensitive=True,),
+        MLPPredictor(
+            model,
+            optim_init_fn,
+            train_for_sensitive=True,
+        ),
         max_epochs=args.max_epochs,
     )
 
@@ -233,13 +238,13 @@ def get_fodvae(args):
             dataset=args.dataset,
         )
         return fvae
-    else:
+    elif args.dataset in {"cifar10", "cifar100"}:
         lambda_od = args.get("lambda_od", 0.036)
         lambda_entropy = args.get("lambda_entropy", 0.55)
         gamma_od = args.get("gamma_od", 0.8)
         gamma_entropy = args.get("gamma_entropy", 0.133)
         step_size = args.get("step_size", 1000)
-        encoder = ResNetEncoder(z_dim=args.z_dim)
+        encoder = ResNetEncoder(z_dim=args.z_dim, continue_training=True)
         disc_target = get_target_discriminator(args)
         disc_sensitive = get_sensitive_discriminator(args)
         fvae = FODVAE(

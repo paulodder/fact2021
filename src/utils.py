@@ -10,6 +10,10 @@ DOTENV = dotenv_values(find_dotenv())
 DATA_DIR = Path(DOTENV["DATA_DIR"])
 
 
+def current_device():
+    return "cuda:0" if torch.cuda.is_available() else "cpu:0"
+
+
 def sample_reparameterize(mean, std):
     """
     Perform the reparameterization trick to sample from a distribution with the given mean and std
@@ -21,32 +25,32 @@ def sample_reparameterize(mean, std):
         z - A sample of the distributions, with gradient support for both mean and std.
             The tensor should have the same shape as the mean and std input tensors.
     """
-    eps = torch.normal(0, 1, size=mean.shape)
+    eps = torch.normal(0, 1, size=mean.shape).to(current_device())
     z = mean + (std * eps)
     return z
 
 
 def bce_loss(x, y):
-    return nn.functional.binary_cross_entropy(
-        x.squeeze().float(), y.squeeze().float()
-    )
+    return nn.functional.binary_cross_entropy(x.float(), y.float())
+
+
+def fillnan(tensor, value):
+    tensor[tensor != tensor] = value
+    return tensor
 
 
 def loss_representation(y_pred, y_true):
+    y_pred = fillnan(torch.clamp(y_pred, 0, 1), 0.0)
     out = nn.functional.binary_cross_entropy(y_pred, y_true, reduction="none")
     return out
 
 
-# def loss_od(mean, std):
-#     return nn.functional.binary_cross_entropy(y_pred, y_true)
-
-
-def KLD(mean, std, mean_prior):
+def KLD(mean, std, mean_prior, eps=1e-8):
     "assumes prior unit variance"
     val = (
-        torch.log(torch.ones_like(std) / (std + 1e-8))
-        + (((std ** 2) + ((mean - mean_prior) ** 2)) / 2)
-    ).sum(1) - 0.5
+        torch.log(1.0 / (std + eps))
+        + ((std ** 2 + (mean - mean_prior) ** 2 - 1) / 2)
+    ).sum(1)
     return val
 
 
@@ -61,7 +65,6 @@ def loss_entropy_binary(crossover_posterior):
             + (normalized + 1e-8).log() * normalized
         )
     else:
-        # breakpoint()
         return (normalized * (normalized + 1e-8).log()).sum(1)
 
 

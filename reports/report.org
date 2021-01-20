@@ -126,15 +126,16 @@ input sample. Each sample has an associated target vector $\bm{y} \in
 \mathbb{R}^n$ and an associated sensitive attribute vector $\bm{s} \in
 \mathbb{R}^m$, with $n$ and $m$ classes respectively. The aim is to create two
 latent representations; a target latent representation $\bm{z}_T$ and a
-sensitive latent representation $\bm{z}_S$. These representations are generated
-via a VAE-like encoder network [cite VAE] that outputs the means and variances
-of $\bm{z}_T$ and $\bm{z}_S$. The encoder has the following shape:
-The first part of the encoder $f(\bm{x}, \theta)$ is shared between the target
-and sensitive representation. After a data sample $\bm{x}$ is fed through said
-shared encoder, the result is fed through two separate encoders,
+sensitive latent representation $\bm{z}_S$. The encoder has the following shape:
+The first part of the encoder $f(\bm{x}, \theta)$ can be shared between the target
+and sensitive representation, depending on the dataset. After a data sample
+$\bm{x}$ is fed through said shared encoder, the result is fed through two separate encoders,
 $q_{\theta_T}(\bm{z}_T | \bm{x})$ and $q_{\theta_S}(\bm{z}_S | \bm{x})$, to
-create the target and sensitive representations respectively. Each
-representation is then used as input for the corresponding discriminator,
+create the target and sensitive representations respectively. The target and
+sensitive encoders are parameterized by $\theta_T$ and $\theta_S$
+respectively. The shared part of the encoder is therefore paramaterized by
+$\theta = \theta_T \cap \theta_S$.
+Each representation is then used as input for the corresponding discriminator,
 either the target discriminator $q_{\phi_T}(\bm{z}_T | \bm{x})$ or the
 sensitive discriminator $q_{\theta_S}(\bm{z}_S | \bm{x})$.
 
@@ -142,7 +143,7 @@ sensitive discriminator $q_{\theta_S}(\bm{z}_S | \bm{x})$.
   probability as it is confusing now.
 
 The encoder and discriminator are trained in supervised fashion to minimize the
-following loss:
+following losses, which combined we call the representation loss:
 \begin{align}
 \label{eq:recon-losses}
 \mathcal{L}_{T}(\theta_{T},\phi_{T}) &= KL(p(\bm{y}|\bm{x})\parallel
@@ -151,9 +152,9 @@ q_{\phi_{t}}(\bm{y}|\bm{z}_{T})) \\
 q_{\phi_{S}}(\bm{y}|\bm{z}_{S}))
 \end{align}
 
-Here $\theta_S^* = \theta_S \backslash \theta$.
-
-- TO-DO: explain how optimization works with the shared params etc.
+Here $\theta_S^* = \theta_S \backslash \theta$. These losses are effectively
+equal to the cross-entropy between the predicted values for the targets and
+sensitive attributes and their actual values.
 
 To ensure no sensitive info leaking into the target representation, we
 maximimze "the entropy of the sensitive discriminator given the target
@@ -164,18 +165,39 @@ representation". This is achieved by minimising
 KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s}))
 \end{equation}
 
-Last, to ensure disantanglement we "enforce some sort of  independence among latent
-factors". This is achieved by using Variational Inference, more specifically
-the re-paramaterization trick [cite repar. trick], and try to minimize the KL
-divergence between posterior (formula) and prior (formula):
+Last, we want to ensure that there is some level of independence between the
+two representations, i.e., ideally the posterior $p(\bm{z}_T | \bm{x})$ would be
+statistically independent of $p(\bm{z}_S | \bm{x})$. Following [cite Sarhan] we
+relax this independence requirement to enforcing 1) a disentaglement property
+and 2) orthogonality between the two representations. To enforce these
+properties, we need to /estimate/ the aforementioned posteriors (as they are
+intractable) using Variational Inference. The encoder network will be similar
+to the encoder of a VAE-like model [cite VAE] that outputs the means and
+variances, $\bm{\mu}_T$ and $\bm{\sigma}_T$ for both representations. To
+enforce the disentangelement property we minimize the KL-divergence between the
+output posterior $q_{\theta_T} (\bm{z}_T | \bm{x})$ and some prior $p (\bm{z}_T)$:
 
 \begin{align}
 \label{eq:od-losses}
 \mathcal{L}_{z_{T}}(\theta_{T}) &= KL(q_{\theta_{T}}(\bm{z}_{T} \vert \bm{x}) \parallel
-  p(\bm{z}_{T})) \\
-\mathcal{L}_{z_{S}}(\theta_{S}) &= KL(q_{\theta_{S}}(\bm{z}_{S} \vert \bm{x}) \parallel
-  p(\bm{z}_{S}))
+  p(\bm{z}_{T}))
 \end{align}
+
+Here $q_{\theta_T} (\bm{z}_T | \bm{x}) = \mathcal{N} (\bm{z}_T | \bm{\mu}_T,
+\text{diag} (\bm{\sigma}_T ^2))$ and $p (\bm{z}_T) = \mathca{N} (\bm{0} ,
+\bm{I}). We can construct a similar KL-divergence term for the sensitive
+representations. To enforce the orthogonality between the two representations
+we can make sure that the means of the prior distributions are orthogonal. This
+will indirectly push the posterior distributions to be orthogonal.
+
+We call these losses combined the /Orthogonal Disentangled/, or /OD/ loss.
+\[
+\mathcal{L}_{OD}(\theta_{T}, \theta_S) = \mathcal{L}_{z_{T}}(\theta_{T})  +
+\mathcal{L}_{z_{S}}(\theta_{S})
+\]
+We can use the re-parameterization trick [cite reparam trick] to sample
+from the posterior distribution to obtain the latent representations, which can
+then be fed to the respective discriminators.
 
 We combine all of the aforementioned losses and the objective becomes to
 minimize this combined loss:

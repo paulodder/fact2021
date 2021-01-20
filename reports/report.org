@@ -216,12 +216,7 @@ entropy loss respectively. These are hyperparameters that we need to set.
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
 apply the model to five datasets. Below, we outline some basic properties of
 the datasets, aswell as outlining steps taken in the pre processing, and we
-explain the sensitive and target attributes that are to be modeled. It is
-important to note that the \verb|get_all.sh| script in our scripts director
-will download all the datasets, and the \verb|load_data| function defined in
-\verb|dataloaders.py| will preprocess the data and provide a pytorch dataloader
-object.
-
+explain the sensitive and target attributes that are to be modeled.
 
 
 *** Adult
@@ -230,15 +225,79 @@ cite:uci. The dataset contains census data, and the task is to predict whether
 a persons income exceeds 50K. In total, it contains 48842 rows and 14
 attributes. These attributes are a mix of categorical and continuous and
 contain information about the persons gender, education and occupation. The
-categorical columns were one-hot encoded
+categorical columns were one-hot encoded, and the continuous variables were
+left unchanged. In the end, this left us with 108 features. The sensitive
+attribute for this dataset is the gender. All missing values occurred in
+categorical columns, these were explicitly encoded as a seperate
+category. Approximately 75% of the rows' income did not exceed 50K, and around
+67% are male. The train/test split is explicitly defined in the repository
+through aving seperate train and test files, the train:test ration is 2:1.
 *** German
+The German dataset was also collected from the UCI machine learning repository
+cite:uci. Again, the dataset contains a mix of categorical and continuous
+attributes. It contains 1000 rows and 20 features. Information pertaining to
+the occupation, age and personal status are included, the task is to classify
+rows as having good or bad credit risk. Similar to the adult dataset, the
+categorical features were one hot encoded, and continuous columns left
+unchanged, the sensitive attribute is gender. There are no missing values in
+the dataset. After our preprocessing, the dataset contained 61 columns. We
+randomly split the data with a train:test ration of 4:1. 68% of the rows in the
+dataset are male, and 70% have bad credit risk.
+
 
 *** Yale B
-The yaleb dataset was collected from cite:yaleb_ds
+The yaleb dataset was collected from the University of Toronto computer science
+department website cite:GeBeKr01. The dataset we used contains 2433 grayscale,
+168x192 images of 38 human faces under different lighting conditions.  The
+cropped variant was used, the task is to classify images according to the
+subjects of the images. We constructed a sensitive attribute by clustering the
+illumination conditions into 5 classes loosely corresponding to top left,
+bottom left, top right, bottom right and center. We defined these classes
+ourselves as we were unable to find detailed information on how this was done
+in the study by Sarhan et al. Our sensitive attributes' distribution was not
+skewed, with the 'center' class containing around 800 images, and the between
+340 and 380. This was not in line with the paper by Sarhan et al, who mention
+that a majority class classifier could attain 50% accuracy, in our case this is
+around 0.35. Unfortunately, we were unable to find sufficient information to be
+able to replicate the ratios mentioned in the reference paper, and instead
+constructed our own sensitive attributes.
+
+Our training dataset was comprised of 190 images, just like Sarhan et al. It is
+important to note that our testing dataset contained 2243 images, while the
+original study's dataset contained only 1096. The reason for this is unclear as
+we used the full dataset, and found no mention of omitting images in the paper
+by reference paper. The images were flattened into vectors of length 32256. The
+target feature was evenly distributed across the dataset, i.e. the dataset
+contained 64 images of each person.
 
 *** cifar 10
+The cifar 10 dataset was also collected from the University of Toronto computer
+science department website cite:GeBeKr01. It consists of 60 000 32x32 colour
+images that are divided into 10 classes such as airplane, automobile and
+bird. For our purposes, we construct a new target attribute, one that denotes
+whether the subject of the image is alive or not. The sensitive attribute,
+then, is the original label of the image. We must thus learn a representation
+of the image that allows a classifier to identify whether the subject is alive
+or not, while remaining invariant to the actual class of the image. There are
+6000 images of each original class label, and due to the nature of these
+classes 60% are alive, and 40% are not. Due to the convolutional nature of the
+network that we used for this dataset, the images were not flattened and
+instead the 32x32x3 images were fed through our network directly. The
+train:test ratio was 5:1, the provided split was used.
 
 *** cifar 100
+Finally, the cifar 100 dataset was also collected from the University of
+Toronto computer science department website cite:GeBeKr01. It is similar to
+CIFAR-10, except it contains 100 classes of 600 images each. Similarly to
+CIFAR-10, the 100 classes in CIFAR-100 are split into 20 coarses classes that
+cluster similar concepts into one category. For example: 'beaver'. 'dolphin'
+and 'otter' all belong to the coarse class 'aquatic mammals'. More details on
+this split can be found at cite:proteek. The task is the prediction of the
+coarse class while remaining invariant to the finer class. As mentioned before,
+there are 600 images of each fine class (i.e. the original labels), and 3000
+images of each coarse class (i.e. our targets). Again, a convolutional neowrk
+was used so no flattening was applied to our images. The provided train/test
+split was used, the train test ratio was therefore 5:1.
 
 ** 3.3 Implementation details
 Following the paper of [Sarhan], we implement the following networks for the
@@ -270,8 +329,31 @@ paper)
 :PROPERTIES:
 :CUSTOM_ID: sec:exp-setup
 :END:
-- Setup description that allows for replication
-- Explain evaluation metric
+*** Setup Reproducibility
+*** Evaluation
+Evaluation of the embeddings learned by our model is non trivial, as we must
+gather whether the embeddings adequately represent the data for the downstream
+task (e.g. classification), while also ensuring that the embeddings contain no
+sensitive information. In order to quantitively evaluate our model after
+completing training, we train two classifiers. These classifiers use the test
+data that is embedded using our trained model in the target space.
+
+The first classifier, known as the /target predictor/ is trained to predict the
+target label from the target embeddings. In accordance with the reference
+paper, we evaluated the target predictor using accuracy as metric. It is
+desirable that the target predictor performs as well as possible, as this means
+that the target embeddings embed the information necessary for the downstream
+task well.
+
+The second classifier, known as the /sensitive predictor/ is trained to predict
+the sensitive attribute from the target label. It is desirable that this
+classifier preforms poorly, as we would like there to be no information
+pertaining to the sensitive attribute in our target embedding. As such, we
+would like the model to be as close to a 'majority classifier' as possible,
+where the model is forced to simply predict the majority label for each data
+row as it has no meaningful information with which to make a prediction about
+the sensitive attribute. Again, we use solely accuracy as evaluation metric.
+
 ** 3.6 Computational Requirements
 - Include Hardware used (CPU/GPU used)
 - For each model, include average run-time

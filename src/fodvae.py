@@ -176,9 +176,11 @@ class FODVAE(pl.LightningModule):
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):
+        # print('y', y)
         y = reshape_tensor(y)
         y_pred = reshape_tensor(y_pred)
-        if len(y_pred.size()) >= 2:
+        # print('y_pred', y_pred)
+        if len(y_pred.squeeze().size()) >= 2:
             # multi class accuracy
             matches = y.argmax(1).long() == y_pred.argmax(1).long()
         else:
@@ -250,6 +252,9 @@ class FODVAE(pl.LightningModule):
                 mean_sensitive, std_sensitive, self.prior_mean_sensitive
             ).mean()
             loss_od = loss_od_target + loss_od_sensitive
+            # if torch.isnan(loss_od):
+            #     pass
+            #     breakpoint()
         else:
             loss_od = torch.zeros(1)
 
@@ -288,10 +293,12 @@ class FODVAE(pl.LightningModule):
         ##############################
 
         loss_total = loss_repr_sensitive.item() + remaining_loss.item()
-        print("loss_total", loss_total)
+        # print("loss_total", loss_total)
 
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
+        # if train_sens_acc > 0.95:
+        #     breakpoint()
         train_sens_crossover_acc = self.accuracy(s, crossover_posterior)
         use_logger = hasattr(self, "logger") and self.logger is not None
         if use_logger:

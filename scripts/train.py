@@ -17,23 +17,25 @@ warnings.filterwarnings("ignore")
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
 RESULTS_DIR = Path(dotenv_values()["RESULTS_DIR"])
 sys.path.insert(0, str(PROJECT_DIR / "src"))
+
 from initializers import (
     get_fodvae,
-    get_sensitive_discriminator,
-    get_target_predictor,
-    get_sensitive_predictor,
+    get_evaluation_managers,
 )
 
 import utils
-from dataloaders import load_data, target2sensitive_loader, dataset_registrar
+from dataloaders import (
+    load_data,
+    load_representation_dataloader,
+    dataset_registrar,
+)
 
-# from predictors import
 
 DEFAULT_Z_DIM = None
 DEFAULT_INPUT_DIM = 108
 DEFAULT_BATCH_SIZE = 64
 DEFAULT_MAX_EPOCHS = None
-# DEFAULT_LEARNING_RATE = 10e-4
+DEFAULT_PREDICTOR_EPOCHS = 10
 
 
 def get_argparser():
@@ -138,6 +140,13 @@ def get_argparser():
         default=420,
         help="Random seed",
     )
+    parser.add_argument(
+        "--predictor_epochs",
+        type=int,
+        default=DEFAULT_PREDICTOR_EPOCHS,
+        help="Number of epochs for which the predictor should train (if applicable)",
+    )
+
     return parser
 
 
@@ -165,18 +174,57 @@ def set_defaults(args):
         args.z_dim = dataset2z_dim[args.dataset]
 
 
-def get_classification_report(test, pred, output_dict=False):
-    return classification_report(
-        utils.reshape_tensor(test),
-        utils.reshape_tensor(pred),
-        output_dict=output_dict,
-    )
-
-
 def get_n_gpus():
     n = torch.cuda.device_count()
     print(f"n. gpus available: {n}")
     return n
+
+
+def evaluate(args, fodvae, logger=None, return_results=False):
+    @torch.no_grad()
+    def get_embs(X):
+        return fodvae.encode(X)[0]
+
+    # Evaluation using predictors
+    eval_manager_target, eval_manager_sens = get_evaluation_managers(
+        args, get_embs
+    )
+
+    eval_manager_target.fit()
+    eval_manager_sens.fit()
+
+    with torch.no_grad():
+        # If we have wandb logger, or we return results,
+        # we want to have the report as a dict.
+        output_dict = logger is not None or return_results
+        _, report_target, acc_target = eval_manager_target.evaluate(
+            output_dict
+        )
+        _, report_sens, acc_sens = eval_manager_sens.evaluate(output_dict)
+
+        if logger is not None:
+            logger.log_metrics(
+                {
+                    "target_classification_report": report_target,
+                    "sens_classification_report": report_sens,
+                }
+            )
+
+        # print("target classification report")
+        # print(report_target)
+        # print("sensitive classification report")
+        # print(report_sens)
+
+        print("~ evaluation results ~~~~~~~~~~~~~")
+        print("best target acc:", round(acc_target, 2))
+        print("best sens acc:  ", round(acc_sens, 2))
+        print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+
+        if return_results:
+            return {
+                "target": report_target,
+                "sensitive": report_target,
+            }
 
 
 def main(args, logger=None, return_results=False):
@@ -187,79 +235,23 @@ def main(args, logger=None, return_results=False):
 
     torch.manual_seed(args.seed)
     # Initial model
-    fvae = get_fodvae(args)
-    fvae.set_logger(logger)
-    print("FODVAE:")
-    print(fvae)
+    fodvae = get_fodvae(args)
+    fodvae.set_logger(logger)
+
+    print("FODVAE architecture:")
+    print(fodvae)
 
     # Init dataloaders
     train_dl, val_dl = load_data(args.dataset, args.batch_size, num_workers=0)
 
     # Train model
     trainer = pl.Trainer(max_epochs=args.max_epochs, logger=logger, gpus=0)
-    trainer.fit(fvae, train_dl, val_dl)
-    # we want a fixed n. of epochs to train the eval predictors
-    args.max_epochs = 5
-    # Get embeddings for train and test
-    @torch.no_grad()
-    def get_embs(X):
-        return fvae.encode(X)[0]
+    trainer.fit(fodvae, train_dl, val_dl)
 
-    train_dl_target_emb, test_dl_target_emb = target2sensitive_loader(
-        args.dataset, args.batch_size, get_embs
-    )
-    # Get predictors
-    target_predictor = get_target_predictor(args)
-    sensitive_predictor = get_sensitive_predictor(
-        get_sensitive_discriminator(args), args
-    )
-
-    ## Train target predictor
-    target_predictor.fit(train_dl_target_emb)
-
-    ## Train sensitive predictor
-    sensitive_predictor.fit(train_dl_target_emb)
-
-    with torch.no_grad():
-        if args.eval_on_test:
-            y_test = test_dl_target_emb.dataset.targets
-            y_pred = target_predictor.predict(test_dl_target_emb)
-            # test on train DL, should be false except for debugging
-        else:
-            y_test = train_dl_target_emb.dataset.targets
-            y_pred = target_predictor.predict(train_dl_target_emb)
-
-        s_test = test_dl_target_emb.dataset.s
-        s_pred = sensitive_predictor.predict(test_dl_target_emb)
-
-        if logger is not None:
-            logger.log_metrics(
-                {
-                    "target_classification_report": get_classification_report(
-                        y_test, y_pred, True
-                    ),
-                    "sens_classification_report": get_classification_report(
-                        s_test, s_pred, True
-                    ),
-                }
-            )
-        target_classification_report = get_classification_report(
-            y_test,
-            y_pred,
-        )
-        sens_classification_report = get_classification_report(
-            s_test,
-            s_pred,
-        )
-        print("target classification report")
-        print(target_classification_report)
-        print("sensitive classification report")
-        print(sens_classification_report)
-        if return_results:
-            return {
-                "target": get_classification_report(y_test, y_pred, True),
-                "sensitive": get_classification_report(s_test, s_pred, True),
-            }
+    if return_results:
+        return evaluate(args, fodvae, logger, return_results)
+    else:
+        evaluate(args, fodvae, logger, return_results)
 
 
 if __name__ == "__main__":

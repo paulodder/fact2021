@@ -288,7 +288,6 @@ class FODVAE(pl.LightningModule):
         ##############################
 
         loss_total = loss_repr_sensitive.item() + remaining_loss.item()
-        print("loss_total", loss_total)
 
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)

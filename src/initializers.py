@@ -140,12 +140,13 @@ def get_target_discriminator(args):
 
 def get_fodvae(args):
     "gets FODVAE according to args"
+    loss_components = args.loss_components.split(",")
     if args.dataset == "adult":
         lambda_od = args.get("lambda_od", 0.036)
         lambda_entropy = args.get("lambda_entropy", 0.55)
         gamma_od = args.get("gamma_od", 0.8)
         gamma_entropy = args.get("gamma_entropy", 0.133)
-        step_size = args.get("step_size", 1000)
+        step_size = args.get("step_size", 30)
         input_dim = 108
         encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
         disc_target = MLP(
@@ -166,6 +167,7 @@ def get_fodvae(args):
             step_size=step_size,
             z_dim=args.z_dim,
             dataset=args.dataset,
+            loss_components=loss_components,
         )
         return fvae
     elif args.dataset == "german":
@@ -173,7 +175,7 @@ def get_fodvae(args):
         lambda_entropy = args.get("lambda_entropy", 0.55)
         gamma_od = args.get("gamma_od", 0.8)
         gamma_entropy = args.get("gamma_entropy", 0.133)
-        step_size = args.get("step_size", 1000)
+        step_size = args.get("step_size", 30)
         input_dim = 61
         encoder = MLPEncoder(input_dim=input_dim, z_dim=args.z_dim)
         disc_target = MLP(
@@ -194,6 +196,7 @@ def get_fodvae(args):
             step_size=step_size,
             z_dim=args.z_dim,
             dataset=args.dataset,
+            loss_components=loss_components,
         )
         return fvae
     elif args.dataset == "yaleb":
@@ -222,7 +225,7 @@ def get_fodvae(args):
         #     lambda_entropy=0.5,
         #     gamma_od=0.8,
         #     gamma_entropy=1.33,
-        #     step_size=1000,
+        #     step_size=30,
         #     z_dim=args.z_dim,
         # )
         fvae = FODVAE(
@@ -236,6 +239,7 @@ def get_fodvae(args):
             step_size=step_size,
             z_dim=args.z_dim,
             dataset=args.dataset,
+            loss_components=loss_components,
         )
         return fvae
     elif args.dataset in {"cifar10", "cifar100"}:
@@ -243,7 +247,7 @@ def get_fodvae(args):
         lambda_entropy = args.get("lambda_entropy", 0.55)
         gamma_od = args.get("gamma_od", 0.8)
         gamma_entropy = args.get("gamma_entropy", 0.133)
-        step_size = args.get("step_size", 1000)
+        step_size = args.get("step_size", 30)
         encoder = ResNetEncoder(z_dim=args.z_dim, continue_training=True)
         disc_target = get_target_discriminator(args)
         disc_sensitive = get_sensitive_discriminator(args)
@@ -258,5 +262,6 @@ def get_fodvae(args):
             step_size=step_size,
             z_dim=args.z_dim,
             dataset=args.dataset,
+            loss_components=loss_components,
         )
         return fvae

@@ -44,3 +44,14 @@ parts of the data.
 * parameters sensitivity unclear
 Although they report a sensitivity analysis, they do not report what the
 parameter values are of the parameters that are not being varied.
+* KL w/o orth
+In their ablative study they =KL w/o Orth= means that they did use the
+disentangled loss but did not expliclty enforce disentanglement. We assume that
+they mean that we should just use "similar means" but that are not orthogonal.
+* tabular datasets
+The classifiers trained on our sensitive embeddings for the tabular datasets
+always go for the majority vote, which is not in line with their results
+suggesting they have non-majority accuracies.
+* nan for entropy only
+If we only use =entropy= for =loss_components=, for certain random seeds the
+script fails as loss_entropy becomes =nan=.

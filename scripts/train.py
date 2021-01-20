@@ -1,4 +1,5 @@
 import pickle
+import json
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report
@@ -14,6 +15,7 @@ import wandb
 
 warnings.filterwarnings("ignore")
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
+RESULTS_DIR = Path(dotenv_values()["RESULTS_DIR"])
 sys.path.insert(0, str(PROJECT_DIR / "src"))
 from initializers import (
     get_fodvae,
@@ -27,10 +29,10 @@ from dataloaders import load_data, target2sensitive_loader, dataset_registrar
 
 # from predictors import
 
-DEFAULT_Z_DIM = 2
+DEFAULT_Z_DIM = None
 DEFAULT_INPUT_DIM = 108
 DEFAULT_BATCH_SIZE = 64
-DEFAULT_MAX_EPOCHS = 1
+DEFAULT_MAX_EPOCHS = None
 # DEFAULT_LEARNING_RATE = 10e-4
 
 
@@ -43,6 +45,26 @@ def get_argparser():
         choices=list(dataset_registrar.keys()),
         help="Dataset to ues",
         required=True,
+    )
+    parser.add_argument(
+        "--experiment",
+        type=str,
+        choices=["ablative"],
+        help="Context in which the run takes place",
+    )
+
+    parser.add_argument(
+        "--loss_components",
+        type=str,
+        default="entropy,kl,orth",
+        choices=[
+            "none",
+            "entropy",
+            "kl,orth",
+            "entropy,kl",
+            "entropy,kl,orth",
+        ],
+        help="Comma-separated list of components to include in the loss, the representation losses are included by default",
     )
     parser.add_argument(
         "--max_epochs",
@@ -91,7 +113,7 @@ def get_argparser():
     parser.add_argument(
         "--step_size",
         type=int,
-        default=1000,
+        default=30,
         help="Number of epochs for which lambda's decay exactly by the corresponding gamma",
     )
     # parser.add_argument(
@@ -125,7 +147,25 @@ def parse_args():
     return args
 
 
-def get_classification_report(test, pred, output_dict):
+def set_defaults(args):
+    dataset2max_epochs = {
+        "adult": 1,
+        "german": 12,
+    }
+    dataset2z_dim = {
+        "cifar10": 1,
+        "cifar100": 1,
+        "adult": 2,
+        "german": 2,
+        "yaleb": 1,
+    }
+    if args.max_epochs is None:
+        args.max_epochs = dataset2max_epochs[args.dataset]
+    if args.z_dim is None:
+        args.z_dim = dataset2z_dim[args.dataset]
+
+
+def get_classification_report(test, pred, output_dict=False):
     return classification_report(
         utils.reshape_tensor(test),
         utils.reshape_tensor(pred),
@@ -139,10 +179,11 @@ def get_n_gpus():
     return n
 
 
-def main(args, logger=None, return_accuracy=False):
+def main(args, logger=None, return_results=False):
     if logger is None:
-        wandb.init(project="fact2021", config=vars(args))
-        logger = WandbLogger()
+        pass
+        # wandb.init(project="fact2021", config=vars(args))
+        # logger = WandbLogger()
 
     torch.manual_seed(args.seed)
     # Initial model
@@ -155,12 +196,10 @@ def main(args, logger=None, return_accuracy=False):
     train_dl, val_dl = load_data(args.dataset, args.batch_size, num_workers=0)
 
     # Train model
-    trainer = pl.Trainer(
-        max_epochs=args.max_epochs, logger=logger, gpus=get_n_gpus()
-    )
+    trainer = pl.Trainer(max_epochs=args.max_epochs, logger=logger, gpus=0)
     trainer.fit(fvae, train_dl, val_dl)
     # we want a fixed n. of epochs to train the eval predictors
-    args.max_epochs = 20
+    args.max_epochs = 5
     # Get embeddings for train and test
     @torch.no_grad()
     def get_embs(X):
@@ -182,11 +221,10 @@ def main(args, logger=None, return_accuracy=False):
     sensitive_predictor.fit(train_dl_target_emb)
 
     with torch.no_grad():
-        if (
-            args.eval_on_test
-        ):  # test on train DL, should be false except for debugging
+        if args.eval_on_test:
             y_test = test_dl_target_emb.dataset.targets
             y_pred = target_predictor.predict(test_dl_target_emb)
+            # test on train DL, should be false except for debugging
         else:
             y_test = train_dl_target_emb.dataset.targets
             y_pred = target_predictor.predict(train_dl_target_emb)
@@ -206,17 +244,38 @@ def main(args, logger=None, return_accuracy=False):
                 }
             )
         target_classification_report = get_classification_report(
-            y_test, y_pred, False
+            y_test,
+            y_pred,
         )
         sens_classification_report = get_classification_report(
-            s_test, s_pred, False
+            s_test,
+            s_pred,
         )
         print("target classification report")
         print(target_classification_report)
         print("sensitive classification report")
         print(sens_classification_report)
+        if return_results:
+            return {
+                "target": get_classification_report(y_test, y_pred, True),
+                "sensitive": get_classification_report(s_test, s_pred, True),
+            }
 
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args)
+    set_defaults(args)
+    # print(dict(vars(args)["namespace"].it))
+    # for a in vars(args):
+    #     print(a)
+    # print(a, getattr(args, a))
+    # print arg, getattr(args, arg)
+    # print("{:<20}{:>5}".format(k, v))
+    return_results = args.experiment == "ablative"
+    results = main(args, return_results=return_results)
+    if return_results:
+        with open(RESULTS_DIR / utils.get_result_fname(args), "w") as f:
+            f.write(json.dumps(results, indent=2))
+            print(
+                f"Written results to {(RESULTS_DIR / utils.get_result_fname(args)).relative_to(PROJECT_DIR)}"
+            )

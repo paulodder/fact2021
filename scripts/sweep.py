@@ -42,7 +42,7 @@ def get_config(dataset):
             "lambda_entropy": uniform_dist(0.0, 1.5),
             "gamma_od": {"value": 1},
             "gamma_entropy": {"value": 1},
-            "step_size": {"value": 1000},
+            "step_size": {"value": 30},
         }
     return {
         "name": f"{dataset}_sweep",

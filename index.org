@@ -14,3 +14,5 @@ Documents any of jeroen's experiences during the project.
 Documents any of siem's experiences during the project.
 * [[=reports/report.org=]]
 Report file for eventual hand-in
+* [[reports/ablative.org][=reports/ablative.org=]]
+Reports usage of ablative study-related scripts

@@ -63,10 +63,10 @@ via maximum entropy.
 know dat het al in de introduction staat maar '- Introduce problems work
 addresses'
 
-[cite Sarhan] aimed to answer to questions with their experiments. 1) how does
+[cite Sarhan] aim to answer two questions with their experiments. 1) how does
 the learned target representation perform when predicting target attributes,
 and 2) how much information of the sensitive attributes is still present in the
-learned target representation? To answer these questions they reported the a
+learned target representation? To answer these questions they report a
 /target accuracy/ and a /sensitive accuracy/ respectively, which we define in
 section [[#sec:exp-setup]]. The authors' reported values can be found in
 table [[tab:sarhan_accuracies]]. Note that some of the accuracies were not reported

@@ -184,17 +184,17 @@ output posterior $q_{\theta_T} (\bm{z}_T | \bm{x})$ and some prior $p (\bm{z}_T)
 \end{align}
 
 Here $q_{\theta_T} (\bm{z}_T | \bm{x}) = \mathcal{N} (\bm{z}_T | \bm{\mu}_T,
-\text{diag} (\bm{\sigma}_T ^2))$ and $p (\bm{z}_T) = \mathca{N} (\bm{0} ,
-\bm{I}). We can construct a similar KL-divergence term for the sensitive
+\text{diag} (\bm{\sigma}_T ^2))$ and $p (\bm{z}_T) = \mathcal{N} (\bm{0} ,
+\bm{I})$. We can construct a similar KL-divergence term for the sensitive
 representations. To enforce the orthogonality between the two representations
 we can make sure that the means of the prior distributions are orthogonal. This
 will indirectly push the posterior distributions to be orthogonal.
 
 We call these losses combined the /Orthogonal Disentangled/, or /OD/ loss.
-\[
+$$
 \mathcal{L}_{OD}(\theta_{T}, \theta_S) = \mathcal{L}_{z_{T}}(\theta_{T})  +
 \mathcal{L}_{z_{S}}(\theta_{S})
-\]
+$$
 We can use the re-parameterization trick [cite reparam trick] to sample
 from the posterior distribution to obtain the latent representations, which can
 then be fed to the respective discriminators.

@@ -16,3 +16,6 @@ Documents any of siem's experiences during the project.
 Report file for eventual hand-in
 * [[reports/ablative.org][=reports/ablative.org=]]
 Reports usage of ablative study-related scripts
+* [[reports/reproduce.org][=reports/reproduce.org=]]
+Documents the scripts required to reproduce any of the figures/results in our
+paper.

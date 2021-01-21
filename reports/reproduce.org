@@ -1,0 +1,74 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: reproduce
+#+AUTHOR: Paul Lodder
+#+EMAIL: <paul_lodder@live.nl>
+#+DATE: January 21, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session reproduce :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+*  Introduction
+This file serves the purpose of documenting the scripts that generate any of
+the results in our paper.
+* Ablative study
+The ablative study compares the effect of the composition of the loss term on
+the sensitive and target accuracy. To generate the results for any given
+dataset, we train the model with the best parameters according to Sarhan et
+al. with the following possible combinations of loss components:
+- Entropy with KL
+- KL Orth w/o Entropy
+- w/o Entropy w/o KL
+- Entropy + KL w/o Orth
+- Entropy + KL Orth.
+In addition, we train a baseline classifier on the raw data, but at this point
+we do not know what the baseline classifiers are.
+
+To generate the results for each of the loss component combinations, and for
+three random seeds we run:
+#+BEGIN_SRC sh
+bash scripts/ablative.sh <dataset name>
+#+END_SRC
+Where <dataset name> is one of =adult= =german= =cifar10= =cifar100= or
+=yaleb=.
+To visualize the results for a dataset we run:
+#+BEGIN_SRC sh
+python scripts/visualize_ablative.py --dataset <dataset name>
+#+END_SRC
+
+Hence, to generate the images we run:
+** adult
+#+BEGIN_SRC python
+bash scripts/ablative.sh adult
+python scripts/visualize_ablative.py --dataset adult
+#+END_SRC
+[[file:../figures/ablative.adult.png]]
+** german
+#+BEGIN_SRC python
+bash scripts/ablative.sh german
+python scripts/visualize_ablative.py --dataset german
+#+END_SRC
+[[file:../figures/ablative.german.png]]
+** yaleb
+#+BEGIN_SRC python
+bash scripts/ablative.sh yaleb
+python scripts/visualize_ablative.py --dataset yaleb
+#+END_SRC
+[[file:../figures/ablative.yaleb.png]]
+** cifar10
+#+BEGIN_SRC python
+bash scripts/ablative.sh cifar10
+python scripts/visualize_ablative.py --dataset cifar10
+#+END_SRC
+[[file:../figures/ablative.cifar10.png]]
+** cifar100
+#+BEGIN_SRC python
+bash scripts/ablative.sh cifar100
+python scripts/visualize_ablative.py --dataset cifar100
+#+END_SRC
+[[file:../figures/ablative.cifar100.png]]

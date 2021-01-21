@@ -33,20 +33,26 @@ class FODVAE(pl.LightningModule):
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
         self.dataset = dataset
-
         # Configure hyperparameters that have defaults
-        param2default = {
-            "lambda_od": 0.036,
-            "lambda_entropy": 0.55,
-            "gamma_od": 0.8,
-            "gamma_entropy": 1.33,
-            "step_size": 30,
+        hparams = {
+            "gamma_entropy",
+            "gamma_od",
+            "lambda_entropy",
+            "lambda_od",
+            "step_size",
+            "encoder_lr",
+            "encoder_weight_decay",
+            "discs_lr",
+            "discs_weight_decay",
         }
-        for param, default in param2default.items():
-            setattr(self, param, kwargs.get(param, default))
-        self.lambda_od_initial = self.lambda_od * 1
-        self.lambda_entropy_initial = self.lambda_entropy * 1
+        for param in hparams:
+            param_val = kwargs.get(param)
+            if param_val is None:
+                raise Exception(f"FODVAE missing required value for {param}")
+            setattr(self, param, param_val)
         self.loss_components = loss_components
+        self.lambda_od_initial = 1 * self.lambda_od
+        self.lambda_entropy_initial = 1 * self.lambda_entropy
         print(f"Using {loss_components}")
         self._init_prior_means()
 
@@ -133,33 +139,35 @@ class FODVAE(pl.LightningModule):
 
     def configure_optimizers(self):
         # Optimizer for CIFAR datasets
-        if self.dataset in {"cifar10", "cifar100"}:
-            # optim_encoder = torch.optim.Adam(
-            #     self.encoder.parameters(), lr=10 ** -4, weight_decay=10 ** -2
-            # )
-            optim_encoder = torch.optim.Adam(self.encoder.parameters())
-            disc_params = list(self.discriminator_target.parameters()) + list(
-                self.discriminator_sensitive.parameters()
-            )
-            # optim_disc = torch.optim.Adam(
-            #     disc_params, lr=10 ** -2, weight_decay=10 ** -3
-            # )
-            optim_disc = torch.optim.Adam(disc_params)
-            return optim_encoder, optim_disc
+        optim_encoder = torch.optim.Adam(
+            self.encoder.parameters(),
+            lr=self.encoder_lr,
+            weight_decay=self.encoder_weight_decay,
+        )
+        disc_params = list(self.discriminator_target.parameters()) + list(
+            self.discriminator_sensitive.parameters()
+        )
+        optim_discs = torch.optim.Adam(
+            disc_params, lr=self.discs_lr, weight_decay=self.discs_weight_decay
+        )
+        # return [
+        #     torch.optim.Adam(self.parameters()),
+        # ]
+        return optim_encoder, optim_discs
 
-        # Optimizer for YaleB dataset
-        elif self.dataset == "yaleb":
-            optim = torch.optim.Adam(
-                self.parameters(), lr=10 ** -4, weight_decay=5 * (10 ** -2)
-            )
-            return optim
+        # # Optimizer for YaleB dataset
+        # elif self.dataset == "yaleb":
+        #     optim = torch.optim.Adam(
+        #         self.parameters(), lr=10 ** -4, weight_decay=5 * (10 ** -2)
+        #     )
+        #     return optim
 
-        # Optimizer for Adult and German datasets
-        elif self.dataset in {"adult", "german"}:
-            optim = torch.optim.Adam(
-                self.parameters(), lr=1e-3, weight_decay=5e-4
-            )
-            return optim
+        # # Optimizer for Adult and German datasets
+        # elif self.dataset in {"adult", "german"}:
+        #     optim = torch.optim.Adam(
+        #         self.parameters(), lr=1e-3, weight_decay=5e-4
+        #     )
+        #     return optim
 
     automatic_optimization = False
 
@@ -252,9 +260,8 @@ class FODVAE(pl.LightningModule):
                 mean_sensitive, std_sensitive, self.prior_mean_sensitive
             ).mean()
             loss_od = loss_od_target + loss_od_sensitive
-            # if torch.isnan(loss_od):
-            #     pass
-            #     breakpoint()
+            if torch.isnan(loss_od):
+                breakpoint()
         else:
             loss_od = torch.zeros(1)
 

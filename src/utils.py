@@ -1,5 +1,6 @@
 import math
 import pandas as pd
+from defaults import DATASET2DEFAULTS
 import json
 import torch
 import torch.nn as nn
@@ -151,16 +152,34 @@ class NamespaceWithGet:
         return attr
 
 
-class ArgumentParser(argparse.ArgumentParser):
-    def parse_args(self):
-        namespace = super().parse_args()
-        return NamespaceWithGet(namespace)
+class Config:
+    def __init__(self, args):
+        """Given a parsed args, initializes parameters according to defaults unless
+        they are explicitly specified in the given args object"""
+        if hasattr(args, "__dict__"):
+            args_key2val = vars(args)
+            self.key2val = DATASET2DEFAULTS[args.dataset]
+        else:
+            args_key2val = args
+            self.key2val = DATASET2DEFAULTS[args["dataset"]]
+        for key, val in args_key2val.items():
+            if val is not None:
+                self.key2val[key] = val
+
+    def __getattr__(self, key):
+        return self.key2val.get(key, None)
 
 
-def get_result_fname(args):
+# class ArgumentParser(argparse.ArgumentParser):
+#     def parse_args(self):
+#         namespace = super().parse_args()
+#         return NamespaceWithGet(namespace)
+
+
+def get_result_fname(config):
     """Given args object, return fname formatted accordingly"""
     if args.experiment == "ablative":
-        return f"{args.experiment}.{args.dataset}.{args.loss_components}.{args.seed}.json"
+        return f"{config.experiment}.{config.dataset}.{config.loss_components}.{config.seed}.json"
 
 
 def parse_results_fname(fname):

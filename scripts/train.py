@@ -1,4 +1,5 @@
 import pickle
+import argparse
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -29,17 +30,11 @@ from dataloaders import (
     load_representation_dataloader,
     dataset_registrar,
 )
+from defaults import DATASET2DEFAULTS
 
 
-DEFAULT_Z_DIM = None
-DEFAULT_INPUT_DIM = 108
-DEFAULT_BATCH_SIZE = 64
-DEFAULT_MAX_EPOCHS = None
-DEFAULT_PREDICTOR_EPOCHS = 10
-
-
-def get_argparser():
-    parser = utils.ArgumentParser()
+def parse_args():
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dataset",
         "-d",
@@ -49,12 +44,11 @@ def get_argparser():
         required=True,
     )
     parser.add_argument(
-        "--experiment",
-        type=str,
-        choices=["ablative"],
-        help="Context in which the run takes place",
+        "--eval_on_test",
+        type=bool,
+        default=True,
+        help="Evaluate predictors on test set",
     )
-
     parser.add_argument(
         "--loss_components",
         type=str,
@@ -69,48 +63,42 @@ def get_argparser():
         help="Comma-separated list of components to include in the loss, the representation losses are included by default",
     )
     parser.add_argument(
+        "--experiment",
+        type=str,
+        choices=["ablative"],
+        help="Context in which the run takes place",
+    )
+    parser.add_argument(
         "--max_epochs",
         "-e",
         type=int,
         help="Max number of epochs",
-        default=DEFAULT_MAX_EPOCHS,
     )
     parser.add_argument(
         "--z_dim",
         "-z",
         type=int,
-        default=DEFAULT_Z_DIM,
         help="Latent dimensionality",
     )
     parser.add_argument(
         "--lambda_od",
         type=float,
-        default=None,
         help="Lambda for OD loss",
     )
     parser.add_argument(
         "--gamma_od",
         type=float,
-        default=None,
         help="Gamma for OD loss",
     )
     parser.add_argument(
         "--lambda_entropy",
         type=float,
-        default=None,
         help="Lambda for OD loss",
     )
     parser.add_argument(
         "--gamma_entropy",
         type=float,
-        default=None,
         help="Gamma for OD loss",
-    )
-    parser.add_argument(
-        "--eval_on_test",
-        type=bool,
-        default=True,
-        help="Evaluate predictors on test set",
     )
     parser.add_argument(
         "--step_size",
@@ -118,19 +106,10 @@ def get_argparser():
         default=30,
         help="Number of epochs for which lambda's decay exactly by the corresponding gamma",
     )
-    # parser.add_argument(
-    #     "--learning_rate",
-    #     "-l",
-    #     type=float,
-    #     default=DEFAULT_LEARNING_RATE,
-    #     help="Learning rate",
-    # )
-
     parser.add_argument(
         "--batch_size",
         "-b",
         type=int,
-        default=DEFAULT_BATCH_SIZE,
         help="Batch size",
     )
     parser.add_argument(
@@ -143,35 +122,22 @@ def get_argparser():
     parser.add_argument(
         "--predictor_epochs",
         type=int,
-        default=DEFAULT_PREDICTOR_EPOCHS,
         help="Number of epochs for which the predictor should train (if applicable)",
     )
-
-    return parser
-
-
-def parse_args():
-    parser = get_argparser()
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
-def set_defaults(args):
-    dataset2max_epochs = {
-        "adult": 1,
-        "german": 12,
-    }
-    dataset2z_dim = {
-        "cifar10": 1,
-        "cifar100": 1,
-        "adult": 2,
-        "german": 2,
-        "yaleb": 1,
-    }
-    if args.max_epochs is None:
-        args.max_epochs = dataset2max_epochs[args.dataset]
-    if args.z_dim is None:
-        args.z_dim = dataset2z_dim[args.dataset]
+# def parse_args():
+#     parser = get_argparser()
+#     args = parser.parse_args()
+#     return args
+
+
+# def set_defaults(args):
+#     if args.max_epochs is None:
+#         args.max_epochs = DATASET2DEFAULTS[args.dataset]["max_epochs"]
+#     if args.z_dim is None:
+#         args.z_dim = DATASET2DEFAULTS[args.dataset]["z_dim"]
 
 
 def get_n_gpus():
@@ -201,7 +167,8 @@ def evaluate(args, fodvae, logger=None, return_results=False):
             output_dict
         )
         _, report_sens, acc_sens = eval_manager_sens.evaluate(output_dict)
-
+        print(report_target)
+        print(report_sens)
         if logger is not None:
             logger.log_metrics(
                 {
@@ -223,48 +190,42 @@ def evaluate(args, fodvae, logger=None, return_results=False):
         if return_results:
             return {
                 "target": report_target,
-                "sensitive": report_target,
+                "sensitive": report_sens,
             }
 
 
-def main(args, logger=None, return_results=False):
+def main(config, logger=None, return_results=False):
     if logger is None:
         pass
-        # wandb.init(project="fact2021", config=vars(args))
+        # wandb.init(project="fact2021", config=vars(config))
         # logger = WandbLogger()
 
-    torch.manual_seed(args.seed)
+    torch.manual_seed(config.seed)
     # Initial model
-    fodvae = get_fodvae(args)
+    fodvae = get_fodvae(config)
     fodvae.set_logger(logger)
 
     print("FODVAE architecture:")
     print(fodvae)
 
     # Init dataloaders
-    train_dl, val_dl = load_data(args.dataset, args.batch_size, num_workers=0)
-
+    train_dl, val_dl = load_data(
+        config.dataset, config.batch_size, num_workers=0
+    )
+    print(config.key2val, config.max_epochs)
     # Train model
-    trainer = pl.Trainer(max_epochs=args.max_epochs, logger=logger, gpus=0)
+    trainer = pl.Trainer(max_epochs=config.max_epochs, logger=logger, gpus=0)
     trainer.fit(fodvae, train_dl, val_dl)
 
-    if return_results:
-        return evaluate(args, fodvae, logger, return_results)
-    else:
-        evaluate(args, fodvae, logger, return_results)
+    return evaluate(config, fodvae, logger, return_results)
 
 
 if __name__ == "__main__":
     args = parse_args()
-    set_defaults(args)
-    # print(dict(vars(args)["namespace"].it))
-    # for a in vars(args):
-    #     print(a)
-    # print(a, getattr(args, a))
-    # print arg, getattr(args, arg)
-    # print("{:<20}{:>5}".format(k, v))
+    config = utils.Config(args)
     return_results = args.experiment == "ablative"
-    results = main(args, return_results=return_results)
+    results = main(config, return_results=return_results)
+    print(results)
     if return_results:
         with open(RESULTS_DIR / utils.get_result_fname(args), "w") as f:
             f.write(json.dumps(results, indent=2))

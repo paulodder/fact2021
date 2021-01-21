@@ -24,7 +24,7 @@
 
 (require 'org-ref)
 (setq org-ref-default-bibliography "refs")
-(setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
+;; (setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
 
 #+END_SRC
 
@@ -59,9 +59,11 @@ via maximum entropy.
 - Introduce problems work addresses
 - Introduce claims of paper that we will try to reproduce
 
-< mss hier nog iets over generally wat het doet (robust feature learning) i
-know dat het al in de introduction staat maar '- Introduce problems work
-addresses'
+The reference work by Sarhan et al aims to work towards a method of generating
+embeddings of data, while remaining invariant towards a particular
+feature. This is done by explicitly learning an encoding of the sensitive
+information, and forcing this encoding to be orthogonal and disentangled with
+respect to the actual 'target' embeddings that are to be used in the downstream task.
 
 [cite Sarhan] aim to answer two questions with their experiments. 1) how does
 the learned target representation perform when predicting target attributes,
@@ -99,7 +101,7 @@ we will attempt to reproduce these results, aswell.
 
 Finally, the authors preform a sensitivity analysis on the parameters that
 weigh the different loss terms. In particular the final target accuracy and
-sensitivty accuracy are reported as a function of the weight assigned to the
+sensitivity accuracy are reported as a function of the weight assigned to the
 entropy term, and the KL term. These results are displayed as a
 heatmap. Besides this two terms that control the decay of these loss terms are
 also varied and the final sensitivity and target accuracy reported in a
@@ -108,13 +110,7 @@ heatmap.
 * 3 Methodology
 The code of the author's implementation of this project was not
 available. Therefore, it was our goal to reproduce the implementation from the
-description in the paper. Due to the size of the described models (in
-particular the ResNet-18 implementation that was used for the CIFAR tasks)
-GPU's were utilized in order to train the models. Two GPU's were used, first we
-used Google's Colab to access a Tesla K80. Besides this we used a
-<<<??????pauls gpu??>>>> on a local machine.
-
-The essential elements of the model are described in
+description in the paper. The essential elements of the model are described in
 the next section.
 ** 3.1 Model descriptions
 - Give explanation of the model
@@ -212,12 +208,14 @@ minimize this combined loss:
 Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
 entropy loss respectively. These are hyperparameters that we need to set.
 
+- Hier ook nog ff de decay uitleggen van lambda via gammas en timestep heel
+  kort
+
 ** 3.2 Datasets
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
 apply the model to five datasets. Below, we outline some basic properties of
 the datasets, aswell as outlining steps taken in the pre processing, and we
 explain the sensitive and target attributes that are to be modeled.
-
 
 *** Adult
 The adult dataset was collected from the UCI machine learning repository
@@ -244,8 +242,7 @@ the dataset. After our preprocessing, the dataset contained 61 columns. We
 randomly split the data with a train:test ration of 4:1. 68% of the rows in the
 dataset are male, and 70% have bad credit risk.
 
-
-*** Yale B
+*** YaleB
 The yaleb dataset was collected from the University of Toronto computer science
 department website cite:GeBeKr01. The dataset we used contains 2433 grayscale,
 168x192 images of 38 human faces under different lighting conditions.  The
@@ -298,6 +295,7 @@ there are 600 images of each fine class (i.e. the original labels), and 3000
 images of each coarse class (i.e. our targets). Again, a convolutional neowrk
 was used so no flattening was applied to our images. The provided train/test
 split was used, the train test ratio was therefore 5:1.
+
 
 ** 3.3 Implementation details
 Following the paper of [Sarhan], we implement the following networks for the

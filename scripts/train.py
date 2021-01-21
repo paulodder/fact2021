@@ -224,13 +224,16 @@ def main(args, logger=None, return_results=False):
         if args.eval_on_test:
             y_test = test_dl_target_emb.dataset.targets
             y_pred = target_predictor.predict(test_dl_target_emb)
+
+            s_test = test_dl_target_emb.dataset.s
+            s_pred = sensitive_predictor.predict(test_dl_target_emb)
             # test on train DL, should be false except for debugging
         else:
+            s_test = train_dl_target_emb.dataset.s
+            s_pred = sensitive_predictor.predict(train_dl_target_emb)
+
             y_test = train_dl_target_emb.dataset.targets
             y_pred = target_predictor.predict(train_dl_target_emb)
-
-        s_test = test_dl_target_emb.dataset.s
-        s_pred = sensitive_predictor.predict(test_dl_target_emb)
 
         if logger is not None:
             logger.log_metrics(

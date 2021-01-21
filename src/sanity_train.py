@@ -8,7 +8,6 @@ from utils import (
     loss_entropy_binary,
     sample_reparameterize,
     KLD,
-    reshape_tensor,
     current_device,
 )
 

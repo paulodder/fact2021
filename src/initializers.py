@@ -6,11 +6,14 @@ from dataloaders import load_representation_dataloader
 from evaluation import EvaluationManager
 
 
+def optim_init_fn(model):
+    return optim.Adam(model.parameters())
+
+
 def _cifar10_target_predictor(args):
     """Gets target predictor for the cifar10 dataset"""
     z_dim = args.z_dim
     output_dim = 1
-    optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictor.init_without_model(
         input_dim=z_dim,
         output_dim=output_dim,
@@ -23,12 +26,11 @@ def _cifar100_target_predictor(args):
     """Gets target predictor for the cifar100 dataset"""
     z_dim = args.z_dim
     output_dim = 20
-    optim_init_fn = lambda model: optim.Adam(model.parameters())
-    return MLPPredictor.init_with_model(
+    return MLPPredictor.init_without_model(
         input_dim=z_dim,
         output_dim=output_dim,
-        optim_init_fn=optim_init_fn,
         hidden_dims=[256, 128],
+        optim_init_fn=optim_init_fn,
     )
 
 
@@ -231,35 +233,21 @@ def get_target_predictor_trainer(args):
     if args.dataset in ["adult", "german"]:
         return LRPredictorTrainer()
     if args.dataset == "yaleb":
-        # optim_init_fn = lambda model: optim.Adam(model.parameters())
-        # return MLPPredictorTrainer(
-        #     MLPPredictor(
-        #         MLP(
-        #             input_dim=args.z_dim,
-        #             hidden_dims=[],
-        #             output_dim=38,
-        #             batch_norm=False,
-        #         ),
-        #         optim_init_fn,
-        #     ),
-        #     30,
-        # )
         return LRPredictorTrainer(lambda ds: ds.y.argmax(1))
     if args.dataset == "cifar10":
         return MLPPredictorTrainer(
             _cifar10_target_predictor(args),
-            max_epochs=args.max_epochs,
+            epochs=args.predictor_epochs,
         )
     if args.dataset == "cifar100":
         return MLPPredictorTrainer(
-            _cifar100_target_predictor(args), args.max_epochs
+            _cifar100_target_predictor(args), epochs=args.predictor_epochs
         )
     raise ValueError(f"dataset {dataset} is not recognized.")
 
 
 def get_sensitive_predictor_trainer(args):
     model = get_sensitive_discriminator(args)
-    optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictorTrainer(
         MLPPredictor(
             model,

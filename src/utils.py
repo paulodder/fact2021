@@ -120,7 +120,7 @@ def cluster_yaleb_poses():
     return clusters
 
 
-def reshape_tensor(t):
+def prepare_tensor_for_evaluation(t):
     t = t.squeeze()
     s = t.shape
 
@@ -133,6 +133,17 @@ def reshape_tensor(t):
         b, d = s
         return t.argmax(1)
     raise ValueError(f"cannot reshape tensor in a smart way")
+
+
+def accuracy(y, y_pred):
+    # Prepare those tensors
+    y = prepare_tensor_for_evaluation(y)
+    y_pred = prepare_tensor_for_evaluation(y_pred)
+    # With prepared tensors, we can just compare them directly.
+    matches = y == y_pred
+
+    acc = matches.float().mean().item()
+    return acc
 
 
 class NamespaceWithGet:

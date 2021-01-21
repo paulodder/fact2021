@@ -398,7 +398,7 @@ def get_embeddings(dataloader, model):
         embs.append(emb)
         targets.append(target)
         sens.append(s)
-    return [torch.cat(tensor, dim=0) for tensor in (emb, target, sens)]
+    return [torch.cat(tensor, dim=0) for tensor in (embs, targets, sens)]
 
 
 class GenericDataset(Dataset):

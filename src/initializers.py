@@ -2,15 +2,18 @@ from fodvae import FODVAE
 from torch import optim, nn
 from models import MLP, MLPEncoder, ResNetEncoder
 from predictors import MLPPredictor, LRPredictorTrainer, MLPPredictorTrainer
-from dataloaders import load_representation_dataloader
+from dataloaders import load_representation_dataloaders
 from evaluation import EvaluationManager
 from defaults import DATASET2DEFAULTS, DEFAULTS_CIFAR10
 
 
-def _cifar10_target_predictor(config):
+def optim_init_fn(model):
+    return optim.Adam(model.parameters())
+
+
+def _cifar10_target_predictor(args):
     """Gets target predictor for the cifar10 dataset"""
     output_dim = 1
-    optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictor.init_without_model(
         input_dim=config.z_dim,
         output_dim=CIFAR10_DEFAULTS["target_predictor_output_dim"],
@@ -254,7 +257,6 @@ def get_target_predictor_trainer(config):
 
 def get_sensitive_predictor_trainer(config):
     model = get_sensitive_discriminator(config)
-    optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictorTrainer(
         MLPPredictor(
             model,
@@ -264,12 +266,14 @@ def get_sensitive_predictor_trainer(config):
     )
 
 
-def get_evaluation_managers(config, get_embs):
-    train_dl_target, test_dl_target = load_representation_dataloader(
-        config.dataset, config.batch_size, get_embs, y_is_target=True
-    )
-    train_dl_sens, test_dl_sens = load_representation_dataloader(
-        config.dataset, config.batch_size, get_embs, y_is_target=False
+def get_evaluation_managers(args, get_embs):
+    (
+        train_dl_target,
+        test_dl_target,
+        train_dl_sens,
+        test_dl_sens,
+    ) = load_representation_dataloaders(
+        args.dataset, args.batch_size, get_embs
     )
 
     predictor_target_trainer = get_target_predictor_trainer(config)

@@ -24,7 +24,7 @@
 
 (require 'org-ref)
 (setq org-ref-default-bibliography "refs")
-(setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
+;; (setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
 
 #+END_SRC
 
@@ -42,9 +42,6 @@ Summary can be a page long max and needs to be included
 
 \newpage
 * 1 Introduction
-- Shortly introduce the work at high level (few paragraphs AT MOST, guidelines
-  talk about a couple of sentences).
-
 The work of [cite Sarhan] introduces a new way of learning representations that
 are useful for a specified task while robust against sensitive attributes. They
 propose a method that decomposes the latent representation into a target and
@@ -56,37 +53,21 @@ ensure that the target representation is agnostic to the sensitive information
 via maximum entropy.
 
 * 2 Scope of reproducibility
-- Introduce problems work addresses
-- Introduce claims of paper that we will try to reproduce
+The reference work by Sarhan et al aims to work towards a method of generating
+embeddings of data, while remaining invariant towards a particular
+feature. This is done by explicitly learning an encoding of the sensitive
+information, and forcing this encoding to be orthogonal and disentangled with
+respect to the actual 'target' embeddings that are to be used in the downstream task.
 
-< mss hier nog iets over generally wat het doet (robust feature learning) i
-know dat het al in de introduction staat maar '- Introduce problems work
-addresses'
-
-[cite Sarhan] aimed to answer to questions with their experiments. 1) how does
+[cite Sarhan] aim to answer two questions with their experiments. 1) how does
 the learned target representation perform when predicting target attributes,
 and 2) how much information of the sensitive attributes is still present in the
-learned target representation? To answer these questions they reported the a
+learned target representation? To answer these questions they report a
 /target accuracy/ and a /sensitive accuracy/ respectively, which we define in
-section [[#sec:exp-setup]]. The authors' reported values can be found in
-table [[tab:sarhan_accuracies]]. Note that some of the accuracies were not reported
-exactly and have therefore been deduced from figures. It is therefore our aim to
-reproduce these accuracies found by the authors.
-
-
-#+ATTR_LATEX: :width 0.8\linewidth :float nil
-#+attr_latex: :align c|c|c
-#+CAPTION: Accuracies aquired by [cite Sarhan]. \textbf{Accuracies in bold} were not reported exactly and have been deduced from a figure.
-#+label: tab:sarhan_accuracies
-|-----------+-----------------+--------------------|
-| dataset   | target accuracy | sensitive accuracy |
-|-----------+-----------------+--------------------|
-| Adult     | $\bm{0.68}$     | $0.6826$           |
-| German    | $\bm{0.77}$     | $0.71$             |
-| CIFAR-10  | $0.9725$        | $0.1907$           |
-| CIFAR-100 | $0.7074$        | $0.1447$           |
-| YaleB     | $\bm{0.92}$     | $\bm{0.52}$        |
-|-----------+-----------------+--------------------|
+section [[#sec:exp-setup]]. The authors' reported values can be found in the
+results section in table [[tab:sarhan_accuracies]]. Note that some of the
+accuracies were not reported exactly and have therefore been deduced from
+figures. It is our aim to reproduce these accuracies found by the authors.
 
 Furthermore, the authors conduct an ablative study, in which specific parts of
 the loss of the model we excluded, in order to observe the models behaviour and
@@ -99,7 +80,7 @@ we will attempt to reproduce these results, aswell.
 
 Finally, the authors preform a sensitivity analysis on the parameters that
 weigh the different loss terms. In particular the final target accuracy and
-sensitivty accuracy are reported as a function of the weight assigned to the
+sensitivity accuracy are reported as a function of the weight assigned to the
 entropy term, and the KL term. These results are displayed as a
 heatmap. Besides this two terms that control the decay of these loss terms are
 also varied and the final sensitivity and target accuracy reported in a
@@ -108,19 +89,9 @@ heatmap.
 * 3 Methodology
 The code of the author's implementation of this project was not
 available. Therefore, it was our goal to reproduce the implementation from the
-description in the paper. Due to the size of the described models (in
-particular the ResNet-18 implementation that was used for the CIFAR tasks)
-GPU's were utilized in order to train the models. Two GPU's were used, first we
-used Google's Colab to access a Tesla K80. Besides this we used a
-<<<??????pauls gpu??>>>> on a local machine.
-
-The essential elements of the model are described in
+description in the paper. The essential elements of the model are described in
 the next section.
-** 3.1 Model descriptions
-- Give explanation of the model
-  - Alterations for different data-sets
-  - /Is this a good place to give details of all the losses?/
-
+** 3.1 Model description
 Let $\mathcal{X}$ be the dataset and let $\bm{x} \in \mathbb{R}^D$ be a single
 input sample. Each sample has an associated target vector $\bm{y} \in
 \mathbb{R}^n$ and an associated sensitive attribute vector $\bm{s} \in
@@ -139,8 +110,8 @@ Each representation is then used as input for the corresponding discriminator,
 either the target discriminator $q_{\phi_T}(\bm{z}_T | \bm{x})$ or the
 sensitive discriminator $q_{\theta_S}(\bm{z}_S | \bm{x})$.
 
-- TO-DO: maybe make use different letter (r? d?) to indicate discriminator
-  probability as it is confusing now.
+- @ Stefan: Het is nog het plan om de discriminator een andere letter te geven
+  dan q to avoid confusion.
 
 The encoder and discriminator are trained in supervised fashion to minimize the
 following losses, which combined we call the representation loss:
@@ -184,17 +155,17 @@ output posterior $q_{\theta_T} (\bm{z}_T | \bm{x})$ and some prior $p (\bm{z}_T)
 \end{align}
 
 Here $q_{\theta_T} (\bm{z}_T | \bm{x}) = \mathcal{N} (\bm{z}_T | \bm{\mu}_T,
-\text{diag} (\bm{\sigma}_T ^2))$ and $p (\bm{z}_T) = \mathca{N} (\bm{0} ,
-\bm{I}). We can construct a similar KL-divergence term for the sensitive
+\text{diag} (\bm{\sigma}_T ^2))$ and $p (\bm{z}_T) = \mathcal{N} (\bm{0} ,
+\bm{I})$. We can construct a similar KL-divergence term for the sensitive
 representations. To enforce the orthogonality between the two representations
 we can make sure that the means of the prior distributions are orthogonal. This
 will indirectly push the posterior distributions to be orthogonal.
 
 We call these losses combined the /Orthogonal Disentangled/, or /OD/ loss.
-\[
+$$
 \mathcal{L}_{OD}(\theta_{T}, \theta_S) = \mathcal{L}_{z_{T}}(\theta_{T})  +
 \mathcal{L}_{z_{S}}(\theta_{S})
-\]
+$$
 We can use the re-parameterization trick [cite reparam trick] to sample
 from the posterior distribution to obtain the latent representations, which can
 then be fed to the respective discriminators.
@@ -210,14 +181,25 @@ minimize this combined loss:
 \end{equation}
 
 Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
-entropy loss respectively. These are hyperparameters that we need to set.
+entropy loss respectively. Additionally, we introduce two decay parameters,
+$\gamma_{OD}$ and $\gamma_{E}$ which allows us to change the weights of the
+aforementioned losses while training. The OD loss weight at epoch $t$ during
+training will be calculated as follows:
+\begin{equation}
+\lambda_{OD}^{(t)} = \lambda_{OD}^{(0)} \gamma_{OD}^{t/t_s}
+\end{equation}
+Here $t_s$ is the so-called /step-size/ parameter, and $\lambda_{OD} is the
+initial OD loss weight. The maximum entropy loss weight will be computed in the
+same way. $\lambda_{OD}^{(0)}, \lambda_{E}^{(0)}, \gamma_{OD},
+\gamma_{E}$ and $t_s$ are all hyperparamters that we need to set. More
+information on those will follow.
+
 
 ** 3.2 Datasets
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
 apply the model to five datasets. Below, we outline some basic properties of
 the datasets, aswell as outlining steps taken in the pre processing, and we
 explain the sensitive and target attributes that are to be modeled.
-
 
 *** Adult
 The adult dataset was collected from the UCI machine learning repository
@@ -244,8 +226,7 @@ the dataset. After our preprocessing, the dataset contained 61 columns. We
 randomly split the data with a train:test ration of 4:1. 68% of the rows in the
 dataset are male, and 70% have bad credit risk.
 
-
-*** Yale B
+*** YaleB
 The yaleb dataset was collected from the University of Toronto computer science
 department website cite:GeBeKr01. The dataset we used contains 2433 grayscale,
 168x192 images of 38 human faces under different lighting conditions.  The
@@ -302,24 +283,27 @@ split was used, the train test ratio was therefore 5:1.
 ** 3.3 Implementation details
 Following the paper of [Sarhan], we implement the following networks for the
 several datasets.
-(Maybe better to put all of these in tables and give only short description in
-paragraphs?)
-*** Adult and German
+- @ Stefan: het is het plan om deze modelbeschrijvingen nog samen te vatten een
+  tabel voor de sake of overzichtelijkheid.
+
+
+*** Tabular datasets
 For the Adult and German dataset we implement a MLP with one hidden layer as
 encoder and a MLP with two hidden layers as discriminators. The two
 discriminators are followed by a logistic regression layer to make a
 prediction. All hidden layers contain 64 units. Last, the latent
 representations have size 2.
-*** YaleB
+*** CIFAR datasets
+For the CIFAR datasets we implement a ResNet-18 [cite resnet] architecture for
+the encoder. For the discriminator and the target classifier we use an MLP with
+two hidden layers, with 256 and 128 neurons. Last, the latent representations
+have size 128.
+
+*** YaleB dataset
 For the extended YaleB dataset we implement a MLP with one hidden layer as
 encoder and a MLP with two hidden layers as discriminators. The two
 discriminators are followed by a linear layer to make a prediction. All hidden
-layers contain 100 units. Last, the latent representations have size 2 (?).
-*** CIFAR
-For the CIFAR datasets we implement a ResNet-18 [cite resnet] architecture for
-the encoder. For the discriminator and the target classifier we use an MLP with
-two hidden layers, with 256 and 128 neurons. (z size?? maybe in resnet 18
-paper)
+layers contain 100 units. Last, the latent representations have size 100.
 
 ** 3.4 Hyperparameters
 - Describe process of setting hyperparameters
@@ -352,8 +336,19 @@ pertaining to the sensitive attribute in our target embedding. As such, we
 would like the model to be as close to a 'majority classifier' as possible,
 where the model is forced to simply predict the majority label for each data
 row as it has no meaningful information with which to make a prediction about
-the sensitive attribute. Again, we use solely accuracy as evaluation metric.
+the sensitive attribute. Again, we solely use accuracy as evaluation metric.
 
+We use the following classifier networks for evaluation per dataset:
+
+\paragraph{Tabular Datasets} For the Adult and German datasets we implement a
+single logistic regression layer for the target and sensitive predictors.
+
+\paragraph{CIFAR datasets} For the CIFAR datasets we implement a MLP with two
+hidden layers for the and sensitive predictors. The hidden layers have 256 and
+128 neurons.
+
+\paragraph{YaleB dataset} For the YaleB dataset we implement a MLP with one
+hidden layer with 100 neurons for the target and sensitive predictors.
 ** 3.6 Computational Requirements
 - Include Hardware used (CPU/GPU used)
 - For each model, include average run-time
@@ -362,6 +357,27 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 * 4 Results
 - High-level overview. Do our results support the paper's claims? Keep
   discussion for next section.
+
+We have listed the reported accuracies of the authors in table
+[[tab:sarhan_accuracies]].
+- @ Stefan: het is het idee om hier een grotere tabel van te maken als onze
+  resultaten binnen zijn zodat ze makkelijk te vergelijken zijn! Zelfde voor de
+  ablative studie en we denken dat we hun heatmap resultaten in de appendix
+  zetten omdat het anders veel ruimte in beslag zal nemen.
+#+ATTR_LATEX: :width 0.8\linewidth :float nil
+#+attr_latex: :align c|c|c
+#+CAPTION: Accuracies aquired by [cite Sarhan]. \textbf{Accuracies in bold} were not reported exactly and have been deduced from a figure.
+#+label: tab:sarhan_accuracies
+|-----------+-----------------+--------------------|
+| dataset   | target accuracy | sensitive accuracy |
+|-----------+-----------------+--------------------|
+| Adult     | $\bm{0.68}$     | $0.6826$           |
+| German    | $\bm{0.77}$     | $0.71$             |
+| CIFAR-10  | $0.9725$        | $0.1907$           |
+| CIFAR-100 | $0.7074$        | $0.1447$           |
+| YaleB     | $\bm{0.92}$     | $\bm{0.52}$        |
+|-----------+-----------------+--------------------|
+
 ** 4.1 Results reproducing original paper
 - Report results and make clear which claim they support (if they do). Should
   be done in logical sections.

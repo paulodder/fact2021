@@ -10,7 +10,7 @@ from utils import (
     loss_entropy_binary,
     sample_reparameterize,
     KLD,
-    reshape_tensor,
+    accuracy,
     current_device,
 )
 
@@ -184,18 +184,7 @@ class FODVAE(pl.LightningModule):
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):
-        # print('y', y)
-        y = reshape_tensor(y)
-        y_pred = reshape_tensor(y_pred)
-        # print('y_pred', y_pred)
-        if len(y_pred.squeeze().size()) >= 2:
-            # multi class accuracy
-            matches = y.argmax(1).long() == y_pred.argmax(1).long()
-        else:
-            # binary class accuracy
-            matches = (y > 0.5).long() == (y_pred > 0.5).long()
-        acc = matches.float().mean().item()
-        return acc
+        return accuracy(y, y_pred)
 
     def update_total_nof_batches(self, batch_idx):
         if self.current_epoch == 0 and batch_idx == 0:
@@ -281,7 +270,6 @@ class FODVAE(pl.LightningModule):
             optimizer.zero_grad()
 
         # Backprop sensitive representation loss
-        loss_repr_sensitive.backward(retain_graph=True)
 
         # Backprop remaining loss
         remaining_loss = (
@@ -303,9 +291,8 @@ class FODVAE(pl.LightningModule):
 
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
-        # if train_sens_acc > 0.95:
-        #     breakpoint()
         train_sens_crossover_acc = self.accuracy(s, crossover_posterior)
+
         use_logger = hasattr(self, "logger") and self.logger is not None
         if use_logger:
             # Log to WandbLogger

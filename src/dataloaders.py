@@ -366,33 +366,45 @@ def load_data(dataset, batch_size, num_workers=0):
     dataset_class = dataset_registrar[dataset]
     train_set = dataset_class(train=True)
     valid_set = dataset_class(train=False)
+
+    if batch_size == "all":
+        batch_size_train = len(train_set)
+        batch_size_valid = len(valid_set)
+    else:
+        batch_size_train = batch_size
+        batch_size_valid = batch_size
+
     train_loader = DataLoader(
-        train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers
+        train_set,
+        batch_size=batch_size_train,
+        shuffle=True,
+        num_workers=num_workers,
     )
     valid_loader = DataLoader(
         valid_set,
-        batch_size=batch_size,
+        batch_size=batch_size_valid,
         shuffle=False,
         num_workers=num_workers,
     )
     return train_loader, valid_loader
 
 
-class RepresentationDataset(Dataset):
-    def __init__(self, dataloader, model, y_is_target=True):
-        self.x = []
-        self.y = []
-        for data, target, s in dataloader:
-            # BxD
-            representation = model(data)
-            self.x.append(representation)
-            if y_is_target:
-                self.y.append(target)
-            else:
-                self.y.append(s)
+def get_embeddings(dataloader, model):
+    embs = []
+    targets = []
+    sens = []
+    for data, target, s in dataloader:
+        emb = model(data)
+        embs.append(emb)
+        targets.append(target)
+        sens.append(s)
+    return [torch.cat(tensor, dim=0) for tensor in (embs, targets, sens)]
 
-        self.x = torch.cat(self.x, dim=0)
-        self.y = torch.cat(self.y, dim=0)
+
+class GenericDataset(Dataset):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
     def __getitem__(self, i):
         return self.x[i], self.y[i]
@@ -401,37 +413,48 @@ class RepresentationDataset(Dataset):
         return len(self.x)
 
 
-def load_representation_dataloader(
-    dataset, batch_size, model, y_is_target=True, num_workers=0
-):
+@torch.no_grad()
+def load_representation_dataloaders(dataset, batch_size, model, num_workers=0):
     train_loader, valid_loader = load_data(
-        dataset, batch_size, num_workers=num_workers
+        dataset, "all", num_workers=num_workers
     )
 
-    train_set = RepresentationDataset(
-        train_loader, model, y_is_target=y_is_target
+    train_embs, train_targets, train_sens = get_embeddings(train_loader, model)
+    valid_embs, valid_targets, valid_sens = get_embeddings(valid_loader, model)
+
+    train_set_target = GenericDataset(train_embs, train_targets)
+    valid_set_target = GenericDataset(valid_embs, valid_targets)
+    train_set_sens = GenericDataset(train_embs, train_sens)
+    valid_set_sens = GenericDataset(valid_embs, valid_sens)
+
+    train_loader_target = DataLoader(
+        train_set_target,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
     )
-    valid_set = RepresentationDataset(
-        valid_loader, model, y_is_target=y_is_target
-    )
-    train_loader = DataLoader(
-        train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers
-    )
-    valid_loader = DataLoader(
-        valid_set,
+    valid_loader_target = DataLoader(
+        valid_set_target,
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
     )
-    return train_loader, valid_loader
+    train_loader_sens = DataLoader(
+        train_set_sens,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+    )
+    valid_loader_sens = DataLoader(
+        valid_set_sens,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+    )
 
-
-if __name__ == "__main__":
-    for dataset in dataset_registrar.keys():
-        print(dataset)
-        tdl, vdl = load_data(dataset, 20)
-        for xb, yb, sb in vdl:
-            print(xb.size())
-            print(yb.size())
-            print(sb.size())
-            break
+    return (
+        train_loader_target,
+        valid_loader_target,
+        train_loader_sens,
+        valid_loader_sens,
+    )

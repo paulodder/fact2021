@@ -21,7 +21,7 @@ RESULTS_DIR = Path(DOTENV["RESULTS_DIR"])
 
 
 def current_device():
-    return "cuda:0" if False else "cpu:0"  # torch.cuda.is_available()
+    return "cuda:0" if torch.cuda.is_available() else "cpu:0"
 
 
 def sample_reparameterize(mean, std):
@@ -121,7 +121,7 @@ def cluster_yaleb_poses():
     return clusters
 
 
-def reshape_tensor(t):
+def prepare_tensor_for_evaluation(t):
     t = t.squeeze()
     s = t.shape
 
@@ -134,6 +134,17 @@ def reshape_tensor(t):
         b, d = s
         return t.argmax(1)
     raise ValueError(f"cannot reshape tensor in a smart way")
+
+
+def accuracy(y, y_pred):
+    # Prepare those tensors
+    y = prepare_tensor_for_evaluation(y)
+    y_pred = prepare_tensor_for_evaluation(y_pred)
+    # With prepared tensors, we can just compare them directly.
+    matches = y == y_pred
+
+    acc = matches.float().mean().item()
+    return acc
 
 
 class NamespaceWithGet:

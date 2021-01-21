@@ -27,7 +27,6 @@ from initializers import (
 import utils
 from dataloaders import (
     load_data,
-    load_representation_dataloader,
     dataset_registrar,
 )
 from defaults import DATASET2DEFAULTS
@@ -214,7 +213,9 @@ def main(config, logger=None, return_results=False):
     )
     print(config.key2val, config.max_epochs)
     # Train model
-    trainer = pl.Trainer(max_epochs=config.max_epochs, logger=logger, gpus=0)
+    trainer = pl.Trainer(
+        max_epochs=config.max_epochs, logger=logger, gpus=get_n_gpus()
+    )
     trainer.fit(fodvae, train_dl, val_dl)
 
     return evaluate(config, fodvae, logger, return_results)

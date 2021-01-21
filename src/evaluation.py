@@ -23,7 +23,7 @@ class EvaluationManager:
         # We do not have control over the interface of the model
         # itself, so we leave this up to the trainer.
         y_pred = self.trainer.forward_model(model, x)
-        y_pred = utils.reshape_tensor(y_pred)
+        y_pred = utils.prepare_tensor_for_evaluation(y_pred)
 
         return classification_report(y, y_pred, output_dict=True), y_pred
 
@@ -34,7 +34,7 @@ class EvaluationManager:
         best_i = 0
 
         x = self.test_dl.dataset.x
-        y = utils.reshape_tensor(self.test_dl.dataset.y)
+        y = utils.prepare_tensor_for_evaluation(self.test_dl.dataset.y)
 
         for i, model in enumerate(models):
             report, y_pred = self.generate_report(model, x, y)

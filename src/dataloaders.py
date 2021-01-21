@@ -378,36 +378,42 @@ def load_data(dataset, batch_size, num_workers=0):
     return train_loader, valid_loader
 
 
-class Target2SensitiveDataset(Dataset):
-    def __init__(self, dataloader, model):
-        self.targets_latent = []
-        self.targets = []
-        self.s = []
+class RepresentationDataset(Dataset):
+    def __init__(self, dataloader, model, y_is_target=True):
+        self.x = []
+        self.y = []
         for data, target, s in dataloader:
             # BxD
-            output = model(data)
-            self.targets_latent.append(output)
-            self.targets.append(target)
-            self.s.append(s)
-        self.targets_latent = torch.cat(self.targets_latent, dim=0)
-        self.targets = torch.cat(self.targets, dim=0)
-        self.s = torch.cat(self.s, dim=0)
+            representation = model(data)
+            self.x.append(representation)
+            if y_is_target:
+                self.y.append(target)
+            else:
+                self.y.append(s)
+
+        self.x = torch.cat(self.x, dim=0)
+        self.y = torch.cat(self.y, dim=0)
 
     def __getitem__(self, i):
-        return self.targets_latent[i], self.targets[i], self.s[i]
+        return self.x[i], self.y[i]
 
     def __len__(self):
-        return len(self.s)
+        return len(self.x)
 
 
-def target2sensitive_loader(dataset, batch_size, model, num_workers=0):
+def load_representation_dataloader(
+    dataset, batch_size, model, y_is_target=True, num_workers=0
+):
     train_loader, valid_loader = load_data(
         dataset, batch_size, num_workers=num_workers
     )
 
-    dataset_class = dataset_registrar[dataset]
-    train_set = Target2SensitiveDataset(train_loader, model)
-    valid_set = Target2SensitiveDataset(valid_loader, model)
+    train_set = RepresentationDataset(
+        train_loader, model, y_is_target=y_is_target
+    )
+    valid_set = RepresentationDataset(
+        valid_loader, model, y_is_target=y_is_target
+    )
     train_loader = DataLoader(
         train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers
     )

@@ -3,15 +3,18 @@ from sklearn.linear_model import LogisticRegression
 from torch import optim, nn
 from models import MLP
 import utils
+import copy
 
 
 class LRPredictor:
-    def __init__(self, dataset2y):
-        self.model = LogisticRegression()
+    def __init__(self, dataset2y=None):
+        if dataset2y is None:
+            dataset2y = lambda ds: ds.y
         self.dataset2y = dataset2y
+        self.model = LogisticRegression()
 
     def fit(self, dataloader):
-        x = dataloader.dataset.targets_latent
+        x = dataloader.dataset.x
         y = self.dataset2y(dataloader.dataset)
         self.model.fit(x, y)
 
@@ -19,21 +22,20 @@ class LRPredictor:
         x = dataloader.dataset.targets_latent
         return self.model.predict(x)
 
-    @classmethod
-    def predict_targets(cls):
-        return cls(lambda ds: ds.targets)
 
-    @classmethod
-    def predict_sens(cls):
-        return cls(lambda ds: ds.s)
+class LRPredictorTrainer(LRPredictor):
+    def get_saved_models(self):
+        return [self.model]
+
+    def forward_model(self, model, x):
+        return model.predict(x)
 
 
 class MLPPredictor(pl.LightningModule):
-    def __init__(self, model, optim_init_fn, train_for_sensitive=False):
+    def __init__(self, model, optim_init_fn):
         super(MLPPredictor, self).__init__()
         self.model = model
         self.optim_init_fn = optim_init_fn
-        self.train_for_sensitive = train_for_sensitive
         self.loss_fn = utils.bce_loss
 
     def forward(self, x):
@@ -43,12 +45,14 @@ class MLPPredictor(pl.LightningModule):
         optim = self.optim_init_fn(self.model)
         return optim
 
+    automatic_optimization = False
+
     def training_step(self, batch, batch_idx):
-        x, y, s = batch
+        x, y = batch
         output = self.forward(x)
-        goal = s if self.train_for_sensitive else y
-        loss = self.loss_fn(output, goal)
-        return loss
+        loss = self.loss_fn(output, y)
+        loss.backward()
+        self.optimizers().step()
 
     @classmethod
     def init_without_model(
@@ -64,16 +68,46 @@ class MLPPredictor(pl.LightningModule):
         )
 
 
+class TrainerWithSavedModels(pl.Trainer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__models = []
+
+    def get_saved_models(self):
+        return self.__models
+
+    def save_model_on_train_epoch_end(self):
+        model = copy.deepcopy(self.get_model())
+        self.__models.append(model)
+
+    def call_hook(self, hook_name, *args, **kwargs):
+        # Hack to run our code at the end of a training epoch
+        if hook_name == "on_train_epoch_end":
+            self.save_model_on_train_epoch_end()
+        # Resume normal behaviour
+        super().call_hook(hook_name, *args, **kwargs)
+
+
 class MLPPredictorTrainer:
     def __init__(
-        self, predictor, max_epochs,
+        self,
+        predictor,
+        epochs,
     ):
         self.predictor = predictor
-        self.trainer = pl.Trainer(max_epochs=max_epochs)
+        self.trainer = TrainerWithSavedModels(
+            min_epochs=epochs, max_epochs=epochs
+        )
 
     def fit(self, dataloader):
         self.trainer.fit(self.predictor, dataloader)
 
     def predict(self, dataloader):
-        x = dataloader.dataset.targets_latent
+        x = dataloader.dataset.x
         return self.predictor.forward(x)
+
+    def get_saved_models(self):
+        return self.trainer.get_saved_models()
+
+    def forward_model(self, model, x):
+        return model.forward(x)

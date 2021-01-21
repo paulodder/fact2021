@@ -121,8 +121,9 @@ def cluster_yaleb_poses():
 
 
 def reshape_tensor(t):
-    # print(t.shape)
-    s = t.squeeze().shape
+    t = t.squeeze()
+    s = t.shape
+
     if len(s) == 1:
         if (t.max() <= 1) and (t.min() >= 0):
             return t > 0.5

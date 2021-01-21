@@ -1,7 +1,9 @@
 from fodvae import FODVAE
 from torch import optim, nn
 from models import MLP, MLPEncoder, ResNetEncoder
-from predictors import MLPPredictor, LRPredictor, MLPPredictorTrainer
+from predictors import MLPPredictor, LRPredictorTrainer, MLPPredictorTrainer
+from dataloaders import load_representation_dataloader
+from evaluation import EvaluationManager
 
 
 def _cifar10_target_predictor(args):
@@ -27,50 +29,6 @@ def _cifar100_target_predictor(args):
         output_dim=output_dim,
         optim_init_fn=optim_init_fn,
         hidden_dims=[256, 128],
-    )
-
-
-def get_target_predictor(args):
-    """Gets target predictor depending on the args.dataset value and
-    potentially relevant parameters defined in args"""
-    if args.dataset in ["adult", "german"]:
-        return LRPredictor.predict_targets()
-    if args.dataset == "yaleb":
-        # optim_init_fn = lambda model: optim.Adam(model.parameters())
-        # return MLPPredictorTrainer(
-        #     MLPPredictor(
-        #         MLP(
-        #             input_dim=args.z_dim,
-        #             hidden_dims=[],
-        #             output_dim=38,
-        #             batch_norm=False,
-        #         ),
-        #         optim_init_fn,
-        #     ),
-        #     30,
-        # )
-        return LRPredictor(lambda ds: ds.targets.argmax(1))
-    if args.dataset == "cifar10":
-        return MLPPredictorTrainer(
-            _cifar10_target_predictor(args),
-            max_epochs=args.max_epochs,
-        )
-    if args.dataset == "cifar100":
-        return MLPPredictorTrainer(
-            _cifar100_target_predictor(args), args.max_epochs
-        )
-    raise ValueError(f"dataset {dataset} is not recognized.")
-
-
-def get_sensitive_predictor(model, args):
-    optim_init_fn = lambda model: optim.Adam(model.parameters())
-    return MLPPredictorTrainer(
-        MLPPredictor(
-            model,
-            optim_init_fn,
-            train_for_sensitive=True,
-        ),
-        max_epochs=args.max_epochs,
     )
 
 
@@ -265,3 +223,74 @@ def get_fodvae(args):
             loss_components=loss_components,
         )
         return fvae
+
+
+def get_target_predictor_trainer(args):
+    """Gets target predictor trainer depending on the args.dataset value and
+    potentially relevant parameters defined in args"""
+    if args.dataset in ["adult", "german"]:
+        return LRPredictorTrainer()
+    if args.dataset == "yaleb":
+        # optim_init_fn = lambda model: optim.Adam(model.parameters())
+        # return MLPPredictorTrainer(
+        #     MLPPredictor(
+        #         MLP(
+        #             input_dim=args.z_dim,
+        #             hidden_dims=[],
+        #             output_dim=38,
+        #             batch_norm=False,
+        #         ),
+        #         optim_init_fn,
+        #     ),
+        #     30,
+        # )
+        return LRPredictorTrainer(lambda ds: ds.y.argmax(1))
+    if args.dataset == "cifar10":
+        return MLPPredictorTrainer(
+            _cifar10_target_predictor(args),
+            max_epochs=args.max_epochs,
+        )
+    if args.dataset == "cifar100":
+        return MLPPredictorTrainer(
+            _cifar100_target_predictor(args), args.max_epochs
+        )
+    raise ValueError(f"dataset {dataset} is not recognized.")
+
+
+def get_sensitive_predictor_trainer(args):
+    model = get_sensitive_discriminator(args)
+    optim_init_fn = lambda model: optim.Adam(model.parameters())
+    return MLPPredictorTrainer(
+        MLPPredictor(
+            model,
+            optim_init_fn,
+        ),
+        epochs=args.predictor_epochs,
+    )
+
+
+def get_evaluation_managers(args, get_embs):
+    train_dl_target, test_dl_target = load_representation_dataloader(
+        args.dataset, args.batch_size, get_embs, y_is_target=True
+    )
+    train_dl_sens, test_dl_sens = load_representation_dataloader(
+        args.dataset, args.batch_size, get_embs, y_is_target=False
+    )
+
+    predictor_target_trainer = get_target_predictor_trainer(args)
+    predictor_sens_trainer = get_sensitive_predictor_trainer(args)
+
+    eval_on_test = args.get("eval_on_test", True)
+    eval_manager_target = EvaluationManager(
+        predictor_target_trainer,
+        train_dl_target,
+        test_dl_target,
+        eval_on_test=eval_on_test,
+    )
+    eval_manager_sens = EvaluationManager(
+        predictor_sens_trainer,
+        train_dl_sens,
+        test_dl_sens,
+        eval_on_test=eval_on_test,
+    )
+    return eval_manager_target, eval_manager_sens

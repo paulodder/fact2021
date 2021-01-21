@@ -95,31 +95,26 @@ DEFAULTS_CIFAR10 = {
 # }
 DEFAULTS_CIFAR100 = {
     "z_dim": 128,
-    "max_epochs": 30,
-    "batch_size": 64,
-    "lambda_od": 0.037,
-    "gamma_od": 0.8,
-    "encoder_hidden_dims": [64],
-    "lambda_entropy": 0.55,
-    "gamma_entropy": 1.66,
-    "input_dim": 108,
-    "target_output_dim": 1,
-    "sens_output_dim": 1,
-    "target_disc_hidden_dims": [64, 64],
-    "sens_disc_hidden_dims": [64, 64],
+    "max_epochs": 300,
+    "batch_size": 128,
+    "lambda_od": 0.0325,
+    "lambda_entropy": 0.1,
+    "gamma_od": 1.2,
+    "gamma_entropy": 1.67,
+    "target_output_dim": 20,
+    "sens_output_dim": 100,
+    "target_disc_hidden_dims": [256, 128],
+    "sens_disc_hidden_dims": [256, 128],
     "target_disc_batch_norm": False,
     "predictor_epochs": 10,
     # adam parameters
-    "encoder_lr": 1e-3,
-    "encoder_weight_decay": 5e-4,
-    "discs_lr": 1e-3,
-    "discs_weight_decay": 5e-4,
-    "max_epochs": 30,
+    "encoder_lr": 1e-4,
+    "encoder_weight_decay": 1e-2,
+    "discs_lr": 1e-2,
+    "discs_weight_decay": 1e-3,
     "target_predictor_hidden_dims": [256, 128],
-    "target_predictor_output_dim": 1,
-}  # {
-# }
-# {"z_dim": 128, "max_epochs": 30}
+    "target_predictor_output_dim": 20,
+}
 
 DATASET2DEFAULTS = {
     "adult": DEFAULTS_ADULT,

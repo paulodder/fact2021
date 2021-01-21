@@ -54,14 +54,14 @@ def get_sensitive_discriminator(args):
             input_dim=args.z_dim,
             hidden_dims=[256, 128],
             output_dim=10,
-            nonlinearity=nn.Sigmoid,
+            nonlinearity=nn.Softmax,
         )
     else:
         model = MLP(
             input_dim=args.z_dim,
             hidden_dims=[256, 128],
             output_dim=100,
-            nonlinearity=nn.Sigmoid,
+            nonlinearity=nn.Softmax,
         )
     return model
 
@@ -93,7 +93,7 @@ def get_target_discriminator(args):
             input_dim=args.z_dim,
             hidden_dims=[256, 128],
             output_dim=20,
-            nonlinearity=nn.Sigmoid,
+            nonlinearity=nn.Softmax,
         )
     return model
 

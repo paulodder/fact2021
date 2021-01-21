@@ -26,7 +26,6 @@ from initializers import (
 import utils
 from dataloaders import (
     load_data,
-    load_representation_dataloader,
     dataset_registrar,
 )
 
@@ -229,9 +228,8 @@ def evaluate(args, fodvae, logger=None, return_results=False):
 
 def main(args, logger=None, return_results=False):
     if logger is None:
-        pass
-        # wandb.init(project="fact2021", config=vars(args))
-        # logger = WandbLogger()
+        wandb.init(project="fact2021", config=vars(args))
+        logger = WandbLogger()
 
     torch.manual_seed(args.seed)
     # Initial model
@@ -245,7 +243,9 @@ def main(args, logger=None, return_results=False):
     train_dl, val_dl = load_data(args.dataset, args.batch_size, num_workers=0)
 
     # Train model
-    trainer = pl.Trainer(max_epochs=args.max_epochs, logger=logger, gpus=0)
+    trainer = pl.Trainer(
+        max_epochs=args.max_epochs, logger=logger, gpus=get_n_gpus()
+    )
     trainer.fit(fodvae, train_dl, val_dl)
 
     if return_results:

@@ -366,12 +366,23 @@ def load_data(dataset, batch_size, num_workers=0):
     dataset_class = dataset_registrar[dataset]
     train_set = dataset_class(train=True)
     valid_set = dataset_class(train=False)
+
+    if batch_size == "all":
+        batch_size_train = len(train_set)
+        batch_size_valid = len(valid_set)
+    else:
+        batch_size_train = batch_size
+        batch_size_valid = batch_size
+
     train_loader = DataLoader(
-        train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers
+        train_set,
+        batch_size=batch_size_train,
+        shuffle=True,
+        num_workers=num_workers,
     )
     valid_loader = DataLoader(
         valid_set,
-        batch_size=batch_size,
+        batch_size=batch_size_valid,
         shuffle=False,
         num_workers=num_workers,
     )
@@ -381,49 +392,75 @@ def load_data(dataset, batch_size, num_workers=0):
 class RepresentationDataset(Dataset):
     def __init__(self, dataloader, model, y_is_target=True):
         self.x = []
-        self.y = []
-        for data, target, s in dataloader:
+        self.target = []
+        self.sens = []
+        for data, target, sens in dataloader:
             # BxD
             representation = model(data)
             self.x.append(representation)
-            if y_is_target:
-                self.y.append(target)
-            else:
-                self.y.append(s)
+            self.target.append(target)
+            self.sens.append(sens)
 
         self.x = torch.cat(self.x, dim=0)
-        self.y = torch.cat(self.y, dim=0)
+        self.target = torch.cat(self.target, dim=0)
+        self.sens = torch.cat(self.sens, dim=0)
+
+        self.y_is_target = y_is_target
 
     def __getitem__(self, i):
-        return self.x[i], self.y[i]
+        y = self.target if self.y_is_target else self.sens
+        return self.x[i], y[i]
 
     def __len__(self):
         return len(self.x)
 
 
-def load_representation_dataloader(
-    dataset, batch_size, model, y_is_target=True, num_workers=0
-):
+def load_representation_dataloaders(dataset, batch_size, model, num_workers=0):
     train_loader, valid_loader = load_data(
-        dataset, batch_size, num_workers=num_workers
+        dataset, "all", num_workers=num_workers
     )
 
-    train_set = RepresentationDataset(
-        train_loader, model, y_is_target=y_is_target
+    train_set_target = RepresentationDataset(
+        train_loader, model, y_is_target=True
     )
-    valid_set = RepresentationDataset(
-        valid_loader, model, y_is_target=y_is_target
+    valid_set_target = RepresentationDataset(
+        valid_loader, model, y_is_target=True
     )
-    train_loader = DataLoader(
-        train_set, batch_size=batch_size, shuffle=True, num_workers=num_workers
+    train_loader_target = DataLoader(
+        train_set_target,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
     )
-    valid_loader = DataLoader(
-        valid_set,
+    valid_loader_target = DataLoader(
+        valid_set_target,
         batch_size=batch_size,
         shuffle=False,
         num_workers=num_workers,
     )
-    return train_loader, valid_loader
+
+    train_set_sens = copy.deepcopy(train_set_target)
+    train_set_sens.y_is_target = False
+    valid_set_sens = copy.deepcopy(valid_set_target)
+    valid_set_sens.y_is_target = False
+    train_loader_sens = DataLoader(
+        train_set_sens,
+        batch_size=batch_size,
+        shuffle=True,
+        num_workers=num_workers,
+    )
+    valid_loader_sens = DataLoader(
+        valid_set_sens,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=num_workers,
+    )
+    return (
+        train_loader_target,
+        valid_loader_target,
+        train_loader_sens,
+        valid_loader_sens,
+    )
 
 
 if __name__ == "__main__":

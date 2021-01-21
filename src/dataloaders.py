@@ -389,43 +389,44 @@ def load_data(dataset, batch_size, num_workers=0):
     return train_loader, valid_loader
 
 
-class RepresentationDataset(Dataset):
-    def __init__(self, dataloader, model, y_is_target=True):
-        self.x = []
-        self.target = []
-        self.sens = []
-        for data, target, sens in dataloader:
-            # BxD
-            representation = model(data)
-            self.x.append(representation)
-            self.target.append(target)
-            self.sens.append(sens)
+def get_embeddings(dataloader, model):
+    embs = []
+    targets = []
+    sens = []
+    for data, target, s in dataloader:
+        emb = model(data)
+        embs.append(emb)
+        targets.append(target)
+        sens.append(s)
+    return [torch.cat(tensor, dim=0) for tensor in (emb, target, sens)]
 
-        self.x = torch.cat(self.x, dim=0)
-        self.target = torch.cat(self.target, dim=0)
-        self.sens = torch.cat(self.sens, dim=0)
 
-        self.y_is_target = y_is_target
+class GenericDataset(Dataset):
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
 
     def __getitem__(self, i):
-        y = self.target if self.y_is_target else self.sens
-        return self.x[i], y[i]
+        return self.x[i], self.y[i]
 
     def __len__(self):
         return len(self.x)
 
 
+@torch.no_grad()
 def load_representation_dataloaders(dataset, batch_size, model, num_workers=0):
     train_loader, valid_loader = load_data(
         dataset, "all", num_workers=num_workers
     )
 
-    train_set_target = RepresentationDataset(
-        train_loader, model, y_is_target=True
-    )
-    valid_set_target = RepresentationDataset(
-        valid_loader, model, y_is_target=True
-    )
+    train_embs, train_targets, train_sens = get_embeddings(train_loader, model)
+    valid_embs, valid_targets, valid_sens = get_embeddings(valid_loader, model)
+
+    train_set_target = GenericDataset(train_embs, train_targets)
+    valid_set_target = GenericDataset(valid_embs, valid_targets)
+    train_set_sens = GenericDataset(train_embs, train_sens)
+    valid_set_sens = GenericDataset(valid_embs, valid_sens)
+
     train_loader_target = DataLoader(
         train_set_target,
         batch_size=batch_size,
@@ -438,11 +439,6 @@ def load_representation_dataloaders(dataset, batch_size, model, num_workers=0):
         shuffle=False,
         num_workers=num_workers,
     )
-
-    train_set_sens = copy.deepcopy(train_set_target)
-    train_set_sens.y_is_target = False
-    valid_set_sens = copy.deepcopy(valid_set_target)
-    valid_set_sens.y_is_target = False
     train_loader_sens = DataLoader(
         train_set_sens,
         batch_size=batch_size,
@@ -455,20 +451,10 @@ def load_representation_dataloaders(dataset, batch_size, model, num_workers=0):
         shuffle=False,
         num_workers=num_workers,
     )
+
     return (
         train_loader_target,
         valid_loader_target,
         train_loader_sens,
         valid_loader_sens,
     )
-
-
-if __name__ == "__main__":
-    for dataset in dataset_registrar.keys():
-        print(dataset)
-        tdl, vdl = load_data(dataset, 20)
-        for xb, yb, sb in vdl:
-            print(xb.size())
-            print(yb.size())
-            print(sb.size())
-            break

@@ -224,7 +224,7 @@ def main(config, logger=None, return_results=False):
 if __name__ == "__main__":
     args = parse_args()
     config = utils.Config(args)
-    return_results = args.experiment == "ablative"
+    return_results = config.experiment == "ablative"
     results = main(config, return_results=return_results)
     print(results)
     if return_results:

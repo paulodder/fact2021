@@ -189,7 +189,7 @@ class Config:
 
 def get_result_fname(config):
     """Given args object, return fname formatted accordingly"""
-    if args.experiment == "ablative":
+    if config.experiment == "ablative":
         return f"{config.experiment}.{config.dataset}.{config.loss_components}.{config.seed}.json"
 
 

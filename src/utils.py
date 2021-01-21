@@ -20,7 +20,7 @@ RESULTS_DIR = Path(DOTENV["RESULTS_DIR"])
 
 
 def current_device():
-    return "cuda:0" if False else "cpu:0"  # torch.cuda.is_available()
+    return "cuda:0" if torch.cuda.is_available() else "cpu:0"
 
 
 def sample_reparameterize(mean, std):

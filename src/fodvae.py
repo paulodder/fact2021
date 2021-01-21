@@ -263,7 +263,6 @@ class FODVAE(pl.LightningModule):
             optimizer.zero_grad()
 
         # Backprop sensitive representation loss
-        loss_repr_sensitive.backward(retain_graph=True)
 
         # Backprop remaining loss
         remaining_loss = (
@@ -286,7 +285,7 @@ class FODVAE(pl.LightningModule):
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
         train_sens_crossover_acc = self.accuracy(s, crossover_posterior)
-        breakpoint()
+
         use_logger = hasattr(self, "logger") and self.logger is not None
         if use_logger:
             # Log to WandbLogger

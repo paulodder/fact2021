@@ -2,7 +2,7 @@ from fodvae import FODVAE
 from torch import optim, nn
 from models import MLP, MLPEncoder, ResNetEncoder
 from predictors import MLPPredictor, LRPredictorTrainer, MLPPredictorTrainer
-from dataloaders import load_representation_dataloader
+from dataloaders import load_representation_dataloaders
 from evaluation import EvaluationManager
 
 
@@ -54,14 +54,14 @@ def get_sensitive_discriminator(args):
             input_dim=args.z_dim,
             hidden_dims=[256, 128],
             output_dim=10,
-            nonlinearity=nn.Sigmoid,
+            nonlinearity=nn.Softmax,
         )
     else:
         model = MLP(
             input_dim=args.z_dim,
             hidden_dims=[256, 128],
             output_dim=100,
-            nonlinearity=nn.Sigmoid,
+            nonlinearity=nn.Softmax,
         )
     return model
 
@@ -93,7 +93,7 @@ def get_target_discriminator(args):
             input_dim=args.z_dim,
             hidden_dims=[256, 128],
             output_dim=20,
-            nonlinearity=nn.Sigmoid,
+            nonlinearity=nn.Softmax,
         )
     return model
 
@@ -258,11 +258,13 @@ def get_sensitive_predictor_trainer(args):
 
 
 def get_evaluation_managers(args, get_embs):
-    train_dl_target, test_dl_target = load_representation_dataloader(
-        args.dataset, args.batch_size, get_embs, y_is_target=True
-    )
-    train_dl_sens, test_dl_sens = load_representation_dataloader(
-        args.dataset, args.batch_size, get_embs, y_is_target=False
+    (
+        train_dl_target,
+        test_dl_target,
+        train_dl_sens,
+        test_dl_sens,
+    ) = load_representation_dataloaders(
+        args.dataset, args.batch_size, get_embs
     )
 
     predictor_target_trainer = get_target_predictor_trainer(args)

@@ -22,6 +22,7 @@ DEFAULTS_ADULT = {
     "discs_lr": 1e-3,
     "discs_weight_decay": 5e-4,
     "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 DEFAULTS_GERMAN = {
     "z_dim": 2,
@@ -45,6 +46,7 @@ DEFAULTS_GERMAN = {
     "discs_lr": 1e-3,
     "discs_weight_decay": 5e-4,
     "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 DEFAULTS_YALEB = {
     "z_dim": 100,
@@ -68,6 +70,7 @@ DEFAULTS_YALEB = {
     "discs_lr": 1e-4,
     "discs_weight_decay": 5e-2,
     "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 # {
 #     "z_dim": 100,
@@ -96,6 +99,7 @@ DEFAULTS_CIFAR10 = {
     "target_predictor_hidden_dims": [256, 128],
     "target_predictor_output_dim": 1,
     "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 
 DEFAULTS_CIFAR100 = {
@@ -120,6 +124,7 @@ DEFAULTS_CIFAR100 = {
     "target_predictor_hidden_dims": [256, 128],
     "target_predictor_output_dim": 20,
     "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 
 DATASET2DEFAULTS = {

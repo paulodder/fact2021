@@ -54,7 +54,7 @@ def get_config(dataset):
             "gamma_entropy": uniform_dist(0.0, 1.5, 5),
             "step_size": {"value": 30},
             "max_epochs": {"value": 80},
-            "encoder_lr": 1e-5,
+            "encoder_lr": {"value": 1e-5},
         }
     return {
         "name": f"{dataset}_sweep",

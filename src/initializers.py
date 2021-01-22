@@ -71,7 +71,7 @@ def get_target_discriminator(config):
         input_dim=config.z_dim,
         hidden_dims=config.target_disc_hidden_dims,
         output_dim=config.target_output_dim,
-        batch_norm=config.batch_norm,
+        batch_norm=config.target_disc_batch_norm,
         nonlinearity=nn.Sigmoid
         if config.target_output_dim == 1
         else nn.Softmax,

@@ -79,10 +79,10 @@ def sweep_iteration(args):
     # set up W&B logger
     wandb_logger = WandbLogger()
     # wandb.config holds current hparams
-    print("config", wandb.config)
-    combine_args(args, wandb.config)
-    print("args", args)
-    train.main(args, logger=wandb_logger)
+    print("wandb.config", wandb.config)
+    config = combine_args(args, wandb.config)
+    print("config", config)
+    train.main(config, logger=wandb_logger)
     wandb.finish()
 
 

@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import wandb
 from pytorch_lightning.loggers import WandbLogger
-import utils
+
 
 warnings.filterwarnings("ignore")
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
@@ -15,6 +15,7 @@ sys.path.insert(0, str(PROJECT_DIR / "scripts"))
 
 import train
 from dataloaders import dataset_registrar
+import utils
 
 
 def parse_args():

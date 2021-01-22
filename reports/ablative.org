@@ -32,12 +32,12 @@ sensitive and target train accuracy in a json:
 
 * running
 #+BEGIN_SRC sh
-sh scripts/ablative.sh
+bash scripts/ablative.sh <dataset name>
 #+END_SRC
 
 This generates the results and stores them under =RESULT_DIR=.
 Now to visualize the results, we run:
-#+BEGIN_SRC python
+#+BEGIN_SRC pythonp
 python scripts/visualize_ablative.py --dataset adult
 #+END_SRC
 

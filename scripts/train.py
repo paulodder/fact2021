@@ -231,7 +231,7 @@ if __name__ == "__main__":
     results = main(config, return_results=return_results)
     print(results)
     if return_results:
-        with open(RESULTS_DIR / utils.get_result_fname(args), "w") as f:
+        with open(RESULTS_DIR / utils.get_result_fname(config), "w") as f:
             f.write(json.dumps(results, indent=2))
             print(
                 f"Written results to {(RESULTS_DIR / utils.get_result_fname(args)).relative_to(PROJECT_DIR)}"

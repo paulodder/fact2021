@@ -1,5 +1,3 @@
-import torch.nn as nn
-
 DEFAULTS_ADULT = {
     "z_dim": 2,
     "max_epochs": 1,

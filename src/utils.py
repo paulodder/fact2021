@@ -51,9 +51,11 @@ def fillnan(tensor, value):
     return tensor
 
 
-def loss_representation(y_pred, y_true):
+def loss_representation(y_pred, y_true, reduction="none"):
     y_pred = fillnan(torch.clamp(y_pred, 0, 1), 0.0)
-    out = nn.functional.binary_cross_entropy(y_pred, y_true, reduction="none")
+    out = nn.functional.binary_cross_entropy(
+        y_pred, y_true, reduction=reduction
+    )
     return out
 
 

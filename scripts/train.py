@@ -142,6 +142,9 @@ def parse_args():
 def get_n_gpus():
     n = torch.cuda.device_count()
     print(f"n. gpus available: {n}")
+    if n > 1:
+        n = 1
+    print(f"n. gpus used: {n}")
     return n
 
 

@@ -237,8 +237,12 @@ class FODVAE(pl.LightningModule):
         ##############################
 
         # Representation losses
-        loss_repr_target = loss_representation(pred_y, y.float()).mean()
-        loss_repr_sensitive = loss_representation(pred_s, s.float()).mean()
+        loss_repr_target = loss_representation(
+            pred_y, y.float(), reduction="mean"
+        )
+        loss_repr_sensitive = loss_representation(
+            pred_s, s.float(), reduction="mean"
+        )
 
         # OD losses
         if "kl" in self.loss_components:

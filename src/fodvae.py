@@ -256,14 +256,14 @@ class FODVAE(pl.LightningModule):
             if torch.isnan(loss_od):
                 breakpoint()
         else:
-            loss_od = torch.zeros(1)
+            loss_od = torch.zeros(1).to(current_device())
 
         # Entropy loss
         if "entropy" in self.loss_components:
             # print("crossover_posterior", crossover_posterior)
             loss_entropy = loss_entropy_binary(crossover_posterior).mean()
         else:
-            loss_entropy = torch.zeros(1)
+            loss_entropy = torch.zeros(1).to(current_device())
 
         ##############################
         ## Optimization

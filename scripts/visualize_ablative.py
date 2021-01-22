@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 import matplotlib.pyplot as plt
+from matplotlib.pyplot import Text
 from pathlib import Path
 from dotenv import dotenv_values
 
@@ -20,7 +21,7 @@ sns.set_style("darkgrid")
 
 
 def get_argparser():
-    parser = utils.ArgumentParser()
+    parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dataset",
         "-d",
@@ -106,12 +107,20 @@ if __name__ == "__main__":
     # plt.errorbar(bar_idxs_t, means_t, stds_t)
     plt.legend()
     ax.set_ylabel("Scores")
+    ax.set_ylim(0, 1)
+    # y ticks
+    minor_ticks = np.arange(0, 1, 0.05)
+    ax.set_yticks(np.arange(0, 1, 0.05), minor=True)
+    # ytick_labels = np.arange(0, 1, 0.05)
+    # # ytick_labels[~((ytick_labels % 0.2) > 0)]
+    # ax.set_yticklabels(ytick_labels)
     # add x tick labels
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(list(labels), fontsize=9)
     # add bars
+    dotted_line_x_coords = [-0.5 * bwidth, len(labels)]
     ax.plot(
-        [0 - bwidth, len(labels) + 1.5 * bwidth],
+        [-0.5 * bwidth, len(labels)],
         [
             loss_comp2acc_t_mean["entropy,kl,orth"],
             loss_comp2acc_t_mean["entropy,kl,orth"],
@@ -120,7 +129,7 @@ if __name__ == "__main__":
         color=TARGET_COLOR,
     )
     ax.plot(
-        [0, len(labels) - 0.5 * bwidth],
+        [-0.5 * bwidth, len(labels)],
         [
             loss_comp2acc_s_mean["entropy,kl,orth"],
             loss_comp2acc_s_mean["entropy,kl,orth"],

@@ -38,11 +38,22 @@ def get_config(dataset):
     }
     if dataset == "yaleb":
         params = {
-            "lambda_od": uniform_dist(0.0, 1.5),
-            "lambda_entropy": uniform_dist(0.0, 1.5),
-            "gamma_od": {"value": 1},
-            "gamma_entropy": {"value": 1},
+            "lambda_od": uniform_dist(0.0, 1.5, 5),
+            "lambda_entropy": uniform_dist(0.0, 1.5, 5),
+            "gamma_od": uniform_dist(0.0, 1.5, 5),
+            "gamma_entropy": uniform_dist(0.0, 1.5, 5),
             "step_size": {"value": 30},
+            "max_epochs": 25,
+        }
+    if dataset == "cifar100":
+        params = {
+            "lambda_od": uniform_dist(0.0, 0.3, 5),
+            "lambda_entropy": uniform_dist(0.0, 0.3, 5),
+            "gamma_od": uniform_dist(0.0, 1.0, 5),
+            "gamma_entropy": uniform_dist(0.0, 1.5, 5),
+            "step_size": {"value": 30},
+            "max_epochs": 80,
+            "encoder_lr": 1e-5,
         }
     return {
         "name": f"{dataset}_sweep",

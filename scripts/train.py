@@ -49,7 +49,7 @@ def model_fname(config):
     return "-".join(rel_params)
 
 
-def parse_args():
+def get_argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dataset",
@@ -140,13 +140,13 @@ def parse_args():
         type=int,
         help="Number of epochs for which the predictor should train (if applicable)",
     )
-    return parser.parse_args()
+    return parser
 
 
-# def parse_args():
-#     parser = get_argparser()
-#     args = parser.parse_args()
-#     return args
+def parse_args():
+    parser = get_argparser()
+    args = parser.parse_args()
+    return args
 
 
 # def set_defaults(args):

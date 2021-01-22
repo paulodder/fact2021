@@ -32,6 +32,23 @@ from dataloaders import (
 from defaults import DATASET2DEFAULTS
 
 
+MODELS_DIR = PROJECT_DIR / "models"
+MODELS_DIR.mkdir(exist_ok=True)
+
+
+def model_fname(config):
+    rel_params = [
+        config.dataset,
+        config.lambda_od,
+        config.lambda_entropy,
+        config.gamma_od,
+        config.gamma_entropy,
+    ]
+    process_param = lambda p: p if type(p) == str else str(round(p, 6))
+    rel_params = [process_param(param) for param in rel_params]
+    return "-".join(rel_params)
+
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -149,6 +166,8 @@ def get_n_gpus():
 
 
 def evaluate(args, fodvae, logger=None, return_results=False):
+    fodvae.eval()
+
     @torch.no_grad()
     def get_embs(X):
         return fodvae.encode(X)[0]
@@ -221,7 +240,12 @@ def main(config, logger=None, return_results=False):
     )
     trainer.fit(fodvae, train_dl, val_dl)
 
-    return evaluate(config, fodvae, logger, return_results)
+    fodvae_best_version = fodvae.get_best_version()
+    # Save best version
+    save_path = str(MODELS_DIR / model_fname(config))
+    torch.save(fodvae_best_version.state_dict(), save_path)
+
+    return evaluate(config, fodvae_best_version, logger, return_results)
 
 
 if __name__ == "__main__":

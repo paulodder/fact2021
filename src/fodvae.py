@@ -12,6 +12,7 @@ from utils import (
     KLD,
     accuracy,
     current_device,
+    BestModelTracker,
 )
 
 
@@ -33,6 +34,7 @@ class FODVAE(pl.LightningModule):
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
         self.dataset = dataset
+        self.best_model_tracker = BestModelTracker(self)
         # Configure hyperparameters that have defaults
         hparams = {
             "gamma_entropy",
@@ -83,6 +85,9 @@ class FODVAE(pl.LightningModule):
         self.prior_mean_sensitive = self.prior_mean_sensitive / sum(
             self.prior_mean_sensitive ** 2
         )
+
+    def get_best_version(self):
+        return self.best_model_tracker.best_model
 
     def encode(self, x):
         """
@@ -181,6 +186,7 @@ class FODVAE(pl.LightningModule):
         )
 
     def training_epoch_end(self, outputs):
+        self.best_model_tracker.end_of_epoch()
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):
@@ -287,16 +293,22 @@ class FODVAE(pl.LightningModule):
         for optimizer in optimizers:
             optimizer.step()
 
-        ##############################
-        ## Logging
-        ##############################
-
         loss_total = loss_repr_sensitive.item() + remaining_loss.item()
 
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
         train_sens_crossover_acc = self.accuracy(s, crossover_posterior)
 
+        ##############################
+        ## Tracking best model
+        ##############################
+
+        batch_size = y.size()[0]
+        self.best_model_tracker.track_performance(train_target_acc, batch_size)
+
+        ##############################
+        ## Logging
+        ##############################
         use_logger = hasattr(self, "logger") and self.logger is not None
         if use_logger:
             # Log to WandbLogger

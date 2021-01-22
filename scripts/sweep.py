@@ -44,7 +44,7 @@ def get_config(dataset):
             "gamma_od": uniform_dist(0.0, 1.5, 5),
             "gamma_entropy": uniform_dist(0.0, 1.5, 5),
             "step_size": {"value": 30},
-            "max_epochs": 25,
+            "max_epochs": {"value": 25},
         }
     if dataset == "cifar100":
         params = {
@@ -53,7 +53,7 @@ def get_config(dataset):
             "gamma_od": uniform_dist(0.0, 1.0, 5),
             "gamma_entropy": uniform_dist(0.0, 1.5, 5),
             "step_size": {"value": 30},
-            "max_epochs": 80,
+            "max_epochs": {"value": 80},
             "encoder_lr": 1e-5,
         }
     return {

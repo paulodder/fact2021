@@ -21,6 +21,8 @@ DEFAULTS_ADULT = {
     "encoder_weight_decay": 5e-4,
     "discs_lr": 1e-3,
     "discs_weight_decay": 5e-4,
+    "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 DEFAULTS_GERMAN = {
     "z_dim": 2,
@@ -43,6 +45,8 @@ DEFAULTS_GERMAN = {
     "encoder_weight_decay": 5e-4,
     "discs_lr": 1e-3,
     "discs_weight_decay": 5e-4,
+    "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 DEFAULTS_YALEB = {
     "z_dim": 100,
@@ -65,6 +69,8 @@ DEFAULTS_YALEB = {
     "encoder_weight_decay": 5e-2,
     "discs_lr": 1e-4,
     "discs_weight_decay": 5e-2,
+    "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 # {
 #     "z_dim": 100,
@@ -73,26 +79,29 @@ DEFAULTS_YALEB = {
 #     "target_disc_hidden_dims": [100, 100],
 # }
 DEFAULTS_CIFAR10 = {
-    "z_dim": None,
-    "max_epochs": None,
-    "batch_size": None,
-    "lambda_od": None,
-    "gamma_od": None,
-    "lambda_entropy": None,
-    "gamma_entropy": None,
-    "input_dim": None,
-    "target_output_dim": None,
-    "sens_output_dim": None,
-    "target_disc_hidden_dims": None,
-    "sens_disc_hidden_dims": None,
+    "z_dim": 128,
+    "max_epochs": 30,
+    "batch_size": 128,
+    "lambda_od": 0.063,
+    "gamma_od": 1.7,
+    "lambda_entropy": 1.0,
+    "gamma_entropy": 1.0,
+    "target_output_dim": 1,
+    "sens_output_dim": 10,
+    "target_disc_hidden_dims": [256, 128],
+    "sens_disc_hidden_dims": [256, 128],
     "predictor_epochs": None,
     "target_disc_batch_norm": False,
-}  # {
-#     "z_dim": 128,
-#     "max_epochs": 30,
-#     "target_predictor_hidden_dims": [256, 128],
-#     "target_predictor_output_dim": 1,
-# }
+    "encoder_lr": 1e-4,
+    "encoder_weight_decay": 1e-2,
+    "discs_lr": 1e-2,
+    "discs_weight_decay": 1e-3,
+    "target_predictor_hidden_dims": [256, 128],
+    "target_predictor_output_dim": 1,
+    "loss_components": "entropy,kl,orth",
+    "step_size": 30,
+}
+
 DEFAULTS_CIFAR100 = {
     "z_dim": 128,
     "max_epochs": 300,
@@ -114,6 +123,8 @@ DEFAULTS_CIFAR100 = {
     "discs_weight_decay": 1e-3,
     "target_predictor_hidden_dims": [256, 128],
     "target_predictor_output_dim": 20,
+    "loss_components": "entropy,kl,orth",
+    "step_size": 30,
 }
 
 DATASET2DEFAULTS = {

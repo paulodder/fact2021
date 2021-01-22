@@ -180,6 +180,15 @@ class Config:
     def __getattr__(self, key):
         return self.key2val.get(key, None)
 
+    def __str__(self):
+        keys, vals = zip(*sorted(self.key2val.items()))
+        max_len = max(map(len, keys))
+        out = ""
+        for k, v in zip(keys, vals):
+            # print(k, v)
+            out += "\n{:<30}{:<5}".format(str(k), str(v))
+        return out
+
 
 # class ArgumentParser(argparse.ArgumentParser):
 #     def parse_args(self):

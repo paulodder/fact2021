@@ -266,14 +266,14 @@ def get_sensitive_predictor_trainer(config):
     )
 
 
-def get_evaluation_managers(args, get_embs):
+def get_evaluation_managers(config, get_embs):
     (
         train_dl_target,
         test_dl_target,
         train_dl_sens,
         test_dl_sens,
     ) = load_representation_dataloaders(
-        args.dataset, args.batch_size, get_embs
+        config.dataset, config.batch_size, get_embs
     )
 
     predictor_target_trainer = get_target_predictor_trainer(config)

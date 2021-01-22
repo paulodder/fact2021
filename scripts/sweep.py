@@ -6,7 +6,7 @@ import sys
 import numpy as np
 import wandb
 from pytorch_lightning.loggers import WandbLogger
-
+import utils
 
 warnings.filterwarnings("ignore")
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
@@ -66,9 +66,11 @@ def get_config(dataset):
     }
 
 
-def combine_args(args, config):
-    for key, val in config.items():
+def combine_args(args, sweep_config):
+    for key, val in sweep_config.items():
         setattr(args, key, val)
+    config = utils.Config(args)
+    return config
 
 
 def sweep_iteration(args):

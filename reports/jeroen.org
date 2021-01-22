@@ -66,6 +66,36 @@ have a total size of 1286. however, our dataset contains a total of =2433=
 samples (190 train, 2243 test). there are a total of 18 corrupted (".bad")
 images in the set, so the difference can't have to do with that.
 
+we can do some dataset arithmetic, however. there are:
+- 18 "bad"/corrupted images in the set
+- 38 persons
+- 64 total positions
+
+their test size was 1096. perhaps some lighting positions were omitted due to
+ambiguity as to their cluster membership. each lighting positions contains 38
+people. so, the number of lighting positions should be =1096 / 38 = 28.84=,
+which is not a whole number, so it is not possibe. however, if we assume that
+some number of corrupted images were discarded, the actual number of samples
+could be anywhere between 1096+1 and 1096+18. dividing these candidates by 38,
+we see that =(1096 + 6) / 38 = 29=, the only integer in the resulting
+numbers. so it is possible that 29 lighting positions were selected for
+testing, that those lighting positions contained 6 corrupted images, which were
+discarded, and that the resulting test size was 1096.
+if we count the number of bad images per lighting position, we get:
+
+#+BEGIN_EXAMPLE
+{('-010', '+00'): 3,
+ ('+095', '+00'): 4,
+ ('-050', '-40'): 3,
+ ('+050', '-40'): 3,
+ ('-110', '+15'): 3,
+ ('-110', '-20'): 1,
+ ('-035', '+40'): 1}
+#+END_EXAMPLE
+
+so it does seem to be possible that a subset of these were among the positions
+selected for the test set, and that the bad images were discarded.
+
 ** cifar100
 
 the authors, following [20], repurpose the cifar100 dataset to become a

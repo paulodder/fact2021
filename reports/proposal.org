@@ -29,7 +29,7 @@ reported results. Furthermore, we aim to reproduce the results of the ablative
 study the authors do, more details on that will follow.
 
 The representations are trained in supervised fashion using an
-encoder-discriminator network. For evaluation, we train two seperate
+encoder-discriminator network. For evaluation, we train two separate
 predictors on the final target embeddings, one to trying to predict the true
 target (actual classification task) and one to predict the sensitive
 attribute. The latter predictor can give an indication of how much sensitive
@@ -45,5 +45,5 @@ the orthogonality or maximum entropy, influence performance.
 
 * Comments
 - Maybe mention we will contact/have already contacted the authors for details
-  about datasets, HPs etc.? As part of explaning "how we will achieve this"?
+  about datasets, HPs etc.? As part of explaining "how we will achieve this"?
 - Say anything about resources? Methodology? Be more explicit at least?

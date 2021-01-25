@@ -11,7 +11,7 @@ def optim_init_fn(model):
     return optim.Adam(model.parameters())
 
 
-def _cifar10_target_predictor(args):
+def _cifar10_target_predictor(config):
     """Gets target predictor for the cifar10 dataset"""
     output_dim = 1
     return MLPPredictor.init_without_model(
@@ -266,14 +266,14 @@ def get_sensitive_predictor_trainer(config):
     )
 
 
-def get_evaluation_managers(args, get_embs):
+def get_evaluation_managers(config, get_embs):
     (
         train_dl_target,
         test_dl_target,
         train_dl_sens,
         test_dl_sens,
     ) = load_representation_dataloaders(
-        args.dataset, args.batch_size, get_embs
+        config.dataset, config.batch_size, get_embs
     )
 
     predictor_target_trainer = get_target_predictor_trainer(config)

@@ -19,7 +19,7 @@ class LRPredictor:
         self.model.fit(x, y)
 
     def predict(self, dataloader):
-        x = dataloader.dataset.targets_latent
+        x = dataloader.dataset.x
         return self.model.predict(x)
 
 

@@ -81,7 +81,6 @@ python scripts/train.py --dataset adult --max_epochs 1 --z_dim 2 \
        --lambda_entropy 0.55 --gamma_od 0.8 --gamma_entropy 1.66
 #+END_SRC
 
-
 * German Dataset
 ** methodology
 *** data

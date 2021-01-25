@@ -280,8 +280,8 @@ class FODVAE(pl.LightningModule):
             optimizer.zero_grad()
 
         # Backprop sensitive representation loss
+        loss_repr_sensitive.backward(retain_graph=True)
         # Backprop remaining loss
-        # .backward(retain_graph=True)
         remaining_loss = (
             loss_repr_target
             + loss_repr_sensitive

@@ -102,10 +102,11 @@ def plot_heat_matrix(coord2val, ax):
     for coord0, ind0 in coord2ind0.iteritems():
         for coord1, ind1 in coord2ind1.iteritems():
             # breakpoint()
+            hmap[ind0, ind1] = coord2val[(coord0, coord1)]
             # print(coord2val[coord2val.index == (coord0, coord1)].get(0))
-            hmap[ind0, ind1] = coord2val[
-                coord2val.index == (coord0, coord1)
-            ].get(0)
+            # hmap[ind0, ind1] = coord2val[
+            #     coord2val.index == (coord0, coord1)
+            # ].get(0)
 
     def get_labels(vals):
         return [
@@ -119,26 +120,33 @@ def plot_heat_matrix(coord2val, ax):
             for i, v in enumerate(vals)
         ]
 
+    # breakpoint()
     mappable = ax.imshow(
-        gaussian_filter(hmap, 1),
+        hmap,
         # ax=ax,
         cmap="jet",
+        extent=(
+            coord2ind0.max(),
+            coord2ind0.min(),
+            coord2ind1.min(),
+            coord2ind1.max(),
+        ),
         # xticklabels=get_labels(coord2ind1.index),
         # yticklabels=get_labels(coord2ind0.index),
         # square=True,
-        interpolation="bilinear",
+        # interpolation="bilinear",
     )
-    fig.colorbar(mappable, ax=ax)
-    ax.legend()
+    fig.colorbar(mappable, ax=ax, fraction=0.046)
+    # ax.legend()
     # ax.set_ticks(range(len(coord2ind1.index)), get_labels(coord2ind1.index))
     ax.set_xticks(
-        list(range(len(coord2ind1.index))),
-    )
-    ax.set_xticklabels(coord2ind1.index)
-    ax.set_yticks(
         list(range(len(coord2ind0.index))),
     )
-    ax.set_yticklabels(coord2ind0.index)
+    ax.set_xticklabels(coord2ind0.index)
+    ax.set_yticks(
+        list(range(len(coord2ind1.index))),
+    )
+    ax.set_yticklabels(coord2ind1.index)
     # print(coord2ind0)
     # ax.set_xticks(list(range(len(coord2ind1.index.astype(float)))), minor=True)
     # ax.set_xticklabels(list(coord2ind1.index.astype(str)))
@@ -170,6 +178,23 @@ PARAM_NAME2PRETTY_NAME = {
     "gamma_od": "$\gamma_{OD}$",
 }
 
+
+dummy_coord2val = pd.Series(
+    {
+        (0, 0.0): 0,
+        (0, 0.1): 1,
+        (0, 0.2): 2,
+        (1, 0.0): 3,
+        (1, 0.1): 4,
+        (1, 0.2): 5,
+        (2, 0.0): 6,
+        (2, 0.1): 7,
+        (2, 0.2): 8,
+    }
+)
+fig, ax = plt.subplots()
+plot_heat_matrix(dummy_coord2val, ax)
+fig.savefig("/tmp/x.png")
 if __name__ == "__main__":
     args = parse_args()
     varying_param2vals2seed2results = get_varying_param2vals2seed2results(
@@ -178,20 +203,21 @@ if __name__ == "__main__":
     plt.clf()
     fig, ax = plt.subplots(1, 4, figsize=(16, 4), tight_layout=True)
     varying_params_list = sorted(
-        varying_param2vals2seed2results.index.levels[0]
+        varying_param2vals2seed2results.index.levels[0], reverse=True
     )
     for i, varying_params in enumerate(varying_params_list):
         vals2seed2results = varying_param2vals2seed2results.loc[varying_params]
-        vals2acc_t, vals2std_t = get_mean_and_std(
-            vals2seed2results, lambda d: round(d["target"]["accuracy"], 3)
+        vals2acc_mean_t, _ = get_mean_and_std(
+            vals2seed2results, lambda d: d["target"]["accuracy"]
         )
-        vals2acc_s, vals2std_s = get_mean_and_std(
-            vals2seed2results, lambda d: round(d["sensitive"]["accuracy"], 3)
+        vals2acc_mean_s, vals2std_s = get_mean_and_std(
+            vals2seed2results, lambda d: d["sensitive"]["accuracy"]
         )
         ax_t, ax_s = ax[(i * 2)], ax[(i * 2) + 1]
-        plot_heat_matrix(vals2acc_t, ax_t)
+        plot_heat_matrix(vals2acc_mean_t, ax_t)
+        # breakpoint()
         ax_t.set_title("Target accuracy")
-        plot_heat_matrix(vals2acc_s, ax_s)
+        plot_heat_matrix(vals2acc_mean_s, ax_s)
         ax_s.set_title("Sensitive accuracy")
         for this_ax in [ax_s, ax_t]:
             this_ax.set_xlabel(PARAM_NAME2PRETTY_NAME[varying_params[0]])

@@ -14,7 +14,16 @@
 #+OPTIONS: ^:nil
 #+LATEX_COMPILER: pdflatex
 
-* Proposal
+
+#+BEGIN_SRC emacs-lisp :exports none
+(setq org-export-with-toc nil)
+(setq org-export-with-section-numbers nil)
+#+END_SRC
+
+#+RESULTS:
+We are Jeroen Jagt, Paul Lodder, Pim Meerdink and Siem Teusink and we are all
+MSc Artificial Intelligence students at the University of Amsterdam. \newline
+
 We propose to reproduce the paper "Fairness by Learning Orthogonal Disentangled
 Representations" by Sarhan et al. (2020). They introduce a method for creating
 representations that can be used for a specific downstream classification task while
@@ -26,7 +35,7 @@ entropy. The authors apply their method to five different
 datasets. Seeing that the authors have not made their implementation available,
 it is our aim to implement the used model for every dataset and reproduce the
 reported results. Furthermore, we aim to reproduce the results of the ablative
-study the authors do, more details on that will follow.
+study the authors do, more details on that will follow. \newline
 
 The representations are trained in supervised fashion using an
 encoder-discriminator network. For evaluation, we train two separate
@@ -37,13 +46,9 @@ information we can possibly get out of the final target representation.
 The five datasets Sarhan et al. use are the Adult [cite], German, [cite],
 YaleB [cite], CIFAR-10 and CIFAR-100 [cite] datasets. It is our aim to
 reproduce the accuracies of the target predictor and of the sensitive predictor
-on all of these datasets.
+on all of these datasets. \newline
 
 Last, we plan to reproduce the ablative study from the paper. The authors
 explore how in -and excluding different parts of their model, such as enforcing
 the orthogonality or maximum entropy, influence performance.
 
-* Comments
-- Maybe mention we will contact/have already contacted the authors for details
-  about datasets, HPs etc.? As part of explaining "how we will achieve this"?
-- Say anything about resources? Methodology? Be more explicit at least?

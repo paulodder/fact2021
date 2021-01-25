@@ -15,6 +15,7 @@ sys.path.insert(0, str(PROJECT_DIR / "scripts"))
 
 import train
 from dataloaders import dataset_registrar
+import utils
 
 
 def parse_args():
@@ -38,11 +39,22 @@ def get_config(dataset):
     }
     if dataset == "yaleb":
         params = {
-            "lambda_od": uniform_dist(0.0, 1.5),
-            "lambda_entropy": uniform_dist(0.0, 1.5),
-            "gamma_od": {"value": 1},
-            "gamma_entropy": {"value": 1},
+            "lambda_od": uniform_dist(0.0, 1.5, 5),
+            "lambda_entropy": uniform_dist(0.0, 1.5, 5),
+            "gamma_od": uniform_dist(0.0, 1.5, 5),
+            "gamma_entropy": uniform_dist(0.0, 1.5, 5),
             "step_size": {"value": 30},
+            "max_epochs": {"value": 25},
+        }
+    if dataset == "cifar100":
+        params = {
+            "lambda_od": uniform_dist(0.0, 0.3, 5),
+            "lambda_entropy": uniform_dist(0.0, 0.3, 5),
+            "gamma_od": uniform_dist(0.0, 1.0, 5),
+            "gamma_entropy": uniform_dist(0.0, 1.5, 5),
+            "step_size": {"value": 30},
+            "max_epochs": {"value": 80},
+            "encoder_lr": {"value": 1e-5},
         }
     return {
         "name": f"{dataset}_sweep",
@@ -55,9 +67,11 @@ def get_config(dataset):
     }
 
 
-def combine_args(args, config):
-    for key, val in config.items():
+def combine_args(args, sweep_config):
+    for key, val in sweep_config.items():
         setattr(args, key, val)
+    config = utils.Config(args)
+    return config
 
 
 def sweep_iteration(args):
@@ -65,10 +79,10 @@ def sweep_iteration(args):
     # set up W&B logger
     wandb_logger = WandbLogger()
     # wandb.config holds current hparams
-    print("config", wandb.config)
-    combine_args(args, wandb.config)
-    print("args", args)
-    train.main(args, logger=wandb_logger)
+    print("wandb.config", wandb.config)
+    config = combine_args(args, wandb.config)
+    print("config", config)
+    train.main(config, logger=wandb_logger)
     wandb.finish()
 
 

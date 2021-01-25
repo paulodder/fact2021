@@ -32,7 +32,24 @@ from dataloaders import (
 from defaults import DATASET2DEFAULTS
 
 
-def parse_args():
+MODELS_DIR = PROJECT_DIR / "models"
+MODELS_DIR.mkdir(exist_ok=True)
+
+
+def model_fname(config):
+    rel_params = [
+        config.dataset,
+        config.lambda_od,
+        config.lambda_entropy,
+        config.gamma_od,
+        config.gamma_entropy,
+    ]
+    process_param = lambda p: p if type(p) == str else str(round(p, 6))
+    rel_params = [process_param(param) for param in rel_params]
+    return "-".join(rel_params)
+
+
+def get_argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dataset",
@@ -123,13 +140,13 @@ def parse_args():
         type=int,
         help="Number of epochs for which the predictor should train (if applicable)",
     )
-    return parser.parse_args()
+    return parser
 
 
-# def parse_args():
-#     parser = get_argparser()
-#     args = parser.parse_args()
-#     return args
+def parse_args():
+    parser = get_argparser()
+    args = parser.parse_args()
+    return args
 
 
 # def set_defaults(args):
@@ -142,10 +159,15 @@ def parse_args():
 def get_n_gpus():
     n = torch.cuda.device_count()
     print(f"n. gpus available: {n}")
+    if n > 1:
+        n = 1
+    print(f"n. gpus used: {n}")
     return n
 
 
 def evaluate(args, fodvae, logger=None, return_results=False):
+    fodvae.eval()
+
     @torch.no_grad()
     def get_embs(X):
         return fodvae.encode(X)[0]
@@ -218,7 +240,12 @@ def main(config, logger=None, return_results=False):
     )
     trainer.fit(fodvae, train_dl, val_dl)
 
-    return evaluate(config, fodvae, logger, return_results)
+    fodvae_best_version = fodvae.get_best_version()
+    # Save best version
+    save_path = str(MODELS_DIR / model_fname(config))
+    torch.save(fodvae_best_version.state_dict(), save_path)
+
+    return evaluate(config, fodvae_best_version, logger, return_results)
 
 
 if __name__ == "__main__":
@@ -228,7 +255,7 @@ if __name__ == "__main__":
     results = main(config, return_results=return_results)
     print(results)
     if return_results:
-        with open(RESULTS_DIR / utils.get_result_fname(args), "w") as f:
+        with open(RESULTS_DIR / utils.get_result_fname(config), "w") as f:
             f.write(json.dumps(results, indent=2))
             print(
                 f"Written results to {(RESULTS_DIR / utils.get_result_fname(args)).relative_to(PROJECT_DIR)}"

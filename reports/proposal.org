@@ -1,0 +1,49 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: ML Reproducibility Challenge Proposal
+#+AUTHOR: Jeroen Jagt, Paul Lodder, Pim Meerdink, Siem Teusink
+#+EMAIL: <siemteusink@hotmail.com>
+#+DATE: January 24, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session proposal :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+
+* Proposal
+We propose to reproduce the paper "Fairness by Learning Orthogonal Disentangled
+Representations" by Sarhan et al. (2020). They introduce a method for creating
+representations that can be used for a specific downstream classification task while
+being independent of sensitive attributes. They achieve this by disentangeling
+the meaningful, or target, and senstitive representation through enforcing
+orthogonality between the representations. Additionally, they push the target
+representation to be agnostic to sensitive information through maximising the
+entropy. The authors apply their method to five different
+datasets. Seeing that the authors have not made their implementation available,
+it is our aim to implement the used model for every dataset and reproduce the
+reported results. Furthermore, we aim to reproduce the results of the ablative
+study the authors do, more details on that will follow.
+
+The representations are trained in supervised fashion using an
+encoder-discriminator network. For evaluation, we train two separate
+predictors on the final target embeddings, one to trying to predict the true
+target (actual classification task) and one to predict the sensitive
+attribute. The latter predictor can give an indication of how much sensitive
+information we can possibly get out of the final target representation.
+The five datasets Sarhan et al. use are the Adult [cite], German, [cite],
+YaleB [cite], CIFAR-10 and CIFAR-100 [cite] datasets. It is our aim to
+reproduce the accuracies of the target predictor and of the sensitive predictor
+on all of these datasets.
+
+Last, we plan to reproduce the ablative study from the paper. The authors
+explore how in -and excluding different parts of their model, such as enforcing
+the orthogonality or maximum entropy, influence performance.
+
+* Comments
+- Maybe mention we will contact/have already contacted the authors for details
+  about datasets, HPs etc.? As part of explaining "how we will achieve this"?
+- Say anything about resources? Methodology? Be more explicit at least?

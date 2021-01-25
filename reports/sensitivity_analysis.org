@@ -1,0 +1,46 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: sensitivity_analysis
+#+AUTHOR: Paul Lodder
+#+EMAIL: <paul_lodder@live.nl>
+#+DATE: January 22, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session sensitivity_analysis :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+* Introduction
+This file serves the purpose of documenting the sensitivity analysis.
+
+To run the sensitivity analysis for a given dataset (currently only defined for
+=adult=), run:
+#+BEGIN_SRC sh
+scripts/sensitivity_analysis.py --dataset <dataset name>
+#+END_SRC
+
+This will run the sensitivity analysis for a set of parameters defined in the
+=DATASET_VARYING_PARAMS2VALS= variable inside the script. The parameters are
+taken from the original paper. The script will train our FODVAE with the
+corresponding parameters, and store the results of each run under results in a
+file with the following format:
+=sensitivity&<dataset
+name>&varying_param0=val0$varying_param1=val1&<seed>.json= in =RESULTS_DIR= as
+defined in our =.env=
+The json contains
+#+BEGIN_SRC text
+{
+  "target": <output of classification_report output_dict>,
+  "sensitive": <output of classification_report output_dict>
+}
+#+END_SRC
+To visualize the results we run
+#+BEGIN_SRC sh
+python scripts/visualize_ablative.py --dataset <dataset name>
+#+END_SRC
+The script will produce an image per pair parameters that have been varied,
+each image contains two heat maps: one for the sensitive accuracy and one for
+the target accuracy.

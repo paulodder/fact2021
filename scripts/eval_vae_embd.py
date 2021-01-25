@@ -59,9 +59,7 @@ def evaluate_embeddings(dataset):
     )
     config = Config(args)
 
-    with open(
-        f"/home/pim/courses/fact/fact2021/src/vae/models/{dataset}", "rb"
-    ) as file:
+    with open(PROJECT_DIR + f"/models/{dataset}", "rb") as file:
         vae = torch.load(file)
 
     @torch.no_grad()

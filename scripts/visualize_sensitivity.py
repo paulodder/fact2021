@@ -134,7 +134,7 @@ def plot_heat_matrix(coord2val, ax):
         # xticklabels=get_labels(coord2ind1.index),
         # yticklabels=get_labels(coord2ind0.index),
         # square=True,
-        # interpolation="bilinear",
+        interpolation="bilinear",
     )
     fig.colorbar(mappable, ax=ax, fraction=0.046)
     # ax.legend()

@@ -12,14 +12,18 @@ import sys
 from dotenv import dotenv_values
 
 PROJECT_DIR = Path(dotenv_values()["PROJECT_DIR"])
+sys.path.insert(0, str(PROJECT_DIR / "src/vae"))
 sys.path.insert(0, str(PROJECT_DIR / "src"))
 
 from dataloaders import load_data, dataset_registrar
 import pickle
-from vae import Normal, Encoder, Decoder, VAE
+from vae import Normal, Encoder, Decoder, VAE, latent_loss
+import utils
+from train import parse_args
 
 
-def train(dataset):
+def train(args):
+    dataset = args.dataset
     if dataset == "yaleb":
         input_dim = 32256
         batch_size = 32
@@ -50,7 +54,7 @@ def train(dataset):
     optimizer = optim.Adam(vae.parameters(), lr=0.00001)
     l = None
     ls = []
-    for epoch in range(100):
+    for epoch in range(args.max_epochs):
         for i, data in enumerate(dataloader, 0):
             inputs, classes, _ = data
             optimizer.zero_grad()
@@ -63,12 +67,13 @@ def train(dataset):
         ls.append(l)
         print(epoch, l)
 
-    with open(f"./models/{dataset}", "wb") as f:
+    with open(PROJECT_DIR / f"models/{dataset}_vae", "wb") as f:
         torch.save(vae, f)
     plt.plot(ls)
     plt.show()
 
 
 if __name__ == "__main__":
-    dataset = "yaleb"
-    train(dataset)
+    args = parse_args()
+    config = utils.Config(args)
+    train(args)

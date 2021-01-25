@@ -53,8 +53,13 @@ def evaluate_raw(dataset):
     )
     config = Config(args)
 
+    dataset2sens_col = {"adult": 64, "german": 37}
+
     @torch.no_grad()
     def get_embs(X):
+        if args.dataset != "yaleb":
+            print((X[:, dataset2sens_col[args.dataset]]).mean())
+            X[:, dataset2sens_col[args.dataset]] = 0
         return X
 
     # Get predictors

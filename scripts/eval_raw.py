@@ -30,6 +30,7 @@ import pickle
 
 
 def evaluate_raw(args):
+    torch.manual_seed(0)
     dataset = args.dataset
     if dataset == "yaleb":
         batch_size = 16
@@ -54,7 +55,6 @@ def evaluate_raw(args):
     @torch.no_grad()
     def get_embs(X):
         if args.dataset != "yaleb":
-            print((X[:, dataset2sens_col[args.dataset]]).mean())
             X[:, dataset2sens_col[args.dataset]] = 0
         return X
 
@@ -84,7 +84,6 @@ def evaluate_raw(args):
                     "sens_classification_report": report_sens,
                 }
             )
-
         print("~ evaluation results ~~~~~~~~~~~~~")
         print("best target acc:", round(acc_target, 2))
         print("best sens acc:  ", round(acc_sens, 2))
@@ -93,4 +92,6 @@ def evaluate_raw(args):
 
 
 if __name__ == "__main__":
-    evaluate_raw("yaleb")
+    torch.manual_seed(0)
+    args = Namespace(dataset="adult")
+    evaluate_raw(args)

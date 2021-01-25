@@ -114,6 +114,13 @@ bash scripts/ablative.sh cifar100
 python scripts/visualize_ablative.py --dataset cifar100
 #+END_SRC
 [[file:../figures/ablative.cifar100.png]]
+* Sensitivy analysis
+The sensitivity analysis was run on the adult dataset. Make sure to have the
+=results/= directory and point =RESULTS_DIRECTORY= to it in our =.env=
+#+BEGIN_SRC sh
+python scripts/sensitivity_analysis.py --dataset adult
+python scripts/visualize_sensitivity.py --dataset adult
+#+END_SRC
 
 * Tables and figures
 ** table 1

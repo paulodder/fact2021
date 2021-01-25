@@ -11,7 +11,7 @@ def optim_init_fn(model):
     return optim.Adam(model.parameters())
 
 
-def _cifar10_target_predictor(args):
+def _cifar10_target_predictor(config):
     """Gets target predictor for the cifar10 dataset"""
     output_dim = 1
     return MLPPredictor.init_without_model(

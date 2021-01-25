@@ -15,7 +15,49 @@
 #+LATEX_COMPILER: pdflatex
 *  Introduction
 This file serves the purpose of documenting the scripts that generate any of
-the results in our paper.
+the results in our paper, aswell as describing/explaining our ability to
+reproduce the reference papers results in terms of senstivity/target accuracy.
+
+* Reproduction accuracies
+In general:
+things clarified through communtication with authors which were not clear in
+paper:
+- step size
+- how to update lambdas
+- vae embeddings training procedure
+
+things still unclear
+dataste size yaleb
+
+** adult
+-adult is reproducible with standard hyperparameters,
+- we can reproduce the logistic regression on VAE embeddings,
+
+
+** german
+german is not reproducible with standard hyperparameters, unless we turn off the
+weight freezing (i.e. we also update the backbone network with the sensitive
+The VAE baseline is not really reproducible, but it should be noted that how to
+train the VAE is not entirely clear so there is room for discrepancy there.
+
+PARAMETER SEARCH necessary, we should check whether ablative without freezing
+preforms well (but we have senstivity anaysis)
+
+** yaleb
+
+we are unable to reproduce results for yaleb, but size of dataset different, it
+was unclear how to assign the targets labels so there's room for
+inconsistencies. ALso, a baseline logistic regression model doesn not obtain
+the same results as with them, we get lower for sensitive
+
+PARAMETER SEARCH NECESSARY
+
+** cifar 10
+reproducible with standard hyperparameters.
+
+** cifar 100
+seems to be unable to find a real minimum for the target prediction.
+
 * Ablative study
 The ablative study compares the effect of the composition of the loss term on
 the sensitive and target accuracy. To generate the results for any given
@@ -72,3 +114,41 @@ bash scripts/ablative.sh cifar100
 python scripts/visualize_ablative.py --dataset cifar100
 #+END_SRC
 [[file:../figures/ablative.cifar100.png]]
+
+* Tables and figures
+** table 1
+- cifar10 baseline target & sens acc
+- cifar10 fodvae (ours) target & sens acc
+- cifar100 baseline target & sens acc
+- cifar100 fodvae (ours) target & sens acc
+
+** figure 2
+- adult X target & sens acc
+- adult fodvae (ours) target & sens acc
+- german X target & sens acc
+- german fodvae (ours) target & sens acc
+- yaleb LR target & sens acc
+- yaleb fodvae (ours) target & sens acc
+
+** figure 3
+- german full ablative study
+- german baseline?
+- adult full ablative study
+- adult baseline?
+- yaleb full ablative study
+- yaleb baseline?
+- cifar10 full ablative study
+- cifar10 baseline?
+- cifar100 full ablative study
+- cifar100 baseline?
+
+** figure 4
+- t-SNE on yaleb
+- t-SNE on cifar10
+
+** figure 5
+- sensitivity analysis on adult
+
+** suppl
+- sensitivity analysis on german
+- sensitivity analysis on yaleb

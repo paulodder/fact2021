@@ -166,6 +166,11 @@ class NamespaceWithGet:
         return attr
 
 
+class Namespace:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
 class Config:
     def __init__(self, args):
         """Given a parsed args, initializes parameters according to defaults unless

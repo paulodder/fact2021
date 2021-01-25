@@ -179,7 +179,7 @@ class FODVAE(pl.LightningModule):
     def decay_lambdas(self):
         # Every step_size epochs, the lambda should be increased by
         # a factor denoted by corresponding gamma.
-        progress = self.current_epoch / self.step_size
+        progress = (self.current_epoch + 1) / self.step_size
         self.lambda_od = self.lambda_od_initial * self.gamma_od ** progress
         self.lambda_entropy = (
             self.lambda_entropy_initial * self.gamma_entropy ** progress

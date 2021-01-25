@@ -60,12 +60,12 @@ class FODVAE(pl.LightningModule):
 
     def _init_prior_means(self):
         if "orth" in self.loss_components:
-            print("yes orth")
             self.prior_mean_target = torch.ones(self.z_dim).to(
                 current_device()
             )
             self.prior_mean_target[int(self.z_dim / 2) :] = 0
-            self.prior_mean_sensitive = -(self.prior_mean_target - 1)
+            self.prior_mean_sensitive = 1 - self.prior_mean_target
+            # breakpoint()
             assert self.prior_mean_sensitive.dot(self.prior_mean_target) == 0
         else:
             print("no orth")
@@ -280,10 +280,11 @@ class FODVAE(pl.LightningModule):
             optimizer.zero_grad()
 
         # Backprop sensitive representation loss
-
         # Backprop remaining loss
+        # .backward(retain_graph=True)
         remaining_loss = (
             loss_repr_target
+            + loss_repr_sensitive
             + self.lambda_od * loss_od
             + self.lambda_entropy * loss_entropy
         )
@@ -294,7 +295,6 @@ class FODVAE(pl.LightningModule):
             optimizer.step()
 
         loss_total = loss_repr_sensitive.item() + remaining_loss.item()
-
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
         train_sens_crossover_acc = self.accuracy(s, crossover_posterior)

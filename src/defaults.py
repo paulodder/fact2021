@@ -1,6 +1,6 @@
 DEFAULTS_ADULT = {
     "z_dim": 2,
-    "max_epochs": 1,
+    "max_epochs": 2,
     "batch_size": 64,
     "lambda_od": 0.037,
     "gamma_od": 0.8,

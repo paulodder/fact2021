@@ -17,7 +17,7 @@ class EvaluationManager:
         self.test_dl = test_dl if eval_on_test else train_dl
 
     def fit(self):
-        self.trainer.fit(self.train_dl)
+        self.trainer.fit(self.train_dl, gpus=get_n_gpus())
 
     def generate_report(self, model, x, y):
         # We do not have control over the interface of the model

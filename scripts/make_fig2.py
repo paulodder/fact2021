@@ -67,17 +67,21 @@ if __name__ == "__main__":
     args = parse_args()
     config = utils.Config(args)
     df = pd.DataFrame(columns=["target_acc", "sens_acc"])
+    print("Training normal FODVAE")
     res = train.main(config, return_results=True)
-    df.loc["ours"] = {
-        "target_acc": res["target"]["accuracy"],
-        "sens_acc": res["sensitive"]["accuracy"],
-    }
+
+    # df.loc["ours"] = {
+    #     "target_acc": res["target"]["accuracy"],
+    #     "sens_acc": res["sensitive"]["accuracy"],
+    # }
+    print("Training using VAE embeddings")
     if args.dataset != "yaleb":
         if f"{args.dataset}_vae" not in os.listdir(PROJECT_DIR / "models"):
             train_vae.train(args.dataset)
         tacc_vae, sacc_vae = evaluate_embeddings(args.dataset)
         df.loc["VAE"] = {"target_acc": tacc_vae, "sens_acc": sacc_vae}
     tacc_raw, sacc_raw = evaluate_raw(args.dataset)
+    print("Training raw")
     if args.dataset != "yaleb":
         df.loc["X"] = {"target_acc": tacc_raw, "sens_acc": sacc_raw}
     else:

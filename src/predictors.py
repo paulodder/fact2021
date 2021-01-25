@@ -7,7 +7,7 @@ import trainers
 
 
 class LRPredictor:
-    def __init__(self, dataset2y=None):
+    def __init__(self, dataset2y=None, gpus=None):
         if dataset2y is None:
             dataset2y = lambda ds: ds.y
         self.dataset2y = dataset2y

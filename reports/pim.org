@@ -1,0 +1,34 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: Pim
+#+AUTHOR: Pim Meerdink
+#+EMAIL: <pimmeerdink@hotmail.com>
+#+DATE: January 12, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session pim :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+
+* Inconsistencies
+
+- no lambda parameters for YaleB
+- they just mention using a vae as baseline but give no other real information
+  that would allow us to properly understand their training procedure and
+  reproduce their results
+
+- the baselines they give that use the raw data for the target and sensitvei
+  predicitons:
+  we can replicate the adilt
+  we cant replicate the german, we get lower than them but makes sense seeing
+  as out majoirty vote is lower hinting that the task is slightly harder for
+  the split we have
+
+- it is unclear what reconstruction loss they use for the VAE they trained on
+  the tabular datasets
+
+- we can reproduce the logistic regression model on the yaleb

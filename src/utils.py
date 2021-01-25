@@ -166,6 +166,11 @@ class NamespaceWithGet:
         return attr
 
 
+class Namespace:
+    def __init__(self, **kwargs):
+        self.__dict__.update(kwargs)
+
+
 class Config:
     def __init__(self, args):
         """Given a parsed args, initializes parameters according to defaults unless
@@ -264,3 +269,12 @@ class BestModelTracker:
         self.__current_epoch += 1
         self.__running_performance_mean = 0
         self.__running_total_weight = 0
+
+
+def get_n_gpus():
+    n = torch.cuda.device_count()
+    print(f"n. gpus available: {n}")
+    if n > 1:
+        n = 1
+    print(f"n. gpus used: {n}")
+    return n

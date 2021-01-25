@@ -22,9 +22,12 @@ class EvaluationManager:
     def generate_report(self, model, x, y):
         # We do not have control over the interface of the model
         # itself, so we leave this up to the trainer.
+        if type(x) == torch.Tensor:
+            x = x.to(utils.current_device())
         y_pred = self.trainer.forward_model(model, x)
+        if type(y_pred) == torch.Tensor:
+            y_pred = y_pred.cpu()
         y_pred = utils.prepare_tensor_for_evaluation(y_pred)
-
         return classification_report(y, y_pred, output_dict=True), y_pred
 
     def evaluate(self, output_dict=True):

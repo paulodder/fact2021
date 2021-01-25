@@ -156,21 +156,12 @@ def parse_args():
 #         args.z_dim = DATASET2DEFAULTS[args.dataset]["z_dim"]
 
 
-def get_n_gpus():
-    n = torch.cuda.device_count()
-    print(f"n. gpus available: {n}")
-    if n > 1:
-        n = 1
-    print(f"n. gpus used: {n}")
-    return n
-
-
 def evaluate(args, fodvae, logger=None, return_results=False):
     fodvae.eval()
 
     @torch.no_grad()
     def get_embs(X):
-        return fodvae.encode(X)[0]
+        return fodvae.encode(X.to(utils.current_device()))[0].cpu()
 
     # Evaluation using predictors
     eval_manager_target, eval_manager_sens = get_evaluation_managers(
@@ -236,7 +227,7 @@ def main(config, logger=None, return_results=False):
     print(config.key2val, config.max_epochs)
     # Train model
     trainer = pl.Trainer(
-        max_epochs=config.max_epochs, logger=logger, gpus=get_n_gpus()
+        max_epochs=config.max_epochs, logger=logger, gpus=utils.get_n_gpus()
     )
     trainer.fit(fodvae, train_dl, val_dl)
 

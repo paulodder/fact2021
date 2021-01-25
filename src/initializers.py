@@ -1,3 +1,4 @@
+import utils
 from fodvae import FODVAE
 from torch import optim, nn
 from models import MLP, MLPEncoder, ResNetEncoder
@@ -11,7 +12,7 @@ def optim_init_fn(model):
     return optim.Adam(model.parameters())
 
 
-def _cifar10_target_predictor(args):
+def _cifar10_target_predictor(config):
     """Gets target predictor for the cifar10 dataset"""
     output_dim = 1
     return MLPPredictor.init_without_model(
@@ -247,10 +248,13 @@ def get_target_predictor_trainer(config):
         return MLPPredictorTrainer(
             _cifar10_target_predictor(config),
             max_epochs=config.predictor_epochs,
+            gpus=utils.get_n_gpus(),
         )
     if config.dataset == "cifar100":
         return MLPPredictorTrainer(
-            _cifar100_target_predictor(config), config.max_epochs
+            _cifar100_target_predictor(config),
+            config.max_epochs,
+            gpus=utils.get_n_gpus(),
         )
     raise ValueError(f"dataset {dataset} is not recognized.")
 
@@ -262,6 +266,7 @@ def get_sensitive_predictor_trainer(config):
             model,
             optim_init_fn,
         ),
+        gpus=utils.get_n_gpus(),
         epochs=config.predictor_epochs,
     )
 

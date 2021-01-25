@@ -76,11 +76,10 @@ with default parameters.
 ** scripts to reproduce
 Within one epoch everything works fine already, so we can just run
 #+BEGIN_SRC sh
-python scripts/train.py --dataset adult --max_epochs 1 --z_dim 2 \
+python scripts/train.py --dataset adult --max_epochs 2 --z_dim 2 \
        --batch_size 64 --seed 420 --lambda_od 0.037 \
        --lambda_entropy 0.55 --gamma_od 0.8 --gamma_entropy 1.66
 #+END_SRC
-
 
 * German Dataset
 ** methodology
@@ -116,7 +115,7 @@ nothing to learn in the target embeddings to predict the sensitive attributes
 
 According to their paper
 #+BEGIN_SRC sh
-python scripts/train.py --dataset german --max_epochs 20 --z_dim 2 \
+python scripts/train.py --dataset german  --z_dim 2 \
         --seed 420 --lambda_entropy 1 --gamma_entropy 2 \
        --lambda_od 0.01 --gamma_od 1.4 --max_epochs 12
 #+END_SRC

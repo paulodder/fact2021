@@ -4,6 +4,7 @@ from torch import optim, nn
 from models import MLP
 import utils
 import trainers
+import torch
 
 
 class LRPredictor:
@@ -19,7 +20,7 @@ class LRPredictor:
         self.model.fit(x, y)
 
     def predict(self, dataloader):
-        x = dataloader.dataset.targets_latent
+        x = dataloader.dataset.x
         return self.model.predict(x)
 
 
@@ -28,6 +29,8 @@ class LRPredictorTrainer(LRPredictor):
         return [self.model]
 
     def forward_model(self, model, x):
+        if type(x) == torch.Tensor:
+            return model.predict(x.cpu())
         return model.predict(x)
 
 
@@ -73,10 +76,11 @@ class MLPPredictorTrainer:
         self,
         predictor,
         epochs,
+        gpus,
     ):
         self.predictor = predictor
         self.trainer = trainers.TrainerWithSavedModels(
-            min_epochs=epochs, max_epochs=epochs
+            min_epochs=epochs, max_epochs=epochs, gpus=gpus
         )
 
     def fit(self, dataloader):

@@ -58,8 +58,8 @@ def evaluate_embeddings(dataset):
         eval_on_test=eval_on_test,
     )
     config = Config(args)
-
-    with open(PROJECT_DIR + f"/models/{dataset}", "rb") as file:
+    fname = f"/models/{dataset}_vae"
+    with open(str(PROJECT_DIR) + fname, "rb") as file:
         vae = torch.load(file)
 
     @torch.no_grad()

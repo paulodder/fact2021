@@ -170,7 +170,7 @@ def evaluate(args, fodvae, logger=None, return_results=False):
 
     @torch.no_grad()
     def get_embs(X):
-        return fodvae.encode(X)[0]
+        return fodvae.encode(X.to(utils.current_device()))[0].cpu()
 
     # Evaluation using predictors
     eval_manager_target, eval_manager_sens = get_evaluation_managers(

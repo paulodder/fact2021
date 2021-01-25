@@ -30,6 +30,7 @@ def train(args):
         z_dim = 100
         hidden = 300
         criterion = nn.BCELoss()
+        max_epochs = 100
 
     if dataset == "adult":
         input_dim = 108
@@ -37,6 +38,7 @@ def train(args):
         z_dim = 2
         hidden = 100
         criterion = nn.MSELoss()
+        max_epochs = 30
 
     if dataset == "german":
         input_dim = 61
@@ -44,6 +46,7 @@ def train(args):
         z_dim = 2
         hidden = 100
         criterion = nn.MSELoss()
+        max_epochs = 30
 
     dataloader, dataloader_test = load_data(dataset, batch_size)
 
@@ -54,7 +57,7 @@ def train(args):
     optimizer = optim.Adam(vae.parameters(), lr=0.00001)
     l = None
     ls = []
-    for epoch in range(args.max_epochs):
+    for epoch in range(max_epochs):
         for i, data in enumerate(dataloader, 0):
             inputs, classes, _ = data
             optimizer.zero_grad()

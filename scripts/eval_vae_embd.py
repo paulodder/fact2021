@@ -35,7 +35,8 @@ import pickle
 dataset = "german"
 
 
-def evaluate_embeddings(dataset):
+def evaluate_embeddings(args):
+    dataset = args.dataset
     if dataset == "yaleb":
         batch_size = 16
         z_dim = 100
@@ -51,12 +52,8 @@ def evaluate_embeddings(dataset):
     eval_on_test = True
     logger = None
 
-    args = Namespace(
-        dataset=dataset,
-        batch_size=batch_size,
-        z_dim=z_dim,
-        eval_on_test=eval_on_test,
-    )
+    args.batch_size = batch_size
+    args.z_dim = z_dim
     config = Config(args)
     fname = f"/models/{dataset}_vae"
     with open(str(PROJECT_DIR) + fname, "rb") as file:

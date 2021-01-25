@@ -29,7 +29,8 @@ from utils import Namespace, Config
 import pickle
 
 
-def evaluate_raw(dataset):
+def evaluate_raw(args):
+    dataset = args.dataset
     if dataset == "yaleb":
         batch_size = 16
         z_dim = 32256
@@ -44,13 +45,8 @@ def evaluate_raw(dataset):
 
     eval_on_test = True
     logger = None
-
-    args = Namespace(
-        dataset=dataset,
-        batch_size=batch_size,
-        z_dim=z_dim,
-        eval_on_test=eval_on_test,
-    )
+    args.z_dim = z_dim
+    args.batch_size = batch_size
     config = Config(args)
 
     dataset2sens_col = {"adult": 64, "german": 37}

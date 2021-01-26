@@ -4,12 +4,20 @@
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 8, 2021
 #+LATEX: \setlength\parindent{0pt}
-# #+LaTeX_HEADER: \usepackage{minted}
-# #+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
-# #+LATEX_HEADER: \usepackage{bm}
-# #+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
-# #+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
-# #+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+LATEX_HEADER: \usepackage{subcaption}
+#+LaTeX_HEADER: \usepackage[]{neurips_2019}
+#+LaTeX_HEADER: \usepackage[utf8]{inputenc} % allow utf-8 input
+#+LaTeX_HEADER: \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+#+LaTeX_HEADER: \usepackage{hyperref}       % hyperlinks
+#+LaTeX_HEADER: \usepackage{url}            % simple URL typesetting
+#+LaTeX_HEADER: \usepackage{booktabs}       % professional-quality tables
+#+LaTeX_HEADER: \usepackage{amsfonts}       % blackboard math symbols
+#+LaTeX_HEADER: \usepackage{nicefrac}       % compact symbols for 1/2, etc.
+#+LaTeX_HEADER: \usepackage{microtype}      % microtypography
+#+LaTeX_HEADER:
+#+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
+#+LaTeX_HEADER: \usepackage[normalem]{ulem}
+#+LaTeX_HEADER: \newif{\ifhidecomments}
 #+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
 #+PROPERTY: header-args :exports both :session report :cache :results value
 #+OPTIONS: ^:nil
@@ -49,9 +57,6 @@ Summary can be a page long max and needs to be included
 
 \newpage
 * 1 Introduction
-- Shortly introduce the work at high level (few paragraphs AT MOST, guidelines
-  talk about a couple of sentences).
-
 The work of [cite Sarhan] introduces a new way of learning representations that
 are useful for a specified task while robust against sensitive attributes. They
 propose a method that decomposes the latent representation into a target and
@@ -63,9 +68,6 @@ ensure that the target representation is agnostic to the sensitive information
 using a  maximum entropy approach.
 
 * 2 Scope of reproducibility
-- Introduce problems work addresses
-- Introduce claims of paper that we will try to reproduce
-
 The reference work by Sarhan et al works towards a method of generating
 embeddings of data, while remaining invariant towards a particular
 feature. This is done by explicitly learning an encoding of the sensitive
@@ -121,10 +123,6 @@ available. Therefore, it was our goal to reproduce the implementation from the
 description in the paper. The essential elements of the model are described in
 the next section.
 ** 3.1 Model descriptions
-- Give explanation of the model
-  - Alterations for different data-sets
-  - /Is this a good place to give details of all the losses?/
-
 Let $\mathcal{X}$ be the dataset and let $\bm{x} \in \mathbb{R}^D$ be a single
 input sample. Each sample has an associated target vector $\bm{y} \in
 \mathbb{R}^n$ and an associated sensitive attribute vector $\bm{s} \in
@@ -214,10 +212,18 @@ minimize this combined loss:
 \end{equation}
 
 Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
-entropy loss respectively. These are hyperparameters that we need to set.
-
-- Hier ook nog ff de decay uitleggen van lambda via gammas en timestep heel
-  kort
+entropy loss respectively. Additionally, we introduce two decay parameters,
+$\gamma_{OD}$ and $\gamma_{E}$ which allows us to change the weights of the
+aforementioned losses while training. The OD loss weight at epoch $t$ during
+training will be calculated as follows:
+\begin{equation}
+\lambda_{OD}^{(t)} = \lambda_{OD}^{(0)} \gamma_{OD}^{t/t_s}
+\end{equation}
+Here $t_s$ is the so-called /step-size/ parameter, and $\lambda_{OD} is the
+initial OD loss weight. The maximum entropy loss weight will be computed in the
+same way. $\lambda_{OD}^{(0)}, \lambda_{E}^{(0)}, \gamma_{OD},
+\gamma_{E}$ and $t_s$ are all hyperparamters that we need to set. More
+information on those will follow.
 
 ** 3.2 Datasets
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
@@ -368,7 +374,7 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 - High-level overview. Do our results support the paper's claims? Keep
   discussion for next section.
 ** 4.1 Results reproducing original paper
-**** Accuracies Adult, Yaleb and German
+*** Accuracies Adult, Yaleb and German
 #+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:adult
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for adult
@@ -376,8 +382,62 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 | [[../figures/adult_target.png]] | <<fig:adult_target>> sensitive accuracy |
 | target accuracy             | [[../figures/adult_sens.png]]               |
 
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:adult
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
+#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
+| [[../figures/german_target.png]] | <<fig:german_target>> sensitive accuracy |
+| target accuracy              | [[../figures/german_sens.png]]              |
+
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:adult
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
+#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
+| [[../figures/yaleb_target.png]] | <<fig:yaleb_target>> sensitive accuracy  |
+| target accuracy             | [[../figures/yaleb_sens.png]]               |
+
+
+
 Figures [[fig:adult]] show the accuracy for the target and sensitive predictors on
-the adult dataset,
+the adult dataset. The black line indicates the accuracy that a majority class
+classifier would attain. The bars dentoed by X correspond to direct use of the
+input data for our target prediciton. Furthermore, a VAE was trained on the
+adult and german datasets using MSE loss as reconstruction loss. These learned
+embeddings were also used as feature for our target and sensitive
+predictors. These accuracies correspond to the bars denoted with 'VAE'. For
+YaleB, besides the model in question, logistic regression was also used on the
+raw data to predict the sensitive and target attributes. This is denoted by
+'LR'.
+*** Ablative
+#+BEGIN_SRC sh
+# adult
+bash scripts/ablative.sh adult
+python scripts/visualize_ablative.py -d adult
+# german
+bash scripts/ablative.sh german
+python scripts/visualize_ablative.py -d german
+# yaleb
+bash scripts/ablative.sh yaleb
+python scripts/visualize_ablative.py -d yaleb
+# cifar10
+bash scripts/ablative.sh cifar10
+python scripts/visualize_ablative.py -d cifar10
+# cifar100
+bash scripts/ablative.sh cifar100
+python scripts/visualize_ablative.py -d cifar100
+#+END_SRC
+
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:ablative
+#+LABEL: fig:ablative
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
+#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth
+| [[../figures/ablative.adult.png]]    | <<fig:ablative_adult>> Adult       |
+| [[../figures/ablative.german.png]]   | <<fig:ablative_german>> German     |
+| [[../figures/ablative.yaleb.png]]    | <<fig:ablative_yaleb>> YaleB       |
+| [[../figures/ablative.cifar10.png]]  | <<fig:ablative_cifar10>> Cifar10   |
+| [[../figures/ablative.cifar100.png]] | <<fig:ablative_cifar100>> Cifar100 |
+|                                  |                                    |
 
 
 ** 4.2 Results beyond original paper

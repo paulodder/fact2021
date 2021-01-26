@@ -8,7 +8,7 @@ cd $CURRENT_DIR
 echo $RESULTS_DIR
 DATASET=$1
 echo $DATASET
-SEEDS=" 42 420 4200 "
+SEEDS=" 42 420 4200 0 1 "
 LOSS_COMPS=" none entropy kl,orth entropy,kl entropy,kl,orth "
 for l in $LOSS_COMPS
 do

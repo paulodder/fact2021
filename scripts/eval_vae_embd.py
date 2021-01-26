@@ -57,6 +57,7 @@ def evaluate_embeddings(args):
     args.z_dim = z_dim
     config = Config(args)
     fname = f"/models/{dataset}_vae"
+
     with open(str(PROJECT_DIR) + fname, "rb") as file:
         vae = torch.load(file)
 
@@ -89,7 +90,6 @@ def evaluate_embeddings(args):
                     "sens_classification_report": report_sens,
                 }
             )
-
         print("~ evaluation results ~~~~~~~~~~~~~")
         print("best target acc:", round(acc_target, 2))
         print("best sens acc:  ", round(acc_sens, 2))
@@ -98,5 +98,6 @@ def evaluate_embeddings(args):
 
 
 if __name__ == "__main__":
+    torch.manual_seed(0)
     args = Namespace(dataset="adult")
     evaluate_embeddings(args)

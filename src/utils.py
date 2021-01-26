@@ -37,6 +37,7 @@ def sample_reparameterize(mean, std):
             The tensor should have the same shape as the mean and std input tensors.
     """
     eps = torch.normal(0, 1, size=mean.shape).to(current_device())
+    # breakpoint()
     z = mean + (std * eps)
     return z
 
@@ -53,7 +54,7 @@ def fillnan(tensor, value):
 
 
 def loss_representation(y_pred, y_true, reduction="none"):
-    y_pred = fillnan(torch.clamp(y_pred, 0, 1), 0.0)
+    # y_pred = fillnan(torch.clamp(y_pred, 0, 1), 0.0)
     out = nn.functional.binary_cross_entropy(
         y_pred, y_true, reduction=reduction
     )

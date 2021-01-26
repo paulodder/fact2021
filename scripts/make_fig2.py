@@ -1,4 +1,5 @@
 from dotenv import dotenv_values
+import numpy as np
 from pathlib import Path
 import argparse
 import os
@@ -50,7 +51,11 @@ def make_figure(df, args):
         color="black",
         linestyle="--",
     )
-    plt.title(f"Sensitive accuracy {args.dataset}")
+    plt.xlabel("Method")
+    plt.ylabel("Accuracy")
+    plt.tight_layout()
+
+    plt.title(f"Sensitive accuracy {args.dataset} ")
     plt.savefig(FIGURES_DIR / f"{args.dataset}_sens.png")
     plt.clf()
     df["target_acc"].plot.bar(color="gray")
@@ -60,31 +65,58 @@ def make_figure(df, args):
         linestyle="--",
     )
     plt.title(f"Target accuracy {args.dataset}")
+    plt.xlabel("Method")
+    plt.ylabel("Accuracy")
+    plt.tight_layout()
     plt.savefig(FIGURES_DIR / f"{args.dataset}_target.png")
 
 
 if __name__ == "__main__":
+    seeds = [1, 2, 3]
     args = parse_args()
     config = utils.Config(args)
     df = pd.DataFrame(columns=["target_acc", "sens_acc"])
     print("Training normal FODVAE")
-    res = train.main(config, return_results=True)
-
-    df.loc["ours"] = {
-        "target_acc": res["target"]["accuracy"],
-        "sens_acc": res["sensitive"]["accuracy"],
-    }
-    print("Training using VAE embeddings")
+    tacc, sacc = [], []
+    for seed in seeds:
+        torch.manual_seed(seed)
+        res = train.main(config, return_results=True)
+        tacc.append(
+            res["target"]["accuracy"],
+        )
+        sacc.append(
+            res["sensitive"]["accuracy"],
+        )
+    df.loc["ours"] = {"target_acc": np.mean(tacc), "sens_acc": np.mean(sacc)}
+    torch.cuda.empty_cache()
     if args.dataset != "yaleb":
         if f"{args.dataset}_vae" not in os.listdir(PROJECT_DIR / "models"):
             train_vae.train(args)
-        tacc_vae, sacc_vae = evaluate_embeddings(args)
-        df.loc["VAE"] = {"target_acc": tacc_vae, "sens_acc": sacc_vae}
-    tacc_raw, sacc_raw = evaluate_raw(args)
+        print("Training using VAE embeddings")
+        tacc, sacc = [], []
+        for seed in seeds:
+            torch.manual_seed(seed)
+            tacc_vae, sacc_vae = evaluate_embeddings(args)
+            tacc.append(tacc_vae)
+            sacc.append(sacc_vae)
+        df.loc["VAE"] = {
+            "target_acc": np.mean(tacc),
+            "sens_acc": np.mean(sacc),
+        }
+    torch.cuda.empty_cache()
     print("Training raw")
+    tacc, sacc = [], []
+    for sed in seeds:
+        tacc_raw, sacc_raw = evaluate_raw(args)
+        torch.manual_seed(seed)
+        tacc.append(tacc_raw)
+        sacc.append(sacc_raw)
     if args.dataset != "yaleb":
-        df.loc["X"] = {"target_acc": tacc_raw, "sens_acc": sacc_raw}
+        df.loc["X"] = {"target_acc": np.mean(tacc), "sens_acc": np.mean(sacc)}
     else:
-        df.loc["LR"] = {"target_acc": tacc_raw, "sens_acc": sacc_raw}
+        df.loc["LR"] = {"target_acc": np.mean(tacc), "sens_acc": np.mean(sacc)}
     print(df)
+
     make_figure(df, args)
+
+    df.to_pickle(RESULTS_DIR / f"{args.dataset}_results")

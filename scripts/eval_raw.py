@@ -93,4 +93,5 @@ def evaluate_raw(args):
 
 
 if __name__ == "__main__":
-    evaluate_raw("yaleb")
+    args = Namespace(dataset="german")
+    evaluate_raw(args)

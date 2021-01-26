@@ -36,6 +36,7 @@ dataset = "german"
 
 
 def evaluate_embeddings(args):
+    torch.manual_seed(0)
     dataset = args.dataset
     if dataset == "yaleb":
         batch_size = 16
@@ -97,4 +98,5 @@ def evaluate_embeddings(args):
 
 
 if __name__ == "__main__":
-    evaluate_embeddings("adult")
+    args = Namespace(dataset="adult")
+    evaluate_embeddings(args)

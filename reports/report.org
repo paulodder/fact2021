@@ -62,9 +62,6 @@ Summary can be a page long max and needs to be included
 
 \newpage
 * 1 Introduction
-- Shortly introduce the work at high level (few paragraphs AT MOST, guidelines
-  talk about a couple of sentences).
-
 The work of [cite Sarhan] introduces a new way of learning representations that
 are useful for a specified task while robust against sensitive attributes. They
 propose a method that decomposes the latent representation into a target and
@@ -76,9 +73,6 @@ ensure that the target representation is agnostic to the sensitive information
 using a  maximum entropy approach.
 
 * 2 Scope of reproducibility
-- Introduce problems work addresses
-- Introduce claims of paper that we will try to reproduce
-
 The reference work by Sarhan et al works towards a method of generating
 embeddings of data, while remaining invariant towards a particular
 feature. This is done by explicitly learning an encoding of the sensitive
@@ -134,10 +128,6 @@ available. Therefore, it was our goal to reproduce the implementation from the
 description in the paper. The essential elements of the model are described in
 the next section.
 ** 3.1 Model descriptions
-- Give explanation of the model
-  - Alterations for different data-sets
-  - /Is this a good place to give details of all the losses?/
-
 Let $\mathcal{X}$ be the dataset and let $\bm{x} \in \mathbb{R}^D$ be a single
 input sample. Each sample has an associated target vector $\bm{y} \in
 \mathbb{R}^n$ and an associated sensitive attribute vector $\bm{s} \in
@@ -227,10 +217,18 @@ minimize this combined loss:
 \end{equation}
 
 Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
-entropy loss respectively. These are hyperparameters that we need to set.
-
-- Hier ook nog ff de decay uitleggen van lambda via gammas en timestep heel
-  kort
+entropy loss respectively. Additionally, we introduce two decay parameters,
+$\gamma_{OD}$ and $\gamma_{E}$ which allows us to change the weights of the
+aforementioned losses while training. The OD loss weight at epoch $t$ during
+training will be calculated as follows:
+\begin{equation}
+\lambda_{OD}^{(t)} = \lambda_{OD}^{(0)} \gamma_{OD}^{t/t_s}
+\end{equation}
+Here $t_s$ is the so-called /step-size/ parameter, and $\lambda_{OD} is the
+initial OD loss weight. The maximum entropy loss weight will be computed in the
+same way. $\lambda_{OD}^{(0)}, \lambda_{E}^{(0)}, \gamma_{OD},
+\gamma_{E}$ and $t_s$ are all hyperparamters that we need to set. More
+information on those will follow.
 
 ** 3.2 Datasets
 In order to reproduce the results obtained by Sarhan et al. it was necessary to

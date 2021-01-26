@@ -304,7 +304,7 @@ class FODVAE(pl.LightningModule):
         ##############################
 
         batch_size = y.size()[0]
-        self.best_model_tracker.track_performance(train_target_acc, batch_size)
+        # self.best_model_tracker.track_performance(train_target_acc, batch_size)
 
         ##############################
         ## Logging

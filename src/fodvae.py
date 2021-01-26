@@ -62,8 +62,8 @@ def get_encodings(model, x, get_target):
     return target
 
 
-ds_train = dataloaders.dataset_registrar["german"](True)
-ds_test = dataloaders.dataset_registrar["german"](False)
+# ds_train = dataloaders.dataset_registrar["german"](True)
+# ds_test = dataloaders.dataset_registrar["german"](False)
 
 import matplotlib.pyplot as plt
 

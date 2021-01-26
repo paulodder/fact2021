@@ -4,19 +4,19 @@
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 8, 2021
 #+LATEX: \setlength\parindent{0pt}
-#+LaTeX_HEADER: \usepackage{minted}
-#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
-#+LATEX_HEADER: \usepackage{bm}
-#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
-#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
-#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+# #+LaTeX_HEADER: \usepackage{minted}
+# #+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+# #+LATEX_HEADER: \usepackage{bm}
+# #+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+# #+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+# #+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
 #+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
 #+PROPERTY: header-args :exports both :session report :cache :results value
 #+OPTIONS: ^:nil
 #+LATEX_COMPILER: pdflatex
 #+BIBLIOGRAPHY: refs plain
 
-
+* settings :noexport:
 #+BEGIN_SRC emacs-lisp :exports none
 (setq org-export-with-toc nil)
 (setq org-export-with-section-numbers nil)
@@ -30,13 +30,13 @@
   :config (require 'ox-latex-subfigure))
 
 (require 'org-ref)
-(setq org-ref-default-bibliography "refs")
+(setq org-ref-default-bibliography "refs.bib")
 ;; (setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
 
 #+END_SRC
 
 #+RESULTS:
-: refs
+: refs.bib
 
 * Reproducibility Summary
 Summary can be a page long max and needs to be included
@@ -78,7 +78,7 @@ the learned target representation perform when predicting target attributes,
 and 2) how much information of the sensitive attributes is still present in the
 learned target representation? To answer these questions they report a /target
 accuracy/ and a /sensitive accuracy/, which we define in section
-[[#sec:exp-setup]]. The authors' reported values can be found in table
+[[#sec:exp-setup]]. The authors' reported values can be found in Table
 [[tab:sarhan_accuracies]]. Note that some of the accuracies were not reported
 exactly and have therefore been deduced from figures. It is our aim to
 reproduce the accuracies found by the authors.

@@ -35,10 +35,8 @@ class BestModelTracker:
     def end_of_epoch(self):
         self.model.eval()
         y_pred, s_pred, s_pred_crossover = self.model.forward(self.x)
-        model_performance = (
-            1.5 * accuracy(self.y, y_pred)
-            + accuracy(self.s, s_pred)
-            - accuracy(self.s, s_pred_crossover)
+        model_performance = accuracy(self.y, y_pred) - accuracy(
+            self.s, s_pred_crossover
         )
 
         if model_performance > self.best_performance:

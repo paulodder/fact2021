@@ -48,14 +48,11 @@ class MLPPredictor(pl.LightningModule):
         optim = self.optim_init_fn(self.model)
         return optim
 
-    automatic_optimization = False
-
     def training_step(self, batch, batch_idx):
         x, y = batch
         output = self.forward(x)
         loss = self.loss_fn(output, y)
-        loss.backward()
-        self.optimizers().step()
+        return loss
 
     @classmethod
     def init_without_model(
@@ -79,7 +76,7 @@ class MLPPredictorTrainer:
         gpus,
     ):
         self.predictor = predictor
-        self.trainer = trainers.TrainerWithSavedModels(
+        self.trainer = pl.Trainer(
             min_epochs=epochs, max_epochs=epochs, gpus=gpus
         )
 
@@ -91,7 +88,7 @@ class MLPPredictorTrainer:
         return self.predictor.forward(x)
 
     def get_saved_models(self):
-        return self.trainer.get_saved_models()
+        return [self.predictor]  # self.trainer.get_saved_models()
 
     def forward_model(self, model, x):
         return model.forward(x)

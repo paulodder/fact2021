@@ -38,7 +38,7 @@ from train import parse_args
 
 dataset2majority_classifier = {
     "yaleb": (1 / 38, 0.5),
-    "adult": (0.75, 0.84),
+    "adult": (0.75, 0.665),
     "german": (0.71, 0.69),
 }
 

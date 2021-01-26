@@ -368,7 +368,7 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 - High-level overview. Do our results support the paper's claims? Keep
   discussion for next section.
 ** 4.1 Results reproducing original paper
-**** Accuracies Adult, Yaleb and German
+*** Accuracies Adult, Yaleb and German
 #+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:adult
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for adult
@@ -402,7 +402,7 @@ predictors. These accuracies correspond to the bars denoted with 'VAE'. For
 YaleB, besides the model in question, logistic regression was also used on the
 raw data to predict the sensitive and target attributes. This is denoted by
 'LR'.
-
+*** Ablative
 
 
 ** 4.2 Results beyond original paper

@@ -49,6 +49,12 @@ def model_fname(config):
     return "-".join(rel_params)
 
 
+def boolean_string(s):
+    if s not in {"False", "True"}:
+        raise ValueError("Not a valid boolean string")
+    return s == "True"
+
+
 def get_argparser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -61,7 +67,7 @@ def get_argparser():
     )
     parser.add_argument(
         "--eval_on_test",
-        type=bool,
+        type=boolean_string,
         default=True,
         help="Evaluate predictors on test set",
     )
@@ -230,8 +236,8 @@ def main(config, logger=None, return_results=False):
         max_epochs=config.max_epochs, logger=logger, gpus=utils.get_n_gpus()
     )
     trainer.fit(fodvae, train_dl, val_dl)
-
     fodvae_best_version = fodvae.get_best_version()
+
     # Save best version
     save_path = str(MODELS_DIR / model_fname(config))
     torch.save(fodvae_best_version.state_dict(), save_path)

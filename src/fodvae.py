@@ -12,8 +12,87 @@ from utils import (
     KLD,
     accuracy,
     current_device,
-    BestModelTracker,
 )
+import dataloaders
+import copy
+
+
+class BestModelTracker:
+    def __init__(self, model, dataset):
+        self.model = model
+        self.best_model = None
+        self.best_performance = 0
+        self.best_epoch = None
+        self.__current_epoch = 0
+
+        _, test_dl = dataloaders.load_data(dataset, "all")
+        x, y, s = next(iter(test_dl))
+        self.x = x
+        self.x.requires_grad = False
+        self.y = y
+        self.s = s
+
+    def end_of_epoch(self):
+        self.model.eval()
+        y_pred, s_pred, s_pred_crossover = self.model.forward(self.x)
+        model_performance = (
+            1.5 * accuracy(self.y, y_pred)
+            + accuracy(self.s, s_pred)
+            - accuracy(self.s, s_pred_crossover)
+        )
+
+        if model_performance > self.best_performance:
+            print(
+                f"\n[bmt] new best model @ epoch {self.__current_epoch} with sum of accs {round(model_performance, 4)}"
+            )
+            self.best_model = copy.deepcopy(self.model)
+            self.best_performance = model_performance
+            self.best_epoch = self.__current_epoch
+        self.__current_epoch += 1
+
+        self.model.train()
+
+
+def get_encodings(model, x, get_target):
+    mt, st, ms, ss = model.encode(x.view(1, -1))
+    target = sample_reparameterize(mt, st)
+    if not get_target:
+        target = sample_reparameterize(ms, ss)
+    return target
+
+
+ds_train = dataloaders.dataset_registrar["german"](True)
+ds_test = dataloaders.dataset_registrar["german"](False)
+
+import matplotlib.pyplot as plt
+
+
+def plot_embs(ax, model, train=True, target=True):
+    ds = ds_train if train else ds_test
+    embs = torch.stack(
+        [get_encodings(model, ds[i][0], target) for i in range(len(ds))], dim=0
+    ).squeeze()
+    index = 1 if target else 2
+    labels = np.array([ds[i][index].item() for i in range(len(ds))])
+
+    al, bl = set(labels)
+    emb_mat = embs.T.detach()
+    ax.scatter(*emb_mat[:, labels == al], label=al, color="red")
+    ax.scatter(*emb_mat[:, labels == bl], label=bl, color="blue")
+    ax.set_title(f"train={train}, target={target}")
+    plt.legend()
+
+
+def plot_all_embs(model):
+    model.eval()
+    plt.figure()
+    fig, axs = plt.subplots(2, 2)
+    axs = axs.ravel()
+    plot_embs(axs[0], model, train=True, target=True)
+    plot_embs(axs[1], model, train=True, target=False)
+    plot_embs(axs[2], model, train=False, target=True)
+    plot_embs(axs[3], model, train=False, target=False)
+    model.train()
 
 
 class FODVAE(pl.LightningModule):
@@ -34,7 +113,7 @@ class FODVAE(pl.LightningModule):
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
         self.dataset = dataset
-        self.best_model_tracker = BestModelTracker(self)
+        self.best_model_tracker = BestModelTracker(self, dataset)
         # Configure hyperparameters that have defaults
         hparams = {
             "gamma_entropy",
@@ -87,6 +166,11 @@ class FODVAE(pl.LightningModule):
         )
 
     def get_best_version(self):
+        print()
+        print(
+            f"[fodvae] best version @ epoch {self.best_model_tracker.best_epoch}"
+        )
+        print()
         return self.best_model_tracker.best_model
 
     def encode(self, x):
@@ -187,6 +271,7 @@ class FODVAE(pl.LightningModule):
 
     def training_epoch_end(self, outputs):
         self.best_model_tracker.end_of_epoch()
+        # plot_all_embs(self)
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):
@@ -201,6 +286,26 @@ class FODVAE(pl.LightningModule):
     def set_logger(self, logger):
         if logger is not None:
             self.logger = logger
+
+    def forward(self, x):
+        # Encode X to latent representation
+        (
+            mean_target,
+            std_target,
+            mean_sensitive,
+            std_sensitive,
+        ) = self.encode(x)
+
+        # Sample from latent distributions
+        sample_target = sample_reparameterize(mean_target, std_target)
+        sample_sensitive = sample_reparameterize(mean_sensitive, std_sensitive)
+
+        # Predict using discriminators
+        pred_y = self.discriminator_target(sample_target).squeeze()
+        pred_s = self.discriminator_sensitive(sample_sensitive).squeeze()
+        crossover_posterior = self.discriminator_sensitive(sample_target)
+
+        return pred_y, pred_s, crossover_posterior
 
     def training_step(self, batch, batch_idx, optimizer_idx=None):
         # Keep track of how many batches we've trained with
@@ -298,13 +403,6 @@ class FODVAE(pl.LightningModule):
         train_target_acc = self.accuracy(y, pred_y)
         train_sens_acc = self.accuracy(s, pred_s)
         train_sens_crossover_acc = self.accuracy(s, crossover_posterior)
-
-        ##############################
-        ## Tracking best model
-        ##############################
-
-        batch_size = y.size()[0]
-        self.best_model_tracker.track_performance(train_target_acc, batch_size)
 
         ##############################
         ## Logging

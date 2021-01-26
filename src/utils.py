@@ -244,34 +244,6 @@ def get_settings2results(experiment_name, dataset):
     return settings2results
 
 
-class BestModelTracker:
-    def __init__(self, model):
-        self.model = model
-        self.best_model = None
-        self.best_performance = 0
-        self.best_epoch = None
-        self.__running_performance_mean = 0
-        self.__running_total_weight = 0
-        self.__current_epoch = 0
-
-    def track_performance(self, performance_mean, weight):
-        self.__running_performance_mean += weight * performance_mean
-        self.__running_total_weight += weight
-
-    def end_of_epoch(self):
-        model_performance = self.__running_performance_mean / float(
-            self.__running_total_weight
-        )
-        if model_performance > self.best_performance:
-            print(f"[bmt] new best model @ epoch {self.__current_epoch}")
-            self.best_model = copy.deepcopy(self.model)
-            self.best_performance = model_performance
-            self.best_epoch = self.__current_epoch
-        self.__current_epoch += 1
-        self.__running_performance_mean = 0
-        self.__running_total_weight = 0
-
-
 def get_n_gpus():
     n = torch.cuda.device_count()
     print(f"n. gpus available: {n}")

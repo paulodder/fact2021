@@ -102,7 +102,7 @@ DEFAULTS_CIFAR10 = {
 
 DEFAULTS_CIFAR100 = {
     "z_dim": 128,
-    "max_epochs": 300,
+    "max_epochs": 80,
     "batch_size": 128,
     "lambda_od": 0.0325,
     "lambda_entropy": 0.1,

@@ -427,18 +427,17 @@ bash scripts/ablative.sh cifar100
 python scripts/visualize_ablative.py -d cifar100
 #+END_SRC
 
-#+NAME: fig:adult
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:ablative
+#+LABEL: fig:ablative
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth
-| [[../figures/ablative.adult.png]]    | <<fig:ablative.adult>> Adult       |
-| [[../figures/ablative.german.png]]   | <<fig:ablative.german>> German     |
-| [[../figures/ablative.yaleb.png]]    | <<fig:ablative.yaleb>> YaleB       |
-| [[../figures/ablative.cifar10.png]]  | <<fig:ablative.cifar10>> Cifar10   |
-| [[../figures/ablative.cifar100.png]] | <<fig:ablative.cifar100>> Cifar100 |
+| [[../figures/ablative.adult.png]]    | <<fig:ablative_adult>> Adult       |
+| [[../figures/ablative.german.png]]   | <<fig:ablative_german>> German     |
+| [[../figures/ablative.yaleb.png]]    | <<fig:ablative_yaleb>> YaleB       |
+| [[../figures/ablative.cifar10.png]]  | <<fig:ablative_cifar10>> Cifar10   |
+| [[../figures/ablative.cifar100.png]] | <<fig:ablative_cifar100>> Cifar100 |
 |                                  |                                    |
-
-
-
 
 
 ** 4.2 Results beyond original paper

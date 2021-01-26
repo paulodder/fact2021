@@ -4,6 +4,19 @@
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 8, 2021
 #+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage[]{neurips_2019}
+#+LaTeX_HEADER: \usepackage[utf8]{inputenc} % allow utf-8 input
+#+LaTeX_HEADER: \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+#+LaTeX_HEADER: \usepackage{hyperref}       % hyperlinks
+#+LaTeX_HEADER: \usepackage{url}            % simple URL typesetting
+#+LaTeX_HEADER: \usepackage{booktabs}       % professional-quality tables
+#+LaTeX_HEADER: \usepackage{amsfonts}       % blackboard math symbols
+#+LaTeX_HEADER: \usepackage{nicefrac}       % compact symbols for 1/2, etc.
+#+LaTeX_HEADER: \usepackage{microtype}      % microtypography
+#+LaTeX_HEADER:
+#+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
+#+LaTeX_HEADER: \usepackage[normalem]{ulem}
+#+LaTeX_HEADER: \newif{\ifhidecomments}
 # #+LaTeX_HEADER: \usepackage{minted}
 # #+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
 # #+LATEX_HEADER: \usepackage{bm}

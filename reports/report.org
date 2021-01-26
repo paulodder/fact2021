@@ -4,6 +4,7 @@
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 8, 2021
 #+LATEX: \setlength\parindent{0pt}
+#+LATEX_HEADER: \usepackage{subcaption}
 #+LaTeX_HEADER: \usepackage[]{neurips_2019}
 #+LaTeX_HEADER: \usepackage[utf8]{inputenc} % allow utf-8 input
 #+LaTeX_HEADER: \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
@@ -17,12 +18,6 @@
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
-# #+LaTeX_HEADER: \usepackage{minted}
-# #+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
-# #+LATEX_HEADER: \usepackage{bm}
-# #+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
-# #+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
-# #+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
 #+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
 #+PROPERTY: header-args :exports both :session report :cache :results value
 #+OPTIONS: ^:nil
@@ -416,6 +411,36 @@ YaleB, besides the model in question, logistic regression was also used on the
 raw data to predict the sensitive and target attributes. This is denoted by
 'LR'.
 *** Ablative
+#+BEGIN_SRC sh
+# adult
+bash scripts/ablative.sh adult
+python scripts/visualize_ablative.py -d adult
+# german
+bash scripts/ablative.sh german
+python scripts/visualize_ablative.py -d german
+# yaleb
+bash scripts/ablative.sh yaleb
+python scripts/visualize_ablative.py -d yaleb
+# cifar10
+bash scripts/ablative.sh cifar10
+python scripts/visualize_ablative.py -d cifar10
+# cifar100
+bash scripts/ablative.sh cifar100
+python scripts/visualize_ablative.py -d cifar100
+#+END_SRC
+
+#+NAME: fig:adult
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
+#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth
+| [[../figures/ablative.adult.png]]    | <<fig:ablative.adult>> Adult       |
+| [[../figures/ablative.german.png]]   | <<fig:ablative.german>> German     |
+| [[../figures/ablative.yaleb.png]]    | <<fig:ablative.yaleb>> YaleB       |
+| [[../figures/ablative.cifar10.png]]  | <<fig:ablative.cifar10>> Cifar10   |
+| [[../figures/ablative.cifar100.png]] | <<fig:ablative.cifar100>> Cifar100 |
+|                                  |                                    |
+
+
+
 
 
 ** 4.2 Results beyond original paper

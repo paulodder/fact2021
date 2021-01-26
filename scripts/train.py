@@ -164,6 +164,7 @@ def parse_args():
 
 def evaluate(args, fodvae, logger=None, return_results=False):
     fodvae.eval()
+    fodvae = fodvae.to(utils.current_device())
 
     @torch.no_grad()
     def get_embs(X):

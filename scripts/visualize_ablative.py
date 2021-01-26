@@ -105,7 +105,7 @@ if __name__ == "__main__":
         yerr=stds_s,
     )
     # plt.errorbar(bar_idxs_t, means_t, stds_t)
-    plt.legend()
+    plt.legend(loc="lower right")
     ax.set_ylabel("Scores")
     ax.set_ylim(0, 1)
     # y ticks
@@ -120,7 +120,7 @@ if __name__ == "__main__":
     # add bars
     dotted_line_x_coords = [-0.5 * bwidth, len(labels)]
     ax.plot(
-        [-0.5 * bwidth, len(labels)],
+        [-0.5 * bwidth, len(labels) - 0.5 * (1 + bwidth)],
         [
             loss_comp2acc_t_mean["entropy,kl,orth"],
             loss_comp2acc_t_mean["entropy,kl,orth"],
@@ -129,7 +129,7 @@ if __name__ == "__main__":
         color=TARGET_COLOR,
     )
     ax.plot(
-        [-0.5 * bwidth, len(labels)],
+        [-0.5 * bwidth, len(labels) - 0.5 * (1 + bwidth)],
         [
             loss_comp2acc_s_mean["entropy,kl,orth"],
             loss_comp2acc_s_mean["entropy,kl,orth"],

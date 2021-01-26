@@ -5,7 +5,7 @@ from models import MLP, MLPEncoder, ResNetEncoder
 from predictors import MLPPredictor, LRPredictorTrainer, MLPPredictorTrainer
 from dataloaders import load_representation_dataloaders
 from evaluation import EvaluationManager
-from defaults import DATASET2DEFAULTS, DEFAULTS_CIFAR10
+from defaults import DATASET2DEFAULTS, DEFAULTS_CIFAR10, DEFAULTS_CIFAR100
 
 
 def optim_init_fn(model):
@@ -17,8 +17,8 @@ def _cifar10_target_predictor(config):
     output_dim = 1
     return MLPPredictor.init_without_model(
         input_dim=config.z_dim,
-        output_dim=CIFAR10_DEFAULTS["target_predictor_output_dim"],
-        hidden_dims=CIFAR10_DEFAULTS["target_predictor_hidden_dims"],
+        output_dim=DEFAULTS_CIFAR10["target_predictor_output_dim"],
+        hidden_dims=DEFAULTS_CIFAR10["target_predictor_hidden_dims"],
         optim_init_fn=optim_init_fn,
     )
 
@@ -28,10 +28,10 @@ def _cifar100_target_predictor(config):
     # z_dim = config.z_dim
     # output_dim = 20
     optim_init_fn = lambda model: optim.Adam(model.parameters())
-    return MLPPredictor.init_with_model(
+    return MLPPredictor.init_without_model(
         input_dim=config.z_dim,
-        output_dim=CIFAR100_DEFAULTS["target_predictor_output_dim"],
-        hidden_dims=CIFAR100_DEFAULTS["target_predictor_hidden_dims"],
+        output_dim=DEFAULTS_CIFAR100["target_predictor_output_dim"],
+        hidden_dims=DEFAULTS_CIFAR100["target_predictor_hidden_dims"],
     )
 
 
@@ -247,13 +247,13 @@ def get_target_predictor_trainer(config):
     if config.dataset == "cifar10":
         return MLPPredictorTrainer(
             _cifar10_target_predictor(config),
-            max_epochs=config.predictor_epochs,
+            epochs=config.predictor_epochs,
             gpus=utils.get_n_gpus(),
         )
     if config.dataset == "cifar100":
         return MLPPredictorTrainer(
             _cifar100_target_predictor(config),
-            config.max_epochs,
+            epochs=config.predictor_epochs,
             gpus=utils.get_n_gpus(),
         )
     raise ValueError(f"dataset {dataset} is not recognized.")

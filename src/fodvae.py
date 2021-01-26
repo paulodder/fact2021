@@ -39,7 +39,10 @@ class BestModelTracker:
             self.s, s_pred_crossover
         )
 
-        if model_performance > self.best_performance:
+        if (
+            self.best_model is None
+            or model_performance > self.best_performance
+        ):
             print(
                 f"\n[bmt] new best model @ epoch {self.__current_epoch} with sum of accs {round(model_performance, 4)}"
             )

@@ -42,7 +42,7 @@ class MLPPredictor(pl.LightningModule):
         self.loss_fn = utils.bce_loss
 
     def forward(self, x):
-        model = model.to(utils.current_device())
+        model = self.model.to(utils.current_device())
         x = x.to(utils.current_device())
         return self.model(x)
 

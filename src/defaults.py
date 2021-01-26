@@ -24,7 +24,7 @@ DEFAULTS_ADULT = {
 }
 DEFAULTS_GERMAN = {
     "z_dim": 2,
-    "max_epochs": 30,
+    "max_epochs": 15,
     "batch_size": 64,
     "lambda_od": 0.01,
     "gamma_od": 1.4,
@@ -88,7 +88,7 @@ DEFAULTS_CIFAR10 = {
     "sens_output_dim": 10,
     "target_disc_hidden_dims": [256, 128],
     "sens_disc_hidden_dims": [256, 128],
-    "predictor_epochs": None,
+    "predictor_epochs": 10,
     "target_disc_batch_norm": False,
     "encoder_lr": 1e-4,
     "encoder_weight_decay": 1e-2,

@@ -251,7 +251,7 @@ randomly split the data with a train:test ration of 4:1. 68% of the rows in the
 dataset are male, and 70% have bad credit risk.
 
 *** YaleB
-The yaleb dataset was collected from the University of Toronto computer science
+The YaleB dataset was collected from the University of Toronto computer science
 department website cite:GeBeKr01. The dataset we used contains 2433 grayscale,
 168x192 images of 38 human faces under different lighting conditions.  The
 cropped variant was used, the task is to classify images according to the
@@ -327,9 +327,16 @@ two hidden layers, with 256 and 128 neurons. (z size?? maybe in resnet 18
 paper)
 
 ** 3.4 Hyperparameters
-- Describe process of setting hyperparameters
-- If hyperparameter search was performed, denote the details (amount of
-  searches, what space, etc.
+Most used hyperparameters were taken directly from the supplement provided by
+Sarhan et al. Optimal values for some hyperparameters were not given, and
+as a result we were empirically set these to values that worked. In particular,
+the amount of epochs that the model was trained is not given in any of the
+work, this was quite an important value given that no explicit stopping
+criterion was mentioned, either. In correspondene with Sarhan, we were able to
+set values for the step_size hyperparameter that correspond to those used by
+the original team.
+
+
 ** 3.5 Experimental setup and code
 :PROPERTIES:
 :CUSTOM_ID: sec:exp-setup
@@ -375,8 +382,8 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
 | [[../figures/adult_target.png]] | <<fig:adult_target>> sensitive accuracy |
 | target accuracy             | [[../figures/adult_sens.png]]               |
-
 #+LATEX_HEADER: \usepackage{subcaption}
+
 #+NAME: fig:adult
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
@@ -384,8 +391,9 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 | target accuracy              | [[../figures/german_sens.png]]              |
 
 #+LATEX_HEADER: \usepackage{subcaption}
+
 #+NAME: fig:adult
-#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data (LR) for YaleB
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
 | [[../figures/yaleb_target.png]] | <<fig:yaleb_target>> sensitive accuracy  |
 | target accuracy             | [[../figures/yaleb_sens.png]]               |
@@ -394,14 +402,17 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 
 Figures [[fig:adult]] show the accuracy for the target and sensitive predictors on
 the adult dataset. The black line indicates the accuracy that a majority class
-classifier would attain. The bars dentoed by X correspond to direct use of the
+classifier would attain. The bars denoted by X correspond to direct use of the
 input data for our target prediciton. Furthermore, a VAE was trained on the
 adult and german datasets using MSE loss as reconstruction loss. These learned
 embeddings were also used as feature for our target and sensitive
 predictors. These accuracies correspond to the bars denoted with 'VAE'. For
 YaleB, besides the model in question, logistic regression was also used on the
 raw data to predict the sensitive and target attributes. This is denoted by
-'LR'.
+'LR'. In general, our results for adult and german are similar to those
+obtained by Sarhan et al, while the results for yaleb are highly dissimilar:
+our target predictor atains an accuracy of around 20 percent, Sarhan et al
+attained around 90.
 
 
 

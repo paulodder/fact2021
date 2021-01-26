@@ -22,6 +22,13 @@
 (setq org-export-with-section-numbers nil)
 ;; (setq org-export-latex-hyperref-format "\\ref{%s}")
 
+(package-initialize)
+(use-package ox-latex-subfigure
+  :init
+  (setq org-latex-prefer-user-labels t)
+  :load-path "~/Dropbox/ProjectWeekends/lisp/ox-latex-subfigure/"
+  :config (require 'ox-latex-subfigure))
+
 (require 'org-ref)
 (setq org-ref-default-bibliography "refs.bib")
 ;; (setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
@@ -361,8 +368,18 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 - High-level overview. Do our results support the paper's claims? Keep
   discussion for next section.
 ** 4.1 Results reproducing original paper
-- Report results and make clear which claim they support (if they do). Should
-  be done in logical sections.
+**** Accuracies Adult, Yaleb and German
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:adult
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for adult
+#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
+| [[../figures/adult_target.png]] | <<fig:adult_target>> sensitive accuracy |
+| target accuracy             | [[../figures/adult_sens.png]]               |
+
+Figures [[fig:adult]] show the accuracy for the target and sensitive predictors on
+the adult dataset,
+
+
 ** 4.2 Results beyond original paper
 - Report additional results we acquired, if relevant.
 

@@ -50,12 +50,14 @@ def evaluate_raw(args):
     args.batch_size = batch_size
     config = Config(args)
 
-    dataset2sens_col = {"adult": 64, "german": 37}
+    dataset2sens_col = {"adult": [64, 65], "german": [37, 38]}
 
     @torch.no_grad()
     def get_embs(X):
         if args.dataset != "yaleb":
-            X[:, dataset2sens_col[args.dataset]] = 0
+            sens_cols = dataset2sens_col[args.dataset]
+            for sc in sens_cols:
+                X[:, sc] = 0
         return X
 
     # Get predictors

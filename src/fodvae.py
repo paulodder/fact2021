@@ -39,7 +39,10 @@ class BestModelTracker:
             self.s, s_pred_crossover
         )
 
-        if model_performance > self.best_performance:
+        if (
+            self.best_model is None
+            or model_performance > self.best_performance
+        ):
             print(
                 f"\n[bmt] new best model @ epoch {self.__current_epoch} with sum of accs {round(model_performance, 4)}"
             )
@@ -111,7 +114,7 @@ class FODVAE(pl.LightningModule):
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
         self.dataset = dataset
-        self.best_model_tracker = BestModelTracker(self, dataset)
+        # self.best_model_tracker = BestModelTracker(self, dataset)
         # Configure hyperparameters that have defaults
         hparams = {
             "gamma_entropy",
@@ -163,13 +166,13 @@ class FODVAE(pl.LightningModule):
             self.prior_mean_sensitive ** 2
         )
 
-    def get_best_version(self):
-        print()
-        print(
-            f"[fodvae] best version @ epoch {self.best_model_tracker.best_epoch}"
-        )
-        print()
-        return self.best_model_tracker.best_model
+    # def get_best_version(self):
+    #     print()
+    #     print(
+    #         f"[fodvae] best version @ epoch {self.best_model_tracker.best_epoch}"
+    #     )
+    #     print()
+    #     return self.best_model_tracker.best_model
 
     def encode(self, x):
         """
@@ -268,7 +271,6 @@ class FODVAE(pl.LightningModule):
         )
 
     def training_epoch_end(self, outputs):
-        self.best_model_tracker.end_of_epoch()
         # plot_all_embs(self)
         self.decay_lambdas()
 

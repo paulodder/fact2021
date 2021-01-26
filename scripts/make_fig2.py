@@ -51,13 +51,21 @@ def make_figure(df, args):
         color="black",
         linestyle="--",
     )
+    if args.dataset == "yaleb":
+        plt.ylim(0, 1)
+    else:
+        plt.ylim(0.6, 0.9)
     plt.xlabel("Method")
     plt.ylabel("Accuracy")
     plt.tight_layout()
-
     plt.title(f"Sensitive accuracy {args.dataset} ")
-    plt.savefig(FIGURES_DIR / f"{args.dataset}_sens.png")
+    plt.savefig(FIGURES_DIR / f"{args.dataset}_sens.png", bbox_inches="tight")
     plt.clf()
+    if args.dataset == "yaleb":
+        plt.ylim(0, 1)
+    else:
+        plt.ylim(0.6, 0.9)
+
     df["target_acc"].plot.bar(color="gray")
     plt.axhline(
         y=dataset2majority_classifier[args.dataset][0],
@@ -68,7 +76,9 @@ def make_figure(df, args):
     plt.xlabel("Method")
     plt.ylabel("Accuracy")
     plt.tight_layout()
-    plt.savefig(FIGURES_DIR / f"{args.dataset}_target.png")
+    plt.savefig(
+        FIGURES_DIR / f"{args.dataset}_target.png", bbox_inches="tight"
+    )
 
 
 if __name__ == "__main__":

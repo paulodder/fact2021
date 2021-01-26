@@ -97,7 +97,7 @@ if __name__ == "__main__":
         sacc.append(
             res["sensitive"]["accuracy"],
         )
-    df.loc["ours"] = {"target_acc": np.mean(tacc), "sens_acc": np.mean(sacc)}
+    df.loc["Ours"] = {"target_acc": np.mean(tacc), "sens_acc": np.mean(sacc)}
     torch.cuda.empty_cache()
     if args.dataset != "yaleb":
         if f"{args.dataset}_vae" not in os.listdir(PROJECT_DIR / "models"):

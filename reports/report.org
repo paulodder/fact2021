@@ -4,7 +4,8 @@
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 8, 2021
 #+LATEX: \setlength\parindent{0pt}
-#+LATEX_HEADER: \usepackage{subcaption}
+#+LATEX_HEADER: \usepackage{biblatex}
+# #+LATEX_HEADER: \usepackage{subcaption}
 #+LaTeX_HEADER: \usepackage[]{neurips_2019}
 #+LaTeX_HEADER: \usepackage[utf8]{inputenc} % allow utf-8 input
 #+LaTeX_HEADER: \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
@@ -38,13 +39,13 @@
   :config (require 'ox-latex-subfigure))
 
 (require 'org-ref)
-(setq org-ref-default-bibliography "refs.bib")
+(setq org-ref-default-bibliography "refs")
 ;; (setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
 
 #+END_SRC
 
 #+RESULTS:
-: refs.bib
+: refs
 
 * Reproducibility Summary
 Summary can be a page long max and needs to be included
@@ -375,14 +376,14 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
   discussion for next section.
 ** 4.1 Results reproducing original paper
 *** Accuracies Adult, Yaleb and German
-#+LATEX_HEADER: \usepackage{subcaption}
+# #+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:adult
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for adult
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
 | [[../figures/adult_target.png]] | <<fig:adult_target>> sensitive accuracy |
 | target accuracy             | [[../figures/adult_sens.png]]               |
 
-#+LATEX_HEADER: \usepackage{subcaption}
+# #+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:adult
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
@@ -430,7 +431,7 @@ python scripts/visualize_ablative.py -d cifar100
 #+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:ablative
 #+LABEL: fig:ablative
-#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
+#+CAPTION: Target and sensitive accuracies of our model for different combinations of loss term components, results are averaged over 5 random seeds.
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth
 | [[../figures/ablative.adult.png]]    | <<fig:ablative_adult>> Adult       |
 | [[../figures/ablative.german.png]]   | <<fig:ablative_german>> German     |
@@ -438,7 +439,23 @@ python scripts/visualize_ablative.py -d cifar100
 | [[../figures/ablative.cifar10.png]]  | <<fig:ablative_cifar10>> Cifar10   |
 | [[../figures/ablative.cifar100.png]] | <<fig:ablative_cifar100>> Cifar100 |
 |                                  |                                    |
-
+The results of our ablative study are shown in Figure [[fig:ablative]]. We omitted
+the baseline measurement as it was unclear from the text what it
+entailed. While the target accuracies for =Adult= are similar to what we see in
+cite:sarhan2020fairness, we see smaller deviations for the sensitive accuracy
+across variations of the loss term. For =German=, we observe a lower target
+accuracy that is quite consistently at $0.73$. The sensitive accuracy is in
+line with what cite:sarhan2020fairness report.  The relatively large
+discrepancy between our =German= results may be attributed to their
+(reportedly) lack of random seed averaging. We have observed similar results to
+what citep:sarhan2020fairness reported for =German=, but only for particular
+random seeds: upon averaging over multiple random seeds these effects disappeared.
+*** Sensitivity analysis
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:adult
+#+CAPTION: Sensitivity analysis on =Adult= dataset
+#+ATTR_LATEX: :environment subfigure :width 1\textwidth
+[[file:../figures/sensitivity.adult.png]]
 
 ** 4.2 Results beyond original paper
 - Report additional results we acquired, if relevant.

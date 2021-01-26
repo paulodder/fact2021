@@ -328,13 +328,19 @@ paper)
 
 ** 3.4 Hyperparameters
 Most used hyperparameters were taken directly from the supplement provided by
-Sarhan et al. Optimal values for some hyperparameters were not given, and
-as a result we were empirically set these to values that worked. In particular,
-the amount of epochs that the model was trained is not given in any of the
-work, this was quite an important value given that no explicit stopping
-criterion was mentioned, either. In correspondene with Sarhan, we were able to
-set values for the step_size hyperparameter that correspond to those used by
-the original team.
+Sarhan et al. Optimal values for quote some hyperparameters were not reported,
+and as a result we empirically set these to values that seemed to result in
+satisfactory performance.
+
+In particular, the amount of epochs that the model was trained was not reported
+in either the paper or it's supplementary materoa;, this was quite an important
+value given that no explicit stopping criterion was mentioned, either. In
+correspondene with Sarhan, we were able to set values for the step_size
+hyperparameter that correspond to those used by the original team. Furthermore,
+amongst the not reported hyperparameters were those involved the training of
+the MLP target and sensitive predictors. These include the optimizer used, the
+learning rate, weight decay, amount of epochs aswell as the nonlinearities, to name a
+few.
 
 
 ** 3.5 Experimental setup and code

@@ -24,7 +24,7 @@ DEFAULTS_ADULT = {
 }
 DEFAULTS_GERMAN = {
     "z_dim": 2,
-    "max_epochs": 12,
+    "max_epochs": 13,
     "batch_size": 64,
     "lambda_od": 0.01,
     "gamma_od": 1.4,

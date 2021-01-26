@@ -186,7 +186,7 @@ class FODVAE(pl.LightningModule):
         )
 
     def training_epoch_end(self, outputs):
-        self.best_model_tracker.end_of_epoch()
+        # self.best_model_tracker.end_of_epoch()
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):

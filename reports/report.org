@@ -376,8 +376,33 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 | [[../figures/adult_target.png]] | <<fig:adult_target>> sensitive accuracy |
 | target accuracy             | [[../figures/adult_sens.png]]               |
 
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:adult
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
+#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
+| [[../figures/german_target.png]] | <<fig:german_target>> sensitive accuracy |
+| target accuracy              | [[../figures/german_sens.png]]              |
+
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:adult
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
+#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
+| [[../figures/yaleb_target.png]] | <<fig:yaleb_target>> sensitive accuracy  |
+| target accuracy             | [[../figures/yaleb_sens.png]]               |
+
+
+
 Figures [[fig:adult]] show the accuracy for the target and sensitive predictors on
-the adult dataset,
+the adult dataset. The black line indicates the accuracy that a majority class
+classifier would attain. The bars dentoed by X correspond to direct use of the
+input data for our target prediciton. Furthermore, a VAE was trained on the
+adult and german datasets using MSE loss as reconstruction loss. These learned
+embeddings were also used as feature for our target and sensitive
+predictors. These accuracies correspond to the bars denoted with 'VAE'. For
+YaleB, besides the model in question, logistic regression was also used on the
+raw data to predict the sensitive and target attributes. This is denoted by
+'LR'.
+
 
 
 ** 4.2 Results beyond original paper

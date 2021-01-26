@@ -140,10 +140,6 @@ $\theta = \theta_T \cap \theta_S$.
 Each representation is then used as input for the corresponding discriminator,
 either the target discriminator $q_{\phi_T}(\bm{z}_T | \bm{x})$ or the
 sensitive discriminator $q_{\theta_S}(\bm{z}_S | \bm{x})$.
-
-- TO-DO: maybe make use different letter (r? d?) to indicate discriminator
-  probability as it is confusing now.
-
 The encoder and discriminator are trained in supervised fashion to minimize the
 following losses, which combined we call the representation loss:
 \begin{align}
@@ -354,6 +350,14 @@ few.
 :CUSTOM_ID: sec:exp-setup
 :END:
 *** Setup Reproducibility
+Our implementation and instructions to run the code are available at
+[[https://github.com/paulodder/fact2021]] (to be cleaned up). The repository
+contains a folder =scripts= that contains all the scripts necessary to
+perform several tasks. All dataset can be downloaded using the
+=get_all.sh= script. The model can be trained and evaluated using =train.py=,
+the ablative study can be ran using =ablative.sh= and the sensitive analysis
+can be performed using =sensitive_analysis.py=. If necessary, =make_fig2.py=
+can be used to make figures, such as [[fig:adult]], of the results.
 *** Evaluation
 Evaluation of the embeddings learned by our model is non trivial, as we must
 gather whether the embeddings adequately represent the data for the downstream

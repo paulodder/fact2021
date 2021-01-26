@@ -231,7 +231,7 @@ def main(config, logger=None, return_results=False):
     )
     trainer.fit(fodvae, train_dl, val_dl)
 
-    fodvae_best_version = fodvae.get_best_version()
+    fodvae_best_version = fodvae  # .get_best_version()
     # Save best version
     save_path = str(MODELS_DIR / model_fname(config))
     torch.save(fodvae_best_version.state_dict(), save_path)

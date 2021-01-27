@@ -560,21 +560,28 @@ intuitively. Additionally, all loss terms are well described and were therefore
 easy to implement.
 
 ** 5.2 What was difficult
-\paragraph{Training instability}
-One of the issues we ran in is that for these models training seems very unstable,
+\paragraph{Performance fluctuations and training instability}
+One of the issues we ran into is that for these models training seems to be unstable,
 which is evident from the high fluctuation in performance when we vary the
-random seed or the  number of maximum epochs. This is not addressed in the
-paper and therefore there is no information on how to deal with it. (Reflected
-in high variance in results also?)
+random seed or the  number of maximum epochs. (Reflected in high variance in
+results also?) This is not addressed in the paper and therefore there is no
+information on how to deal with it. To add to this, it was unclear what
+trade-off between target and sensitive accuracy was used by the authors to
+select the best model during training. This trade-off ultimately determines
+which model is selected for testing which can have a large influence on
+performance.
 
+# I don't really now what to do with this part, seemed to be a substantial
+# paragraph before but not if we leave those two commented points out perhaps
 \paragraph{Implementation}
-- Limited information on how certain losses were backpropagated with a shared
-  encoder network. (resolved after contact with authors)
-- Connected to this is how to do model selection. Unclear what trade-off
-  between target and sensitive accuracy was used by the authors.
-- Exact implementation of the $\lambda$ decay was not clearly reported
-  (resolved after contact with authors)
 - Little information about given baseline models such as the VAE.
+
+# These two were later resolved so maybe not mention them in the report?
+# - Limited information on how certain losses were backpropagated with a shared
+#   encoder network. (resolved after contact with authors)
+# - Exact implementation of the $\lambda$ decay was not clearly reported
+#  (resolved after contact with authors)
+
 
 \paragraph{Hyperparameters}
 The amount of epochs that the model was trained was not reported
@@ -588,11 +595,14 @@ learning rate, weight decay, amount of epochs aswell as the nonlinearities, to n
 few.
 
 \paragraph{Dataset details}
-- Little information about the YaleB dataset processing. Which lighting angles
-  are part of which class? Why did they only use a part of the whole cropped
-  dataset, and how was that selection made?
-- Type of data-normalization not specified
-- For the German dataset there is not predefined train-test split given.
+As mentioned in YaleB paragraph of the Datasets section we have made a number
+of assumptions about how to set up the classes corresponding to the sensitive
+attributes, which might have some influence on the performance of our approach
+for this datasets.
+We were unsure about some other details concerning the data as well. Namely,
+the type of data-normalization is not specified, and for the German dataset there
+is not a train-test split reported. However, these details were not as vital
+for reproduction as the aforementioned YaleB issue.
 
 ** 5.3 Communication with original authors
 We did have been able to communicate with the original authors.

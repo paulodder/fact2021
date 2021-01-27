@@ -521,6 +521,8 @@ Oh boy. We might not want to list all of these but just the main ones.
   performance over different seeds (right?) and different number of maximum
   epochs.This is not addressed in the paper and therefore there is no
   information on how to deal with it.
+- Limited information on how certain losses were backpropagated with a shared
+  encoder network. (resolved after contact with authors)
 - Missing a number of crucial hyper parameters, importantly, the maximum number
   of epochs per model, which seems to have a big influence on the results.
 - Connected to this is how to do model selection. Unclear what trade-off
@@ -536,4 +538,11 @@ Oh boy. We might not want to list all of these but just the main ones.
 - For the German dataset there is not predefined train-test split given.
 
 ** 5.3 Communication with original authors
+We did have been able to communicate with the original authors.
+- Got our hands on some missing parameters, such as sizes of latent
+  representations, batch sizes, step_size, and more.
+- Got some clarification on how the $\lambda$ values were updated and how the
+  losses are backpropagated.
+- Would receive some info over their YaleB processing but did not receive this
+  in the end.
 * References

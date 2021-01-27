@@ -89,7 +89,7 @@ if __name__ == "__main__":
     print("Training normal FODVAE")
     tacc, sacc = [], []
     for seed in seeds:
-        torch.manual_seed(seed)
+        config.seed = seed
         res = train.main(config, return_results=True)
         tacc.append(
             res["target"]["accuracy"],
@@ -105,8 +105,9 @@ if __name__ == "__main__":
         print("Training using VAE embeddings")
         tacc, sacc = [], []
         for seed in seeds:
+            config.seed = seed
             torch.manual_seed(seed)
-            tacc_vae, sacc_vae = evaluate_embeddings(args)
+            tacc_vae, sacc_vae = evaluate_embeddings(config)
             tacc.append(tacc_vae)
             sacc.append(sacc_vae)
         df.loc["VAE"] = {
@@ -116,8 +117,9 @@ if __name__ == "__main__":
     torch.cuda.empty_cache()
     print("Training raw")
     tacc, sacc = [], []
-    for sed in seeds:
-        tacc_raw, sacc_raw = evaluate_raw(args)
+    for seed in seeds:
+        config.seed = seed
+        tacc_raw, sacc_raw = evaluate_raw(config)
         torch.manual_seed(seed)
         tacc.append(tacc_raw)
         sacc.append(sacc_raw)

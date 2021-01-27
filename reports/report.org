@@ -302,26 +302,39 @@ targets).
 
 
 ** 3.3 Implementation details
-Following the paper of [Sarhan], we implement the following networks for the
-several datasets.
-(Maybe better to put all of these in tables and give only short description in
-paragraphs?)
+Following the paper of cite:sarhan2020fairness, we implement the following networks for the
+several datasets. Note that for all the MLPs described we use ReLU activation functions.
+
 *** Adult and German
 For the Adult and German dataset we implement a MLP with one hidden layer as
-encoder and a MLP with two hidden layers as discriminators. The two
-discriminators are followed by a logistic regression layer to make a
-prediction. All hidden layers contain 64 units. Last, the latent
-representations have size 2.
+encoder and a MLP with two hidden layers as discriminators. All hidden layers
+contain 64 units. Last, the latent representations have size 2.
 *** YaleB
 For the extended YaleB dataset we implement a MLP with one hidden layer as
-encoder and a MLP with two hidden layers as discriminators. The two
-discriminators are followed by a linear layer to make a prediction. All hidden
-layers contain 100 units. Last, the latent representations have size 2 (?).
+encoder and a MLP with two hidden layers as discriminators. All hidden
+layers contain 100 units. Last, the latent representations have size 100.
 *** CIFAR
 For the CIFAR datasets we implement a ResNet-18 [cite resnet] architecture for
 the encoder. For the discriminator and the target classifier we use an MLP with
-two hidden layers, with 256 and 128 neurons. (z size?? maybe in resnet 18
-paper)
+two hidden layers, with 256 and 128 neurons. Last, the latent representations
+have size 128.
+
++--------+-----------------------------------------+-------------------------------+
+|dataset |                 encoder                 |         discriminator         |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+|        | network  |hidden|activation |z-dim      |   network   |hidden|activation|
+|        |          |layers|fucntion   |           |             |layers|function  |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+| Tabular|   MLP    | 64   | ReLU      | 2         |  Logistic   | -    | -        |
+|        |          |      |           |           | Regression  |      |          |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+| CIFAR  |ResNet-18 | -    | -         | 128       |     MLP     | 256, | ReLU     |
+|        |          |      |           |           |             |128   |          |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+| YaleB  |   MLP    | 100  | ReLU      | 100       |     MLP     | 100, | ReLU     |
+|        |          |      |           |           |             |100   |          |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+
 
 ** 3.4 Hyperparameters
 - Describe process of setting hyperparameters

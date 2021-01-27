@@ -226,7 +226,7 @@ def get_settings2results(experiment_name, dataset):
     rel_files = [
         f
         for f in (RESULTS_DIR.glob("*json"))
-        if f.name.startswith(f"{experiment_name}.{dataset}")
+        if f.name.startswith(f"{experiment_name}.{dataset}.")
     ]
 
     def load_results(fpath):

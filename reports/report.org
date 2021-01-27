@@ -4,7 +4,6 @@
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 8, 2021
 #+LATEX: \setlength\parindent{0pt}
-#+LATEX_HEADER: \usepackage{subcaption}
 #+LaTeX_HEADER: \usepackage[]{neurips_2019}
 #+LaTeX_HEADER: \usepackage[utf8]{inputenc} % allow utf-8 input
 #+LaTeX_HEADER: \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
@@ -18,6 +17,12 @@
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
+# #+LaTeX_HEADER: \usepackage{minted}
+# #+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+# #+LATEX_HEADER: \usepackage{bm}
+# #+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+# #+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+# #+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
 #+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
 #+PROPERTY: header-args :exports both :session report :cache :results value
 #+OPTIONS: ^:nil
@@ -225,37 +230,33 @@ information on those will follow.
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
 apply the model to five datasets. Below, we outline some basic properties of
 the datasets, aswell as outlining steps taken in the pre processing, and we
-explain the sensitive and target attributes that are to be modeled.
+explain the sensitive and target attributes that are to be modelled.
 
-*** Adult
-The adult dataset was collected from the UCI machine learning repository
-cite:uci. The dataset contains census data, and the task is to predict whether
-a persons income exceeds 50K. In total, it contains 48842 rows and 14
-attributes. These attributes are a mix of categorical and continuous and
-contain information about the persons gender, education and occupation. The
-categorical columns were one-hot encoded, and the continuous variables were
-left unchanged. In the end, this left us with 108 features. The sensitive
-attribute for this dataset is the gender. All missing values occurred in
-categorical columns, these were explicitly encoded as a seperate
-category. Approximately 75% of the rows' income did not exceed 50K, and around
-67% are male. The train/test split is explicitly defined in the repository
-through aving seperate train and test files, the train:test ration is 2:1.
-*** German
-The German dataset was also collected from the UCI machine learning repository
-cite:uci. Again, the dataset contains a mix of categorical and continuous
-attributes. It contains 1000 rows and 20 features. Information pertaining to
-the occupation, age and personal status are included, the task is to classify
+*** Tabular data
+The Adult and German dataset were  obtained from the UCI repository cite:uci.
+They both contain census data, including categorical and continuous attributes
+which contain information about the persons gender, education and
+occupation. For both datasets, the categorical columns were
+one-hot encoded, and the continuous variables were left unchanged.
+The task for the Adult dataset is to predict whether a persons income exceeds
+$50,000. In total, it contains 48842 rows and 14 attributes. In the end,
+this left us with 108 features. The sensitive attribute for this dataset is the
+gender. All missing values occurred in categorical columns, these were
+explicitly encoded as a separate category. Approximately 75% of the rows'
+income did not exceed 50K, and around 67% are male. The train/test split is
+explicitly defined in the repository through aving seperate train and test
+files, the train:test ration is 2:1.
+The German dataset contains 1000 rows and 20 features, and the task is to classify
 rows as having good or bad credit risk. Similar to the adult dataset, the
-categorical features were one hot encoded, and continuous columns left
-unchanged, the sensitive attribute is gender. There are no missing values in
-the dataset. After our preprocessing, the dataset contained 61 columns. We
+sensitive attribute is gender. There are no missing values in the
+dataset. After our preprocessing, the dataset contained 61 columns. We
 randomly split the data with a train:test ration of 4:1. 68% of the rows in the
 dataset are male, and 70% have bad credit risk.
 
-*** YaleB
-The YaleB dataset was collected from the University of Toronto computer science
+*** YaleB data
+The yaleb dataset was collected from the University of Toronto computer science
 department website cite:GeBeKr01. The dataset we used contains 2433 grayscale,
-168x192 images of 38 human faces under different lighting conditions.  The
+168x192 images of 38 human faces under different lighting conditions. The
 cropped variant was used, the task is to classify images according to the
 subjects of the images. We constructed a sensitive attribute by clustering the
 illumination conditions into 5 classes loosely corresponding to top left,
@@ -277,34 +278,28 @@ by reference paper. The images were flattened into vectors of length 32256. The
 target feature was evenly distributed across the dataset, i.e. the dataset
 contained 64 images of each person.
 
-*** cifar 10
-The cifar 10 dataset was also collected from the University of Toronto computer
-science department website cite:GeBeKr01. It consists of 60 000 32x32 colour
-images that are divided into 10 classes such as airplane, automobile and
-bird. For our purposes, we construct a new target attribute, one that denotes
-whether the subject of the image is alive or not. The sensitive attribute,
-then, is the original label of the image. We must thus learn a representation
-of the image that allows a classifier to identify whether the subject is alive
-or not, while remaining invariant to the actual class of the image. There are
-6000 images of each original class label, and due to the nature of these
-classes 60% are alive, and 40% are not. Due to the convolutional nature of the
-network that we used for this dataset, the images were not flattened and
-instead the 32x32x3 images were fed through our network directly. The
-train:test ratio was 5:1, the provided split was used.
+*** CIFAR data
+The CIFAR-10 and CIFAR-100 datasets were also collected from the University of
+Toronto computer science department website cite:GeBeKr01. It consists of
+60,000 32x32 colour images that are divided into 10 classes such as airplane,
+automobile and bird. For our purposes, we construct a new target attribute, one
+that denotes whether the subject of the image is alive or not. The sensitive
+attribute, then, is the original label of the image. There are 6000 images of
+each original class label, and due to the nature of these classes 60% are
+alive, and 40% are not. Due to the convolutional nature of the network that we
+used for these dataset, the images were not flattened and instead the 32x32x3
+images were fed through our network directly. For both datasets the train:test
+ratio was 5:1, the provided split was used.
+The CIFAR-100 dataset is similar to CIFAR-10, except it contains 100 classes of
+600 images each. Similarly to CIFAR-10, the 100 classes in CIFAR-100 are split
+into 20 coarse classes that cluster similar concepts into one category. For
+example: 'beaver'. 'dolphin' and 'otter' all belong to the coarse class
+'aquatic mammals'. More details on this split can be found at cite:proteek. The
+task is the prediction of the coarse class while remaining invariant to the
+finer class. As mentioned before, there are 600 images of each fine class
+(i.e. the original labels), and 3000 images of each coarse class (i.e. our
+targets).
 
-*** cifar 100
-Finally, the cifar 100 dataset was also collected from the University of
-Toronto computer science department website cite:GeBeKr01. It is similar to
-CIFAR-10, except it contains 100 classes of 600 images each. Similarly to
-CIFAR-10, the 100 classes in CIFAR-100 are split into 20 coarses classes that
-cluster similar concepts into one category. For example: 'beaver'. 'dolphin'
-and 'otter' all belong to the coarse class 'aquatic mammals'. More details on
-this split can be found at cite:proteek. The task is the prediction of the
-coarse class while remaining invariant to the finer class. As mentioned before,
-there are 600 images of each fine class (i.e. the original labels), and 3000
-images of each coarse class (i.e. our targets). Again, a convolutional neowrk
-was used so no flattening was applied to our images. The provided train/test
-split was used, the train test ratio was therefore 5:1.
 
 ** 3.3 Implementation details
 Following the paper of [Sarhan], we implement the following networks for the
@@ -329,22 +324,9 @@ two hidden layers, with 256 and 128 neurons. (z size?? maybe in resnet 18
 paper)
 
 ** 3.4 Hyperparameters
-Most used hyperparameters were taken directly from the supplement provided by
-Sarhan et al. Optimal values for quote some hyperparameters were not reported,
-and as a result we empirically set these to values that seemed to result in
-satisfactory performance.
-
-In particular, the amount of epochs that the model was trained was not reported
-in either the paper or it's supplementary materoa;, this was quite an important
-value given that no explicit stopping criterion was mentioned, either. In
-correspondene with Sarhan, we were able to set values for the step_size
-hyperparameter that correspond to those used by the original team. Furthermore,
-amongst the not reported hyperparameters were those involved the training of
-the MLP target and sensitive predictors. These include the optimizer used, the
-learning rate, weight decay, amount of epochs aswell as the nonlinearities, to name a
-few.
-
-
+- Describe process of setting hyperparameters
+- If hyperparameter search was performed, denote the details (amount of
+  searches, what space, etc.
 ** 3.5 Experimental setup and code
 :PROPERTIES:
 :CUSTOM_ID: sec:exp-setup
@@ -423,8 +405,8 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
 | [[../figures/adult_target.png]] | <<fig:adult_target>> sensitive accuracy |
 | target accuracy             | [[../figures/adult_sens.png]]               |
-#+LATEX_HEADER: \usepackage{subcaption}
 
+#+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:adult
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
@@ -432,9 +414,8 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 | target accuracy              | [[../figures/german_sens.png]]              |
 
 #+LATEX_HEADER: \usepackage{subcaption}
-
 #+NAME: fig:adult
-#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data (LR) for YaleB
+#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
 | [[../figures/yaleb_target.png]] | <<fig:yaleb_target>> sensitive accuracy  |
 | target accuracy             | [[../figures/yaleb_sens.png]]               |
@@ -443,7 +424,7 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 
 Figures [[fig:adult]] show the accuracy for the target and sensitive predictors on
 the adult dataset. The black line indicates the accuracy that a majority class
-classifier would attain. The bars denoted by X correspond to direct use of the
+classifier would attain. The bars dentoed by X correspond to direct use of the
 input data for our target prediciton. Furthermore, a VAE was trained on the
 adult and german datasets using MSE loss as reconstruction loss. These learned
 embeddings were also used as feature for our target and sensitive
@@ -451,43 +432,12 @@ predictors. These accuracies correspond to the bars denoted with 'VAE'. For
 YaleB, besides the model in question, logistic regression was also used on the
 raw data to predict the sensitive and target attributes. This is denoted by
 
-'LR'. In general, our results for adult and german are similar to those
-obtained by Sarhan et al, while the results for yaleb are highly dissimilar:
-our target predictor attains an accuracy of around 20 percent, Sarhan et al
-attained around 90.
+# 'LR'. In general, our results for adult and german are similar to those
+# obtained by Sarhan et al, while the results for yaleb are highly dissimilar:
+# our target predictor attains an accuracy of around 20 percent, Sarhan et al
+# attained around 90.
 
-'LR'.
 *** Ablative
-#+BEGIN_SRC sh
-# adult
-bash scripts/ablative.sh adult
-python scripts/visualize_ablative.py -d adult
-# german
-bash scripts/ablative.sh german
-python scripts/visualize_ablative.py -d german
-# yaleb
-bash scripts/ablative.sh yaleb
-python scripts/visualize_ablative.py -d yaleb
-# cifar10
-bash scripts/ablative.sh cifar10
-python scripts/visualize_ablative.py -d cifar10
-# cifar100
-bash scripts/ablative.sh cifar100
-python scripts/visualize_ablative.py -d cifar100
-#+END_SRC
-
-
-#+LATEX_HEADER: \usepackage{subcaption}
-#+NAME: fig:ablative
-#+LABEL: fig:ablative
-#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
-#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth
-| [[../figures/ablative.adult.png]]    | <<fig:ablative_adult>> Adult       |
-| [[../figures/ablative.german.png]]   | <<fig:ablative_german>> German     |
-| [[../figures/ablative.yaleb.png]]    | <<fig:ablative_yaleb>> YaleB       |
-| [[../figures/ablative.cifar10.png]]  | <<fig:ablative_cifar10>> Cifar10   |
-| [[../figures/ablative.cifar100.png]] | <<fig:ablative_cifar100>> Cifar100 |
-|                                  |                                    |
 
 
 ** 4.2 Results beyond original paper

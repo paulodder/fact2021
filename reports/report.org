@@ -14,6 +14,7 @@
 #+LaTeX_HEADER: \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 #+LaTeX_HEADER: \usepackage{microtype}      % microtypography
 #+LaTeX_HEADER: \usepackage{multirow}
+#+LaTeX_HEADER: \usepackage{subcaption}
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
@@ -105,6 +106,7 @@ reproduce the accuracies found by the authors.
 | YaleB     | $\bm{0.92}$     | $\bm{0.52}$        |
 |-----------+-----------------+--------------------|
 
+
 Furthermore, the authors conduct an ablative study, in which specific parts of
 the loss of the model we excluded, in order to observe the models behaviour and
 understand the role of each of the loss terms within the training process. For
@@ -175,7 +177,7 @@ relax this independence requirement to enforcing 1) a disentaglement property
 and 2) orthogonality between the two representations. To enforce these
 properties, we need to /estimate/ the aforementioned posteriors (as they are
 intractable) using Variational Inference. The encoder network will be similar
-to the encoder of a VAE-like model [cite VAE] that outputs the means and
+to the encoder of a Variational Auto-Encoder (VAE)-like model [cite VAE] that outputs the means and
 variances, $\bm{\mu}_T$ and $\bm{\sigma}_T$ for both representations. To
 enforce the disentangelement property we minimize the KL-divergence between the
 output posterior $q_{\theta_T} (\bm{z}_T | \bm{x})$ and some prior $p (\bm{z}_T)$:
@@ -356,7 +358,7 @@ perform several tasks. All dataset can be downloaded using the
 =get_all.sh= script. The model can be trained and evaluated using =train.py=,
 the ablative study can be ran using =ablative.sh= and the sensitive analysis
 can be performed using =sensitive_analysis.py=. If necessary, =make_fig2.py=
-can be used to make figures, such as [[fig:adult]], of the results.
+can be used to make figures, such as \ref{fig:adult_german_yaleb}, of the results.
 *** Evaluation
 Evaluation of the embeddings learned by our model is non trivial, as we must
 gather whether the embeddings adequately represent the data for the downstream
@@ -397,7 +399,7 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
   \begin{center}
     \caption{Results on CIFAR-10 and CIFAR-100 datasets}
     \label{tab:table1}
-    \begin{tabular}{l|c|c|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+    \begin{tabular}{l|c|c|c|c}
       \hline
       \multirow{2}{*}{} & \multicolumn{2}{c|}{CIFAR-10} & \multicolumn{2}{c}{CIFAR-100} \\
       \hline
@@ -412,47 +414,81 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
     \end{tabular}
   \end{center}
 \end{table}
+
+While we have been able to reproduce the CIFAR-10 target accuracy attained by
+cite:sarhan2020fairness, the CIFAR-10 sensitive accuracy we attained is
+substantially higher than theirs, as displayed in Table \ref{tab:table1}. As
+for the CIFAR-100 dataset, unlike results displayed by cite:sarhan2020fairness,
+our model was not able to learn a representation that carried meaningful
+information, resulting in target and sensitive accuracies that are equal to
+accuracies attained by majority vote (see Table \ref{tab:table1}).
 #+END_EXPORT
 
+*** Accuracies Adult, YaleB and German
 
-*** Accuracies Adult, Yaleb and German
-#+LATEX_HEADER: \usepackage{subcaption}
-#+NAME: fig:adult
-#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for adult
-#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
-| [[../figures/adult_target.png]] | <<fig:adult_target>> sensitive accuracy |
-| target accuracy             | [[../figures/adult_sens.png]]               |
+#+BEGIN_EXPORT latex
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/adult_target.png}
+         \caption{Adult target accuracy}
+         \label{fig:adult_target}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/german_target.png}
+         \caption{German target accuracy}
+         \label{fig:german_target}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/yaleb_target.png}
+         \caption{YaleB target accuracy}
+         \label{fig:yaleb_target}
+     \end{subfigure}
 
-#+LATEX_HEADER: \usepackage{subcaption}
-#+NAME: fig:adult
-#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
-#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
-| [[../figures/german_target.png]] | <<fig:german_target>> sensitive accuracy |
-| target accuracy              | [[../figures/german_sens.png]]              |
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/adult_sens.png}
+         \caption{Adult sensitive accuracy}
+         \label{fig:adult_sens}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/german_sens.png}
+         \caption{German sensitive accuracy}
+         \label{fig:german_sens}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/yaleb_sens.png}
+         \caption{YaleB sensitive accuracy}
+         \label{fig:yaleb_sens}
+     \end{subfigure}
 
-#+LATEX_HEADER: \usepackage{subcaption}
-#+NAME: fig:adult
-#+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
-#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
-| [[../figures/yaleb_target.png]] | <<fig:yaleb_target>> sensitive accuracy  |
-| target accuracy             | [[../figures/yaleb_sens.png]]               |
+     \caption{Target and sensitive accuracies of our model in comparison
+     with majority label classifier (denoted by black line) and various
+     other models for Adult, German, and YaleB datasets. The bars denoted by X correspond to direct use of the
+input data for our target prediction. Furthermore, a VAE was trained on the
+Adult and German datasets using MSE loss as reconstruction loss, and the
+accuracies denoted with `VAE' correspond to the performance achieved by target
+and sensitive predictors trained on these VAE embeddings as input features. For
+YaleB, Logistic Regression was also performed on the raw data to predict the
+sensitive and target attributes, whose performance is denoted by `LR'.}
+     \label{fig:adult_german_yaleb}
+\end{figure}
 
+As displayed in Figure \ref{fig:adult_german_yaleb}, our results for Adult and
+German are similar to those obtained by cite:sarhan2020fairness, while the
+results for YaleB are highly dissimilar; our target predictor attains an
+accuracy of around 20\%, while Sarhan et al. attained around 90\%.
+#+END_EXPORT
 
-
-Figures [[fig:adult]] show the accuracy for the target and sensitive predictors on
-the adult dataset. The black line indicates the accuracy that a majority class
-classifier would attain. The bars dentoed by X correspond to direct use of the
-input data for our target prediciton. Furthermore, a VAE was trained on the
-adult and german datasets using MSE loss as reconstruction loss. These learned
-embeddings were also used as feature for our target and sensitive
-predictors. These accuracies correspond to the bars denoted with 'VAE'. For
-YaleB, besides the model in question, logistic regression was also used on the
-raw data to predict the sensitive and target attributes. This is denoted by
-
-# 'LR'. In general, our results for adult and german are similar to those
-# obtained by Sarhan et al, while the results for yaleb are highly dissimilar:
-# our target predictor attains an accuracy of around 20 percent, Sarhan et al
-# attained around 90.
 
 *** Ablative
 #+BEGIN_SRC sh
@@ -473,32 +509,59 @@ bash scripts/ablative.sh cifar100
 python scripts/visualize_ablative.py -d cifar100
 #+END_SRC
 
-#+LATEX_HEADER: \usepackage{subcaption}
-#+NAME: fig:ablative
-#+LABEL: fig:ablative
-#+CAPTION: Target and sensitive accuracies of our model for different combinations of loss term components, results are averaged over 5 random seeds.
-#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth
-| [[../figures/ablative.adult.png]]    | <<fig:ablative_adult>> Adult       |
-| [[../figures/ablative.german.png]]   | <<fig:ablative_german>> German     |
-| [[../figures/ablative.yaleb.png]]    | <<fig:ablative_yaleb>> YaleB       |
-| [[../figures/ablative.cifar10.png]]  | <<fig:ablative_cifar10>> Cifar10   |
-| [[../figures/ablative.cifar100.png]] | <<fig:ablative_cifar100>> Cifar100 |
-|                                  |                                    |
-The results of our ablative study are shown in Figure [[fig:ablative]]. We omitted
-the baseline measurement as it was unclear from the text what it
-entailed. While the target accuracies for =Adult= are similar to what we see in
+#+BEGIN_EXPORT latex
+\begin{figure}
+     \centering
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/ablative.adult.png}
+         \caption{Adult}
+         \label{fig:ablative_adult}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/ablative.german.png}
+         \caption{German}
+         \label{fig:ablative_german}
+     \end{subfigure}
+     \hfill
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/ablative.yaleb.png}
+         \caption{YaleB}
+         \label{fig:ablative_yaleb}
+     \end{subfigure}
+
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/ablative.cifar10.png}
+         \caption{CIFAR-10}
+         \label{fig:ablative_cifar10}
+     \end{subfigure}
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/ablative.cifar100.png}
+         \caption{CIFAR-100}
+         \label{fig:ablative_cifar100}
+     \end{subfigure}
+     \caption{Target and sensitive accuracies of our model for different combinations of loss term components, results are averaged over 5 random seeds.}
+     \label{fig:ablative}
+\end{figure}
+
+The results of our ablative study are shown in Figure \ref{fig:ablative}.
+The baseline measurement was omitted as it was unclear from the text what it
+entailed. While the target accuracies for Adult are similar to what we see in
 cite:sarhan2020fairness, we see smaller deviations for the sensitive accuracy
-across variations of the loss term. For =German=, we observe a lower target
+across variations of the loss term. For German, we observe a lower target
 accuracy that is quite consistently at $0.73$. The sensitive accuracy is in
 line with what cite:sarhan2020fairness report.  The relatively large
-discrepancy between our =German= results may be attributed to their
+discrepancy between our German results may be attributed to their
 (reportedly) lack of random seed averaging. We have observed similar results to
-what citep:sarhan2020fairness reported for =German=, but only for particular
+what citep:sarhan2020fairness reported for German, but only for particular
 random seeds: upon averaging over multiple random seeds these effects disappeared.
+#+END_EXPORT
 
-
-** 4.2 Results beyond original paper
-- Report additional results we acquired, if relevant.
 
 * 5 Discussion
 /Discuss whether we think our results support the claims of the paper. Discuss

@@ -57,6 +57,8 @@ def make_figure(df, dataset):
     experiment2metrics = dataset2experiment2metrics[dataset]
 
     for experiment, metrics in experiment2metrics.items():
+        if experiment == "majority":
+            continue
         if not experiment in df.index:
             df.loc[experiment] = {
                 "target_acc": metrics[0],
@@ -67,6 +69,7 @@ def make_figure(df, dataset):
 
     sns.set_style("darkgrid")
 
+    plt.figure()
     df["sens_acc"].plot.bar(color="gray")
     plt.axhline(
         y=experiment2metrics["majority"][1],

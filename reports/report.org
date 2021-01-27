@@ -361,9 +361,16 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 - Include /total hours of GPU time/
 
 * 4 Results
-- High-level overview. Do our results support the paper's claims? Keep
-  discussion for next section.
+
+In order to judge the reproducibility of the model proposed by
+\cite{sarhan2020fairness}, we compare their results with those results we were
+able to attain using our implementation. First, we compare target and sensitive
+accuracy attained by training and evaluating the proposed model on each of the
+five datasets. Second, we compare the ablative study with the ablative study of
+Sarhan et al. Finally, we make the same comparison for the sensitive study.
+
 ** 4.1 Results reproducing original paper
+
 *** CIFAR-10 and CIFAR-100
 
 #+BEGIN_EXPORT latex
@@ -377,10 +384,7 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
       \hline
       & Target Acc. \uparrow & Sensitive Acc. \downarrow & Target Acc. \uparrow & Sensitive Acc. \downarrow \\
       \hline
-      Baseline & - & - & - & - \\
-      \hline
       Sarhan et al. & 0.9725 & 0.1907 & 0.7074 & 0.1447 \\
-      \hline
       Ours & 0.9582 & 0.3462 & 0.0500 & 0.0100 \\
       \hline
     \end{tabular}
@@ -388,10 +392,10 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 \end{table}
 
 While we have been able to reproduce the CIFAR-10 target accuracy attained by
-cite:sarhan2020fairness, the CIFAR-10 sensitive accuracy we attained is
+Sarhan et al., the CIFAR-10 sensitive accuracy we attained is
 substantially higher than theirs, as displayed in Table \ref{tab:table1}. As
-for the CIFAR-100 dataset, unlike results displayed by cite:sarhan2020fairness,
-our model was not able to learn a representation that carried meaningful
+for the CIFAR-100 dataset, our results strongly differed from those reported by Sarhan et al.,
+as our model was not able to learn a representation that carried meaningful
 information, resulting in target and sensitive accuracies that are equal to
 accuracies attained by majority vote (see Table \ref{tab:table1}).
 #+END_EXPORT
@@ -443,9 +447,9 @@ accuracies attained by majority vote (see Table \ref{tab:table1}).
          \label{fig:yaleb_sens}
      \end{subfigure}
 
-     \caption{Target and sensitive accuracies of our model in comparison
-     with majority label classifier (denoted by black line) and various
-     other models for Adult, German, and YaleB datasets. The bars denoted by X correspond to direct use of the
+     \caption{Performance of the proposed model, together
+     with majority label classifier (denoted by the horizontal dashed line) and various
+     other models for Adult, German, and YaleB datasets, compared between Sarhan et al. and our reproduction. The bars denoted by X correspond to direct use of the
 input data for our target prediction. Furthermore, a VAE was trained on the
 Adult and German datasets using MSE loss as reconstruction loss, and the
 accuracies denoted with `VAE' correspond to the performance achieved by target
@@ -455,17 +459,19 @@ sensitive and target attributes, whose performance is denoted by `LR'.}
      \label{fig:adult_german_yaleb}
 \end{figure}
 
+Note that for the following results, we focus on the comparison between performances of the proposed models. We have included a comparison of the alternative models in Figure \ref{fig:adult_german_yaleb} mainly to be able to investigate discrepancies in our reimplementation outside of the proposed method itself (e.g. significant differences in the dataset definition, pre-processing, et cetera).
+
 Our results for Adult, as displayed in Figure \ref{fig:adult_german_yaleb}, are
 similar to those obtained by \cite{sarhan2020fairness}, with the only
 difference being a small increase in our sensitive accuracy with regards to
-theirs.  As for German, we observe similar, yet not identical, target and
+theirs.
+As for German, we observe similar, yet not identical, target and
 sensitive accuracies. We have to note that for runs during training with
-certain seeds, a target accuracy was obtained that was identical to the $76\%$
+certain random seeds, a target accuracy was obtained that was identical to the $76\%$
 reported by Sarhan et al.; however, over multiple runs, we obtain a lower
-accuracy around $73\%$ (see Figure \ref{fig:adult_german_yaleb}).  For YaleB,
-we were not able to reproduce the accuracies reported by Sarhan et al. Instead,
-our model achieved a lower target accuracy, and a sensitive accuracy more
-distant from the majority label classifier, suggesting that our model's
+accuracy around $73\%$ (see Figure \ref{fig:adult_german_yaleb}).
+For YaleB, we were not able to reproduce the accuracies reported by Sarhan et al. Instead,
+our model achieved a lower target accuracy, and a sensitive accuracy which is further away from the majority label classifier, suggesting that our model's
 performance was worse than that of Sarhan et al.
 #+END_EXPORT
 
@@ -493,13 +499,6 @@ performance was worse than that of Sarhan et al.
      \centering
      \begin{subfigure}[b]{0.3\textwidth}
          \centering
-         \includegraphics[width=\textwidth]{../figures/ablative.adult.png}
-         \caption{Adult}
-         \label{fig:ablative_adult}
-     \end{subfigure}
-     \hfill
-     \begin{subfigure}[b]{0.3\textwidth}
-         \centering
          \includegraphics[width=\textwidth]{../figures/ablative.german.png}
          \caption{German}
          \label{fig:ablative_german}
@@ -507,40 +506,42 @@ performance was worse than that of Sarhan et al.
      \hfill
      \begin{subfigure}[b]{0.3\textwidth}
          \centering
-         \includegraphics[width=\textwidth]{../figures/ablative.yaleb.png}
-         \caption{YaleB}
-         \label{fig:ablative_yaleb}
+         \includegraphics[width=\textwidth]{../figures/ablative.adult.png}
+         \caption{Adult}
+         \label{fig:ablative_adult}
      \end{subfigure}
-
+     \hfill
      \begin{subfigure}[b]{0.3\textwidth}
          \centering
          \includegraphics[width=\textwidth]{../figures/ablative.cifar10.png}
          \caption{CIFAR-10}
          \label{fig:ablative_cifar10}
      \end{subfigure}
+
      \begin{subfigure}[b]{0.3\textwidth}
          \centering
          \includegraphics[width=\textwidth]{../figures/ablative.cifar100.png}
          \caption{CIFAR-100}
          \label{fig:ablative_cifar100}
      \end{subfigure}
-     \caption{Target and sensitive accuracies of our model for different combinations of loss term components, results are averaged over 5 random seeds.}
+     \begin{subfigure}[b]{0.3\textwidth}
+         \centering
+         \includegraphics[width=\textwidth]{../figures/ablative.yaleb.png}
+         \caption{YaleB}
+         \label{fig:ablative_yaleb}
+     \end{subfigure}
+
+     \caption{Target and sensitive accuracies of our model trained using various combinations of loss term components, results are averaged over 5 random seeds. Specifically, Entropy refers to the $\mathcal{L}_E$ component, Orth refers to the orthogonality constraint between the prior means, and KL refers to the $\mathcal{L}_{OD}$ component (c.f. \cite{sarhan2020fairness}).}
      \label{fig:ablative}
 \end{figure}
 
-The results of our ablative study are shown in Figure \ref{fig:ablative}.
+The results of our ablative study are shown in Figure \ref{fig:ablative}, which can be compared with the ablative study of Sarhan et al. in Appendix <<TODO>>.
 The baseline measurement was omitted as it was unclear from the text what it
-entailed. While the target accuracies for Adult are similar to what we see in
-\cite{sarhan2020fairness}, we see smaller deviations for the sensitive accuracy
-across variations of the loss term. For German, we observe a lower target
-accuracy that is quite consistently at $0.73$. The sensitive accuracy is in
-line with what Sarhan et al. report.  The relatively large
-discrepancy between our German results may be attributed to their
-(reportedly) lack of random seed averaging. We have observed similar results to
-what Sarhan et al. reported for German, but only for particular
-random seeds: upon averaging over multiple random seeds these effects disappeared.
-#+END_EXPORT
+entailed. In comparison to Sarhan et al., for German, we see that varying loss components seems to have less impact on performance; for Adult, we see similar invariability for target accuracy but a lower impact on sensitive accuracy; for CIFAR-10, we observe a larger variance in performance over seeds and loss components; and lastly, CIFAR-100 and YaleB results are significantly different.
+In summary, our ablative study results generally do not exhibit the same patterns as those of Sarhan et al.
 
+Apart from these comparisons, we observe that the `KL' loss component has two noticable and related effects: for CIFAR-10 and YaleB, the inclusion of this component entails a higher error bar (i.e., a higher variance in performance over multiple runs using different seeds), while for CIFAR-100, when this component is excluded, performance substantially increases beyond the range of majority vote.
+#+END_EXPORT
 
 * 5 Discussion
 /Discuss whether we think our results support the claims of the paper. Discuss

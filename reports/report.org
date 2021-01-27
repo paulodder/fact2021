@@ -14,7 +14,7 @@
 #+LaTeX_HEADER: \usepackage{amsfonts}       % blackboard math symbols
 #+LaTeX_HEADER: \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 #+LaTeX_HEADER: \usepackage{microtype}      % microtypography
-#+LaTeX_HEADER:
+#+LaTeX_HEADER: \usepackage{multirow}
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
@@ -391,6 +391,31 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 - High-level overview. Do our results support the paper's claims? Keep
   discussion for next section.
 ** 4.1 Results reproducing original paper
+*** CIFAR-10 and CIFAR-100
+
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{Results on CIFAR-10 and CIFAR-100 datasets}
+    \label{tab:table1}
+    \begin{tabular}{l|c|c|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      \hline
+      \multirow{2}{*}{} & \multicolumn{2}{c|}{CIFAR-10} & \multicolumn{2}{c}{CIFAR-100} \\
+      \hline
+      & Target Acc. \uparrow & Sensitive Acc. \downarrow & Target Acc. \uparrow & Sensitive Acc. \downarrow \\
+      \hline
+      Baseline & - & - & - & - \\
+      \hline
+      Sarhan et al. & 0.9725 & 0.1907 & 0.7074 & 0.1447 \\
+      \hline
+      Ours & 0.9582 & 0.3462 & 0.0500 & 0.0100 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
+
 *** Accuracies Adult, Yaleb and German
 #+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:adult
@@ -428,7 +453,7 @@ raw data to predict the sensitive and target attributes. This is denoted by
 
 'LR'. In general, our results for adult and german are similar to those
 obtained by Sarhan et al, while the results for yaleb are highly dissimilar:
-our target predictor atains an accuracy of around 20 percent, Sarhan et al
+our target predictor attains an accuracy of around 20 percent, Sarhan et al
 attained around 90.
 
 'LR'.

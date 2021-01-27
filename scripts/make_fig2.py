@@ -40,11 +40,11 @@ from train import parse_args
 dataset2experiment2metrics = {
     "yaleb": {
         "Sarhan et al.": (0.92, 0.52),
-        "majority": (1 / 38, 0.5),
+        "majority": (1 / 38, 0.355lo),
     },
     "adult": {
         "majority": (0.75, 0.665),
-        "Sarhan et al.": (0.68, 0.6826),
+        "Sarhan et al.": (0.86, 0.6826),
     },
     "german": {
         "majority": (0.71, 0.69),

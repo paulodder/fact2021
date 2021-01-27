@@ -99,13 +99,12 @@ reproduce the accuracies found by the authors.
 |-----------+-----------------+--------------------|
 | dataset   | target accuracy | sensitive accuracy |
 |-----------+-----------------+--------------------|
-| Adult     | $\bm{0.68}$     | $0.6826$           |
+| Adult     | $\bm{0.86}$     | $0.6826$           |
 | German    | $\bm{0.77}$     | $0.71$             |
 | CIFAR-10  | $0.9725$        | $0.1907$           |
 | CIFAR-100 | $0.7074$        | $0.1447$           |
 | YaleB     | $\bm{0.92}$     | $\bm{0.52}$        |
 |-----------+-----------------+--------------------|
-
 
 Furthermore, the authors conduct an ablative study, in which specific parts of
 the loss of the model we excluded, in order to observe the models behaviour and
@@ -483,30 +482,37 @@ sensitive and target attributes, whose performance is denoted by `LR'.}
      \label{fig:adult_german_yaleb}
 \end{figure}
 
-As displayed in Figure \ref{fig:adult_german_yaleb}, our results for Adult and
-German are similar to those obtained by cite:sarhan2020fairness, while the
-results for YaleB are highly dissimilar; our target predictor attains an
-accuracy of around 20\%, while Sarhan et al. attained around 90\%.
+Our results for Adult, as displayed in Figure \ref{fig:adult_german_yaleb}, are
+similar to those obtained by \cite{sarhan2020fairness}, with the only
+difference being a small increase in our sensitive accuracy with regards to
+theirs.  As for German, we observe similar, yet not identical, target and
+sensitive accuracies. We have to note that for runs during training with
+certain seeds, a target accuracy was obtained that was identical to the $76\%$
+reported by Sarhan et al.; however, over multiple runs, we obtain a lower
+accuracy around $73\%$ (see Figure \ref{fig:adult_german_yaleb}).  For YaleB,
+we were not able to reproduce the accuracies reported by Sarhan et al. Instead,
+our model achieved a lower target accuracy, and a sensitive accuracy more
+distant from the majority label classifier, suggesting that our model's
+performance was worse than that of Sarhan et al.
 #+END_EXPORT
-
 
 *** Ablative
 #+BEGIN_SRC sh
-# adult
-bash scripts/ablative.sh adult
-python scripts/visualize_ablative.py -d adult
-# german
-bash scripts/ablative.sh german
-python scripts/visualize_ablative.py -d german
-# yaleb
-bash scripts/ablative.sh yaleb
-python scripts/visualize_ablative.py -d yaleb
-# cifar10
-bash scripts/ablative.sh cifar10
-python scripts/visualize_ablative.py -d cifar10
-# cifar100
-bash scripts/ablative.sh cifar100
-python scripts/visualize_ablative.py -d cifar100
+# # adult
+# bash scripts/ablative.sh adult
+# python scripts/visualize_ablative.py -d adult
+# # german
+# bash scripts/ablative.sh german
+# python scripts/visualize_ablative.py -d german
+# # yaleb
+# bash scripts/ablative.sh yaleb
+# python scripts/visualize_ablative.py -d yaleb
+# # cifar10
+# bash scripts/ablative.sh cifar10
+# python scripts/visualize_ablative.py -d cifar10
+# # cifar100
+# bash scripts/ablative.sh cifar100
+# python scripts/visualize_ablative.py -d cifar100
 #+END_SRC
 
 #+BEGIN_EXPORT latex
@@ -552,13 +558,13 @@ python scripts/visualize_ablative.py -d cifar100
 The results of our ablative study are shown in Figure \ref{fig:ablative}.
 The baseline measurement was omitted as it was unclear from the text what it
 entailed. While the target accuracies for Adult are similar to what we see in
-cite:sarhan2020fairness, we see smaller deviations for the sensitive accuracy
+\cite{sarhan2020fairness}, we see smaller deviations for the sensitive accuracy
 across variations of the loss term. For German, we observe a lower target
 accuracy that is quite consistently at $0.73$. The sensitive accuracy is in
-line with what cite:sarhan2020fairness report.  The relatively large
+line with what Sarhan et al. report.  The relatively large
 discrepancy between our German results may be attributed to their
 (reportedly) lack of random seed averaging. We have observed similar results to
-what citep:sarhan2020fairness reported for German, but only for particular
+what Sarhan et al. reported for German, but only for particular
 random seeds: upon averaging over multiple random seeds these effects disappeared.
 #+END_EXPORT
 

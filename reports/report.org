@@ -455,6 +455,46 @@ raw data to predict the sensitive and target attributes. This is denoted by
 # attained around 90.
 
 *** Ablative
+#+BEGIN_SRC sh
+# adult
+bash scripts/ablative.sh adult
+python scripts/visualize_ablative.py -d adult
+# german
+bash scripts/ablative.sh german
+python scripts/visualize_ablative.py -d german
+# yaleb
+bash scripts/ablative.sh yaleb
+python scripts/visualize_ablative.py -d yaleb
+# cifar10
+bash scripts/ablative.sh cifar10
+python scripts/visualize_ablative.py -d cifar10
+# cifar100
+bash scripts/ablative.sh cifar100
+python scripts/visualize_ablative.py -d cifar100
+#+END_SRC
+
+#+LATEX_HEADER: \usepackage{subcaption}
+#+NAME: fig:ablative
+#+LABEL: fig:ablative
+#+CAPTION: Target and sensitive accuracies of our model for different combinations of loss term components, results are averaged over 5 random seeds.
+#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth
+| [[../figures/ablative.adult.png]]    | <<fig:ablative_adult>> Adult       |
+| [[../figures/ablative.german.png]]   | <<fig:ablative_german>> German     |
+| [[../figures/ablative.yaleb.png]]    | <<fig:ablative_yaleb>> YaleB       |
+| [[../figures/ablative.cifar10.png]]  | <<fig:ablative_cifar10>> Cifar10   |
+| [[../figures/ablative.cifar100.png]] | <<fig:ablative_cifar100>> Cifar100 |
+|                                  |                                    |
+The results of our ablative study are shown in Figure [[fig:ablative]]. We omitted
+the baseline measurement as it was unclear from the text what it
+entailed. While the target accuracies for =Adult= are similar to what we see in
+cite:sarhan2020fairness, we see smaller deviations for the sensitive accuracy
+across variations of the loss term. For =German=, we observe a lower target
+accuracy that is quite consistently at $0.73$. The sensitive accuracy is in
+line with what cite:sarhan2020fairness report.  The relatively large
+discrepancy between our =German= results may be attributed to their
+(reportedly) lack of random seed averaging. We have observed similar results to
+what citep:sarhan2020fairness reported for =German=, but only for particular
+random seeds: upon averaging over multiple random seeds these effects disappeared.
 
 
 ** 4.2 Results beyond original paper

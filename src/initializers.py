@@ -27,11 +27,11 @@ def _cifar100_target_predictor(config):
     """Gets target predictor for the cifar100 dataset"""
     # z_dim = config.z_dim
     # output_dim = 20
-    optim_init_fn = lambda model: optim.Adam(model.parameters())
     return MLPPredictor.init_without_model(
         input_dim=config.z_dim,
         output_dim=DEFAULTS_CIFAR100["target_predictor_output_dim"],
         hidden_dims=DEFAULTS_CIFAR100["target_predictor_hidden_dims"],
+        optim_init_fn=optim_init_fn,
     )
 
 

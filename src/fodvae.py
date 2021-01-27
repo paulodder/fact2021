@@ -62,12 +62,6 @@ def get_encodings(model, x, get_target):
     return target
 
 
-ds_train = dataloaders.dataset_registrar["german"](True)
-ds_test = dataloaders.dataset_registrar["german"](False)
-
-import matplotlib.pyplot as plt
-
-
 def plot_embs(ax, model, train=True, target=True):
     ds = ds_train if train else ds_test
     embs = torch.stack(

@@ -15,6 +15,7 @@ values defined:
 PROJECT_DIR=/path/to/this/project
 DATA_DIR=/path/to/this/project/data
 MODELS_DIR=/path/to/this/project/models
+RESULTS_DIR=/path/to/this/project/results
 #+END_SRC
 ** Data
 To get the data, make sure to have =DATA_DIR= set in your =.env= and run

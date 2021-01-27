@@ -1,0 +1,41 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: presentation
+#+AUTHOR: Paul Lodder
+#+EMAIL: <paul_lodder@live.nl>
+#+DATE: January 27, 2021
+#+LATEX: \setlength\parindent{0pt}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session presentation :cache :results value
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+
+* introduction
+who are we?
+* what is the goal?
+- make predictions based on data invariant to certain sensitive information
+  (like gender when predicting salary)
+- but leaving it out is no guarantee that the data still contains proxies for
+  sensitive data (occupation)
+- approach by this paper is to construct representations of our data such that
+  these representations are independent of the sensitive information
+* how do we attain this goal?
+* what are we going to reproduce?
+- 5 datasets
+- look at 2: =adult= =cifar100=
+* adult
+- introduce adult, what does the data look like
+* adult results
+- show and discuss their results vs. ours:
+  - target and sensitive accuracy compared with VAE and X?
+* cifar10
+- ablative
+left out parts of the loss terms
+very unstable
+* discussion
+some were reproducible, most weren't
+lack of crucial information e.g. # epochs, stopping condition?

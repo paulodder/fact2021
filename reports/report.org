@@ -4,8 +4,6 @@
 #+EMAIL: <paul_lodder@live.nl>
 #+DATE: January 8, 2021
 #+LATEX: \setlength\parindent{0pt}
-#+LATEX_HEADER: \usepackage{biblatex}
-# #+LATEX_HEADER: \usepackage{subcaption}
 #+LaTeX_HEADER: \usepackage[]{neurips_2019}
 #+LaTeX_HEADER: \usepackage[utf8]{inputenc} % allow utf-8 input
 #+LaTeX_HEADER: \usepackage[T1]{fontenc}    % use 8-bit T1 fonts
@@ -15,7 +13,7 @@
 #+LaTeX_HEADER: \usepackage{amsfonts}       % blackboard math symbols
 #+LaTeX_HEADER: \usepackage{nicefrac}       % compact symbols for 1/2, etc.
 #+LaTeX_HEADER: \usepackage{microtype}      % microtypography
-#+LaTeX_HEADER:
+#+LaTeX_HEADER: \usepackage{multirow}
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
@@ -45,13 +43,13 @@
   :config (require 'ox-latex-subfigure))
 
 (require 'org-ref)
-(setq org-ref-default-bibliography "refs")
+(setq org-ref-default-bibliography "refs.bib")
 ;; (setq org-latex-pdf-process (list "latexmk -pdf %f -shell-escape"))
 
 #+END_SRC
 
 #+RESULTS:
-: refs
+: refs.bib
 
 * Reproducibility Summary
 Summary can be a page long max and needs to be included
@@ -232,7 +230,7 @@ information on those will follow.
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
 apply the model to five datasets. Below, we outline some basic properties of
 the datasets, aswell as outlining steps taken in the pre processing, and we
-explain the sensitive and target attributes that are to be modeled.
+explain the sensitive and target attributes that are to be modelled.
 
 *** Tabular data
 The Adult and German dataset were  obtained from the UCI repository cite:uci.
@@ -304,26 +302,39 @@ targets).
 
 
 ** 3.3 Implementation details
-Following the paper of [Sarhan], we implement the following networks for the
-several datasets.
-(Maybe better to put all of these in tables and give only short description in
-paragraphs?)
+Following the paper of cite:sarhan2020fairness, we implement the following networks for the
+several datasets. Note that for all the MLPs described we use ReLU activation functions.
+
 *** Adult and German
 For the Adult and German dataset we implement a MLP with one hidden layer as
-encoder and a MLP with two hidden layers as discriminators. The two
-discriminators are followed by a logistic regression layer to make a
-prediction. All hidden layers contain 64 units. Last, the latent
-representations have size 2.
+encoder and a MLP with two hidden layers as discriminators. All hidden layers
+contain 64 units. Last, the latent representations have size 2.
 *** YaleB
 For the extended YaleB dataset we implement a MLP with one hidden layer as
-encoder and a MLP with two hidden layers as discriminators. The two
-discriminators are followed by a linear layer to make a prediction. All hidden
-layers contain 100 units. Last, the latent representations have size 2 (?).
+encoder and a MLP with two hidden layers as discriminators. All hidden
+layers contain 100 units. Last, the latent representations have size 100.
 *** CIFAR
 For the CIFAR datasets we implement a ResNet-18 [cite resnet] architecture for
 the encoder. For the discriminator and the target classifier we use an MLP with
-two hidden layers, with 256 and 128 neurons. (z size?? maybe in resnet 18
-paper)
+two hidden layers, with 256 and 128 neurons. Last, the latent representations
+have size 128.
+
++--------+-----------------------------------------+-------------------------------+
+|dataset |                 encoder                 |         discriminator         |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+|        | network  |hidden|activation |z-dim      |   network   |hidden|activation|
+|        |          |layers|fucntion   |           |             |layers|function  |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+| Tabular|   MLP    | 64   | ReLU      | 2         |  Logistic   | -    | -        |
+|        |          |      |           |           | Regression  |      |          |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+| CIFAR  |ResNet-18 | -    | -         | 128       |     MLP     | 256, | ReLU     |
+|        |          |      |           |           |             |128   |          |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+| YaleB  |   MLP    | 100  | ReLU      | 100       |     MLP     | 100, | ReLU     |
+|        |          |      |           |           |             |100   |          |
++--------+----------+------+-----------+-----------+-------------+------+----------+
+
 
 ** 3.4 Hyperparameters
 - Describe process of setting hyperparameters
@@ -375,15 +386,40 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 - High-level overview. Do our results support the paper's claims? Keep
   discussion for next section.
 ** 4.1 Results reproducing original paper
+*** CIFAR-10 and CIFAR-100
+
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{Results on CIFAR-10 and CIFAR-100 datasets}
+    \label{tab:table1}
+    \begin{tabular}{l|c|c|c|c} % <-- Alignments: 1st column left, 2nd middle and 3rd right, with vertical lines in between
+      \hline
+      \multirow{2}{*}{} & \multicolumn{2}{c|}{CIFAR-10} & \multicolumn{2}{c}{CIFAR-100} \\
+      \hline
+      & Target Acc. \uparrow & Sensitive Acc. \downarrow & Target Acc. \uparrow & Sensitive Acc. \downarrow \\
+      \hline
+      Baseline & - & - & - & - \\
+      \hline
+      Sarhan et al. & 0.9725 & 0.1907 & 0.7074 & 0.1447 \\
+      \hline
+      Ours & 0.9582 & 0.3462 & 0.0500 & 0.0100 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
+
 *** Accuracies Adult, Yaleb and German
-# #+LATEX_HEADER: \usepackage{subcaption}
+#+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:adult
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for adult
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
 | [[../figures/adult_target.png]] | <<fig:adult_target>> sensitive accuracy |
 | target accuracy             | [[../figures/adult_sens.png]]               |
 
-# #+LATEX_HEADER: \usepackage{subcaption}
+#+LATEX_HEADER: \usepackage{subcaption}
 #+NAME: fig:adult
 #+CAPTION: Target and sensitive accuracies of our model compared with using the raw data and VAE embeddings for german
 #+ATTR_LATEX: :environment subfigure :width 0.5\textwidth :align c
@@ -408,54 +444,14 @@ embeddings were also used as feature for our target and sensitive
 predictors. These accuracies correspond to the bars denoted with 'VAE'. For
 YaleB, besides the model in question, logistic regression was also used on the
 raw data to predict the sensitive and target attributes. This is denoted by
-'LR'.
-*** Ablative
-#+BEGIN_SRC sh
-# adult
-bash scripts/ablative.sh adult
-python scripts/visualize_ablative.py -d adult
-# german
-bash scripts/ablative.sh german
-python scripts/visualize_ablative.py -d german
-# yaleb
-bash scripts/ablative.sh yaleb
-python scripts/visualize_ablative.py -d yaleb
-# cifar10
-bash scripts/ablative.sh cifar10
-python scripts/visualize_ablative.py -d cifar10
-# cifar100
-bash scripts/ablative.sh cifar100
-python scripts/visualize_ablative.py -d cifar100
-#+END_SRC
 
-#+LATEX_HEADER: \usepackage{subcaption}
-#+NAME: fig:ablative
-#+LABEL: fig:ablative
-#+CAPTION: Target and sensitive accuracies of our model for different combinations of loss term components, results are averaged over 5 random seeds.
-#+ATTR_LATEX: :environment subfigure :width 0.5\textwidth
-| [[../figures/ablative.adult.png]]    | <<fig:ablative_adult>> Adult       |
-| [[../figures/ablative.german.png]]   | <<fig:ablative_german>> German     |
-| [[../figures/ablative.yaleb.png]]    | <<fig:ablative_yaleb>> YaleB       |
-| [[../figures/ablative.cifar10.png]]  | <<fig:ablative_cifar10>> Cifar10   |
-| [[../figures/ablative.cifar100.png]] | <<fig:ablative_cifar100>> Cifar100 |
-|                                  |                                    |
-The results of our ablative study are shown in Figure [[fig:ablative]]. We omitted
-the baseline measurement as it was unclear from the text what it
-entailed. While the target accuracies for =Adult= are similar to what we see in
-cite:sarhan2020fairness, we see smaller deviations for the sensitive accuracy
-across variations of the loss term. For =German=, we observe a lower target
-accuracy that is quite consistently at $0.73$. The sensitive accuracy is in
-line with what cite:sarhan2020fairness report.  The relatively large
-discrepancy between our =German= results may be attributed to their
-(reportedly) lack of random seed averaging. We have observed similar results to
-what citep:sarhan2020fairness reported for =German=, but only for particular
-random seeds: upon averaging over multiple random seeds these effects disappeared.
-*** Sensitivity analysis
-#+LATEX_HEADER: \usepackage{subcaption}
-#+NAME: fig:adult
-#+CAPTION: Sensitivity analysis on =Adult= dataset
-#+ATTR_LATEX: :environment subfigure :width 1\textwidth
-[[file:../figures/sensitivity.adult.png]]
+# 'LR'. In general, our results for adult and german are similar to those
+# obtained by Sarhan et al, while the results for yaleb are highly dissimilar:
+# our target predictor attains an accuracy of around 20 percent, Sarhan et al
+# attained around 90.
+
+*** Ablative
+
 
 ** 4.2 Results beyond original paper
 - Report additional results we acquired, if relevant.

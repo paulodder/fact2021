@@ -86,34 +86,19 @@ the learned target representation perform when predicting target attributes,
 and 2) how much information of the sensitive attributes is still present in the
 learned target representation? To answer these questions they report a /target
 accuracy/ and a /sensitive accuracy/, which we define in section
-[[#sec:exp-setup]]. The authors' reported values can be found in Table
-[[tab:sarhan_accuracies]]. Note that some of the accuracies were not reported
-exactly and have therefore been deduced from figures. It is our aim to
+[[#sec:exp-setup]]. The authors' conducted experiments on five different datasets,
+the results of which can be found in our results section. It is our aim to
 reproduce the accuracies found by the authors.
-
-
-#+ATTR_LATEX: :width 0.8\linewidth :float nil
-#+attr_latex: :align c|c|c
-#+CAPTION: Accuracies aquired by [cite Sarhan]. \textbf{Accuracies in bold} were not reported exactly and have been deduced from a figure.
-#+label: tab:sarhan_accuracies
-|-----------+-----------------+--------------------|
-| dataset   | target accuracy | sensitive accuracy |
-|-----------+-----------------+--------------------|
-| Adult     | $\bm{0.86}$     | $0.6826$           |
-| German    | $\bm{0.77}$     | $0.71$             |
-| CIFAR-10  | $0.9725$        | $0.1907$           |
-| CIFAR-100 | $0.7074$        | $0.1447$           |
-| YaleB     | $\bm{0.92}$     | $\bm{0.52}$        |
-|-----------+-----------------+--------------------|
 
 Furthermore, the authors conduct an ablative study, in which specific parts of
 the loss of the model we excluded, in order to observe the models behaviour and
 understand the role of each of the loss terms within the training process. For
 example, Sarhan et al remove the orthogonality constraint of the learned
 sensitive and target embeddings by removing a loss term. Performance on the
-same datasets as lised above in table [[tab:sarhan_accuracies]] is reported. In
-total, the authors describe 6 variants of the model in this section. As such,
-we will attempt to reproduce these results, aswell.
+same datasets as mentioned before is reported. In total, the authors describe 6
+variants of the model in this section. As such, we will attempt to reproduce
+these results, as well.
+
 
 Finally, the authors preform a sensitivity analysis on the parameters that
 weigh the different loss terms. In particular the final target accuracy and
@@ -301,7 +286,6 @@ finer class. As mentioned before, there are 600 images of each fine class
 (i.e. the original labels), and 3000 images of each coarse class (i.e. our
 targets).
 
-
 ** 3.3 Implementation details
 Following the paper of cite:sarhan2020fairness, we implement the following networks for the
 several datasets. Note that for all the MLPs described we use ReLU activation functions.
@@ -327,24 +311,13 @@ several datasets. Note that for all the MLPs described we use ReLU activation fu
 \end{table}
 #+END_EXPORT
 
-*** Adult and German
-For the Adult and German dataset we implement a MLP with one hidden layer as
-encoder and a MLP with two hidden layers as discriminators. All hidden layers
-contain 64 units. Last, the latent representations have size 2.
-*** YaleB
-For the extended YaleB dataset we implement a MLP with one hidden layer as
-encoder and a MLP with two hidden layers as discriminators. All hidden
-layers contain 100 units. Last, the latent representations have size 100.
-*** CIFAR
-For the CIFAR datasets we implement a ResNet-18 [cite resnet] architecture for
-the encoder. For the discriminator and the target classifier we use an MLP with
-two hidden layers, with 256 and 128 neurons. Last, the latent representations
-have size 128.
-
 ** 3.4 Hyperparameters
-- Describe process of setting hyperparameters
-- If hyperparameter search was performed, denote the details (amount of
-  searches, what space, etc.
+Most used hyperparameters were taken directly from the supplement provided by
+Sarhan et al. Optimal values for some hyperparameters were not reported,
+and as a result we empirically set these to values that seemed to result in
+satisfactory performance. We discuss which hyperparameters we were missing in
+the discussion section, and report all hyperparameters that we used in the
+Appendix.
 ** 3.5 Experimental setup and code
 :PROPERTIES:
 :CUSTOM_ID: sec:exp-setup
@@ -579,7 +552,6 @@ strengths and/or weaknesses of our approach./
 - A weakness of our approach could be that, if we would have had more time, we
   would be able to try out more things to make training more stable.
 
-
 ** 5.1 What was easy
 - Theoretical idea and mathematics were easy to understand and well written out
 - Ehm, tabular datasets were relatively easy to reproduce? Maybe not a great point
@@ -592,13 +564,21 @@ Oh boy. We might not want to list all of these but just the main ones.
   information on how to deal with it.
 - Limited information on how certain losses were backpropagated with a shared
   encoder network. (resolved after contact with authors)
-- Missing a number of crucial hyper parameters, importantly, the maximum number
-  of epochs per model, which seems to have a big influence on the results.
 - Connected to this is how to do model selection. Unclear what trade-off
   between target and sensitive accuracy was used by the authors.
 - Exact implementation of the $\lambda$ decay was not clearly reported
   (resolved after contact with authors)
 - Little information about given baseline models such as the VAE.
+*** Hyperparams
+The amount of epochs that the model was trained was not reported
+in either the paper or its supplementary material. This was quite an important
+value given that no explicit stopping criterion was mentioned, either. In
+correspondene with Sarhan, we were able to set values for the step_size
+hyperparameter that correspond to those used by the original team. Furthermore,
+amongst the not reported hyperparameters were those involved the training of
+the MLP target and sensitive predictors. These include the optimizer used, the
+learning rate, weight decay, amount of epochs aswell as the nonlinearities, to name a
+few.
 *** Data
 - Little information about the YaleB dataset processing. Which lighting angles
   are part of which class? Why did they only use a part of the whole cropped
@@ -614,4 +594,53 @@ We did have been able to communicate with the original authors.
   losses are backpropagated.
 - Would receive some info over their YaleB processing but did not receive this
   in the end.
+
+* Appendix
+** A Hyperparameters
+The hyperparameters that we used for our reported results can be found in table
+\ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
+Adam optimzer [cite Adam].
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{Hyperparameters that we used in our experiments for the various datasets.
+    For the CIFAR datasets, the first number of the learning rate and weight decays refers
+    to the encoder network and the second to the discriminator network.}
+    \label{tab:hps1}
+    \begin{tabular}{l|c|c|c|c}
+
+      \hline
+      & Learning Rate & Weight Decay & Batch Size & Max. Epochs  \\
+      \hline
+      Tabular & $10^{-3}$ & $5 \times 10^{-4}$  & 20   & 20 \\
+      \hline
+      YaleB   & $10^{-4}$ & $5 \times 10^{-2}$ & 20 & 100 \\
+      \hline
+      CIFAR   & $10^{-4}, 10^{-2}$ & $10^{-2}, 10^{-3}$ & 20 & 128 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{The $\lambda_{OD}, \lambda_E, \gamma_{OD}$ and $\gamma_E$ we used in our experiments}
+    \label{tab:hps2}
+    \begin{tabular}{l|c|c|c|c}
+      \hline
+      & $\lambda_{OD}$ & $\lambda_E$ & $\gamma_{OD}$ & $\gamma_E$  \\
+      \hline
+      Tabular & $10^{-3}$ & $10^{-3}$  & 20   & 20 \\
+      \hline
+      YaleB   & $10^{-3}$ & $10^{-3}$ & 20 & 100 \\
+      \hline
+      CIFAR   & $10^{-3}, 10^{-3}^$ & $10^{-3}$ & 20 & 128 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
 * References

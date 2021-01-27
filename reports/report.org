@@ -230,7 +230,7 @@ information on those will follow.
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
 apply the model to five datasets. Below, we outline some basic properties of
 the datasets, aswell as outlining steps taken in the pre processing, and we
-explain the sensitive and target attributes that are to be modeled.
+explain the sensitive and target attributes that are to be modelled.
 
 *** Tabular data
 The Adult and German dataset were  obtained from the UCI repository cite:uci.

@@ -35,78 +35,119 @@ from dataloaders import (
 )
 from defaults import DATASET2DEFAULTS
 from train import parse_args
+from collections import Counter
 
 
-dataset2experiment2metrics = {
+def get_majority_accs(dataset):
+    test_ds = dataset_registrar[dataset](True)
+    get_label = lambda label: (
+        label.argmax(0) if len(label.size()) > 0 else label
+    ).item()
+    Y = [get_label(y) for x, y, s in test_ds]
+    S = [get_label(s) for x, y, s in test_ds]
+    get_majority = lambda labels: Counter(labels).most_common(1)[0][1] / len(
+        labels
+    )
+    return get_majority(Y), get_majority(S)
+
+
+dataset2orig_experiment2metrics = {
     "yaleb": {
-        "Sarhan et al.": (0.92, 0.52),
-        "majority": (1 / 38, 0.355lo),
+        "majority": (1 / 38 + 0.03, 0.51),
+        "LR": (0.79, 0.96),
+        "Proposed": (0.92, 0.52),
     },
     "adult": {
-        "majority": (0.75, 0.665),
-        "Sarhan et al.": (0.86, 0.6826),
+        "majority": (0.75, 0.675),
+        "X": (0.85, 0.84),
+        "VAE": (0.82, 0.66),
+        "Proposed": (0.86, 0.6826),
     },
     "german": {
-        "majority": (0.71, 0.69),
-        "Sarhan et al.": (0.77, 0.71),
+        "majority": (0.715, 0.69),
+        "X": (0.87, 0.80),
+        "VAE": (0.725, 0.795),
+        "Proposed": (0.77, 0.71),
     },
 }
 
 
-def make_figure(df, dataset):
-    experiment2metrics = dataset2experiment2metrics[dataset]
+def make_figure(df, dataset, is_target):
+    # "Ours" should be renamed "Proposed"
+    df = df.rename(index={"Ours": "Proposed"})
 
-    for experiment, metrics in experiment2metrics.items():
-        if experiment == "majority":
-            continue
-        if not experiment in df.index:
-            df.loc[experiment] = {
-                "target_acc": metrics[0],
-                "sens_acc": metrics[1],
-            }
+    # We use df bar plot functionality, so prepare correct format
+    df_for_plot = pd.DataFrame(index=df.index)
 
-    df = df.reindex(index=df.index[::-1])
+    metric_name = "target" if is_target else "sens"
+    metric_index = 0 if is_target else 1
 
+    # Set original results
+    orig_experiment2metrics = dataset2orig_experiment2metrics[dataset]
+    df_for_plot["Sarhan et al."] = pd.Series(
+        {
+            experiment: metrics[metric_index]
+            for experiment, metrics in orig_experiment2metrics.items()
+            if not experiment == "majority" and experiment in df_for_plot.index
+        }
+    )
+
+    # Set our results
+    df_for_plot["Ours"] = df[f"{metric_name}_acc"]
+
+    # Sort experiments
+    df_for_plot = df_for_plot.reindex(index=df_for_plot.index[::-1])
+
+    # Get majorities
+    ours_majority = get_majority_accs(dataset)
+    orig_majority = orig_experiment2metrics["majority"]
+
+    # Plotting code
     sns.set_style("darkgrid")
+    orig_color = "#7678ED"
+    ours_color = "#F18701"
+    orig_color_dark = "#4A4DE8"
+    ours_color_dark = "#CB7301"
 
     plt.figure()
-    df["sens_acc"].plot.bar(color="gray")
+    df_for_plot.plot.bar(
+        fontsize=12,
+        color={"Ours": ours_color, "Sarhan et al.": orig_color},
+        rot=0,
+    )
     plt.axhline(
-        y=experiment2metrics["majority"][1],
-        color="black",
+        y=ours_majority[metric_index],
+        color=ours_color_dark,
         linestyle="--",
     )
-    if dataset == "yaleb":
-        plt.ylim(0, 1)
-    else:
-        plt.ylim(0.6, 0.9)
-    plt.xlabel("Method")
-    plt.ylabel("Accuracy")
-    plt.tight_layout()
-    plt.title(f"Sensitive accuracy {dataset} ")
-    plt.savefig(FIGURES_DIR / f"{dataset}_sens.png", bbox_inches="tight")
-    plt.clf()
+    plt.axhline(
+        y=orig_majority[metric_index],
+        color=orig_color_dark,
+        linestyle="--",
+    )
+
     if dataset == "yaleb":
         plt.ylim(0, 1)
     else:
         plt.ylim(0.6, 0.9)
 
-    df["target_acc"].plot.bar(color="gray")
-    plt.axhline(
-        y=experiment2metrics["majority"][0],
-        color="black",
-        linestyle="--",
-    )
-    plt.title(f"Target accuracy {dataset}")
-    plt.xlabel("Method")
     plt.ylabel("Accuracy")
     plt.tight_layout()
-    plt.savefig(FIGURES_DIR / f"{dataset}_target.png", bbox_inches="tight")
+
+    # Save the figure
+    plt.savefig(
+        FIGURES_DIR / f"{dataset}_{metric_name}.png", bbox_inches="tight"
+    )
+
+
+def make_figures(df, dataset):
+    make_figure(df, dataset, is_target=True)
+    make_figure(df, dataset, is_target=False)
 
 
 def load_and_plot(dataset):
     df = pd.read_pickle(RESULTS_DIR / f"{dataset}_results")
-    make_figure(df, dataset)
+    make_figures(df, dataset)
 
 
 if __name__ == "__main__":
@@ -157,6 +198,6 @@ if __name__ == "__main__":
         df.loc["LR"] = {"target_acc": np.mean(tacc), "sens_acc": np.mean(sacc)}
     print(df)
 
-    make_figure(df, args.dataset)
+    make_figures(df, args.dataset)
 
     df.to_pickle(RESULTS_DIR / f"{args.dataset}_results")

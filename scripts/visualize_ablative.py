@@ -78,10 +78,8 @@ if __name__ == "__main__":
 
     # start plottin
     plt.clf()
-    # TARGET_COLOR = "#6ba292"
-    # SENSITIVE_COLOR = "#e4fde1"
-    TARGET_COLOR = "#ff9b71"
-    SENSITIVE_COLOR = "#ffdc7c"
+    TARGET_COLOR = "#F18701"
+    SENSITIVE_COLOR = "#7678ED"
     fig, ax = plt.subplots()
     bwidth = 0.25
     bar_idxs_t = np.arange(len(labels))

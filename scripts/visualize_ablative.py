@@ -76,10 +76,14 @@ if __name__ == "__main__":
     labels = loss_comp2nice_name.loc[sorted_loss_components].values
     # print(labels)
 
-    # start plottin
+    # start plotting
     plt.clf()
+
     TARGET_COLOR = "#F18701"
     SENSITIVE_COLOR = "#7678ED"
+    TARGET_COLOR_DARK = "#4A4DE8"
+    SENSITIVE_COLOR_DARK = "#CB7301"
+
     fig, ax = plt.subplots()
     bwidth = 0.25
     bar_idxs_t = np.arange(len(labels))
@@ -121,7 +125,8 @@ if __name__ == "__main__":
     # add x tick labels
     ax.set_xticks(range(len(labels)))
     ax.set_xticklabels(list(labels), fontsize=9)
-    # add bars
+
+    # add horizontal line
     dotted_line_x_coords = [-0.5 * bwidth, len(labels)]
     ax.plot(
         [-0.5 * bwidth, len(labels) - 0.5 * (1 + bwidth)],
@@ -130,7 +135,7 @@ if __name__ == "__main__":
             loss_comp2acc_t_mean["entropy,kl,orth"],
         ],
         "k--",
-        color=TARGET_COLOR,
+        color=TARGET_COLOR_DARK,
     )
     ax.plot(
         [-0.5 * bwidth, len(labels) - 0.5 * (1 + bwidth)],
@@ -139,7 +144,7 @@ if __name__ == "__main__":
             loss_comp2acc_s_mean["entropy,kl,orth"],
         ],
         "k--",
-        color=SENSITIVE_COLOR,
+        color=SENSITIVE_COLOR_DARK,
     )
     # add bars
     out_fpath = FIGURES_DIR / f"ablative.{args.dataset}.png"

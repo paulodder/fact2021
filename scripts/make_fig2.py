@@ -36,49 +36,74 @@ from dataloaders import (
 from defaults import DATASET2DEFAULTS
 from train import parse_args
 
-dataset2majority_classifier = {
-    "yaleb": (1 / 38, 0.5),
-    "adult": (0.75, 0.665),
-    "german": (0.71, 0.69),
+
+dataset2experiment2metrics = {
+    "yaleb": {
+        "Sarhan et al.": (0.92, 0.52),
+        "majority": (1 / 38, 0.5),
+    },
+    "adult": {
+        "majority": (0.75, 0.665),
+        "Sarhan et al.": (0.68, 0.6826),
+    },
+    "german": {
+        "majority": (0.71, 0.69),
+        "Sarhan et al.": (0.77, 0.71),
+    },
 }
 
 
-def make_figure(df, args):
+def make_figure(df, dataset):
+    experiment2metrics = dataset2experiment2metrics[dataset]
+
+    for experiment, metrics in experiment2metrics.items():
+        if not experiment in df.index:
+            df.loc[experiment] = {
+                "target_acc": metrics[0],
+                "sens_acc": metrics[1],
+            }
+
+    df = df.reindex(index=df.index[::-1])
+
     sns.set_style("darkgrid")
+
     df["sens_acc"].plot.bar(color="gray")
     plt.axhline(
-        y=dataset2majority_classifier[args.dataset][1],
+        y=experiment2metrics["majority"][1],
         color="black",
         linestyle="--",
     )
-    if args.dataset == "yaleb":
+    if dataset == "yaleb":
         plt.ylim(0, 1)
     else:
         plt.ylim(0.6, 0.9)
     plt.xlabel("Method")
     plt.ylabel("Accuracy")
     plt.tight_layout()
-    plt.title(f"Sensitive accuracy {args.dataset} ")
-    plt.savefig(FIGURES_DIR / f"{args.dataset}_sens.png", bbox_inches="tight")
+    plt.title(f"Sensitive accuracy {dataset} ")
+    plt.savefig(FIGURES_DIR / f"{dataset}_sens.png", bbox_inches="tight")
     plt.clf()
-    if args.dataset == "yaleb":
+    if dataset == "yaleb":
         plt.ylim(0, 1)
     else:
         plt.ylim(0.6, 0.9)
 
     df["target_acc"].plot.bar(color="gray")
     plt.axhline(
-        y=dataset2majority_classifier[args.dataset][0],
+        y=experiment2metrics["majority"][0],
         color="black",
         linestyle="--",
     )
-    plt.title(f"Target accuracy {args.dataset}")
+    plt.title(f"Target accuracy {dataset}")
     plt.xlabel("Method")
     plt.ylabel("Accuracy")
     plt.tight_layout()
-    plt.savefig(
-        FIGURES_DIR / f"{args.dataset}_target.png", bbox_inches="tight"
-    )
+    plt.savefig(FIGURES_DIR / f"{dataset}_target.png", bbox_inches="tight")
+
+
+def load_and_plot(dataset):
+    df = pd.read_pickle(RESULTS_DIR / f"{dataset}_results")
+    make_figure(df, dataset)
 
 
 if __name__ == "__main__":
@@ -129,6 +154,6 @@ if __name__ == "__main__":
         df.loc["LR"] = {"target_acc": np.mean(tacc), "sens_acc": np.mean(sacc)}
     print(df)
 
-    make_figure(df, args)
+    make_figure(df, args.dataset)
 
     df.to_pickle(RESULTS_DIR / f"{args.dataset}_results")

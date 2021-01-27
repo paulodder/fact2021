@@ -106,7 +106,7 @@ if __name__ == "__main__":
     )
     # plt.errorbar(bar_idxs_t, means_t, stds_t)
 
-    if args.dataset == "cifar100":
+    if args.dataset in {"cifar100", "yaleb"}:
         legend_loc = "upper right"
     else:
         legend_loc = "lower right"

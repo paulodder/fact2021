@@ -13,8 +13,8 @@ from dotenv import dotenv_values, find_dotenv
 from pathlib import Path
 
 DOTENV = dotenv_values(find_dotenv())
-PLOTS_DIR = Path(DOTENV["PROJECT_DIR"]) / "plots"
-PLOTS_DIR.mkdir(exist_ok=True)
+FIGURES_DIR = Path(DOTENV["FIGURES_DIR"])
+FIGURES_DIR.mkdir(exist_ok=True)
 
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 colorlist = ["deepskyblue", "orangered", "yellowgreen", "slateblue", "m"]
@@ -58,4 +58,4 @@ def plot_yaleb_lighting_positions(fname="yaleb_lighting_positions"):
         label2coord = lambda l: int(l.replace("+", ""))
         plt.text(label2coord(pos[0]), label2coord(pos[1]), str(n_bad))
 
-    plt.savefig(PLOTS_DIR / (fname + ".png"), bbox_inches="tight")
+    plt.savefig(FIGURES_DIR / (fname + ".png"), bbox_inches="tight")

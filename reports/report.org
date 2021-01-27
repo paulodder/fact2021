@@ -304,6 +304,27 @@ targets).
 ** 3.3 Implementation details
 Following the paper of cite:sarhan2020fairness, we implement the following networks for the
 several datasets. Note that for all the MLPs described we use ReLU activation functions.
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{Encoder and discriminator implementation details.}
+    \label{tab:imp}
+    \begin{tabular}{l|c|c|c|c|c}
+      \hline
+      \multirow{2}{*}{} & \multicolumn{3}{c|}{Encoder} & \multicolumn{2}{c}{Discriminator} \\
+      \hline
+      & Network Type & Hidden Dims &  Latent Dim & Network type & Hidden Dims  \\
+      \hline
+      Tabular & MLP       & 64  & 2   & MLP & 64, 64 \\
+      \hline
+      YaleB   & MLP       & 100 & 100 & MLP & 100, 100 \\
+      \hline
+      CIFAR   & ResNet-18 & -   & 128 & MLP & 256, 128 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
 
 *** Adult and German
 For the Adult and German dataset we implement a MLP with one hidden layer as
@@ -318,23 +339,6 @@ For the CIFAR datasets we implement a ResNet-18 [cite resnet] architecture for
 the encoder. For the discriminator and the target classifier we use an MLP with
 two hidden layers, with 256 and 128 neurons. Last, the latent representations
 have size 128.
-
-+--------+-----------------------------------------+-------------------------------+
-|dataset |                 encoder                 |         discriminator         |
-+--------+----------+------+-----------+-----------+-------------+------+----------+
-|        | network  |hidden|activation |z-dim      |   network   |hidden|activation|
-|        |          |layers|fucntion   |           |             |layers|function  |
-+--------+----------+------+-----------+-----------+-------------+------+----------+
-| Tabular|   MLP    | 64   | ReLU      | 2         |  Logistic   | -    | -        |
-|        |          |      |           |           | Regression  |      |          |
-+--------+----------+------+-----------+-----------+-------------+------+----------+
-| CIFAR  |ResNet-18 | -    | -         | 128       |     MLP     | 256, | ReLU     |
-|        |          |      |           |           |             |128   |          |
-+--------+----------+------+-----------+-----------+-------------+------+----------+
-| YaleB  |   MLP    | 100  | ReLU      | 100       |     MLP     | 100, | ReLU     |
-|        |          |      |           |           |             |100   |          |
-+--------+----------+------+-----------+-----------+-------------+------+----------+
-
 
 ** 3.4 Hyperparameters
 - Describe process of setting hyperparameters
@@ -497,9 +501,48 @@ random seeds: upon averaging over multiple random seeds these effects disappeare
 - Report additional results we acquired, if relevant.
 
 * 5 Discussion
-- Discuss whether we think our results support the claims of the paper. Discuss
-  strengths and/or weaknesses of our approach.
+/Discuss whether we think our results support the claims of the paper. Discuss
+strengths and/or weaknesses of our approach./
+
+- Purely looking at our results, they only support some claims of the original
+  paper. (I suppose, Adult results, and German to an extent? CIFAR-10?)
+
+- A weakness of our approach could be that, if we would have had more time, we
+  would be able to try out more things to make training more stable.
+
+
 ** 5.1 What was easy
+- Theoretical idea and mathematics were easy to understand and well written out
+- Ehm, tabular datasets were relatively easy to reproduce? Maybe not a great point
 ** 5.2 What was difficult
+Oh boy. We might not want to list all of these but just the main ones.
+*** General
+- Training seems very unstable which is evident from the high fluctuation in
+  performance over different seeds (right?) and different number of maximum
+  epochs.This is not addressed in the paper and therefore there is no
+  information on how to deal with it.
+- Limited information on how certain losses were backpropagated with a shared
+  encoder network. (resolved after contact with authors)
+- Missing a number of crucial hyper parameters, importantly, the maximum number
+  of epochs per model, which seems to have a big influence on the results.
+- Connected to this is how to do model selection. Unclear what trade-off
+  between target and sensitive accuracy was used by the authors.
+- Exact implementation of the $\lambda$ decay was not clearly reported
+  (resolved after contact with authors)
+- Little information about given baseline models such as the VAE.
+*** Data
+- Little information about the YaleB dataset processing. Which lighting angles
+  are part of which class? Why did they only use a part of the whole cropped
+  dataset, and how was that selection made?
+- Type of data-normalization not specified
+- For the German dataset there is not predefined train-test split given.
+
 ** 5.3 Communication with original authors
+We did have been able to communicate with the original authors.
+- Got our hands on some missing parameters, such as sizes of latent
+  representations, batch sizes, step_size, and more.
+- Got some clarification on how the $\lambda$ values were updated and how the
+  losses are backpropagated.
+- Would receive some info over their YaleB processing but did not receive this
+  in the end.
 * References

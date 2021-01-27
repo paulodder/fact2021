@@ -105,7 +105,13 @@ if __name__ == "__main__":
         yerr=stds_s,
     )
     # plt.errorbar(bar_idxs_t, means_t, stds_t)
-    plt.legend(loc="lower right")
+
+    if args.dataset == "cifar100":
+        legend_loc = "upper right"
+    else:
+        legend_loc = "lower right"
+    plt.legend(loc=legend_loc)
+
     ax.set_ylabel("Scores")
     ax.set_ylim(0, 1)
     # y ticks

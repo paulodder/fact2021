@@ -112,7 +112,7 @@ if __name__ == "__main__":
         legend_loc = "lower right"
     plt.legend(loc=legend_loc)
 
-    ax.set_ylabel("Scores")
+    ax.set_ylabel("Accuracy")
     ax.set_ylim(0, 1)
     # y ticks
     minor_ticks = np.arange(0, 1, 0.05)

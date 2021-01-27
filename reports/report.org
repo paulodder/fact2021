@@ -553,15 +553,21 @@ strengths and/or weaknesses of our approach./
   would be able to try out more things to make training more stable.
 
 ** 5.1 What was easy
-- Theoretical idea and mathematics were easy to understand and well written out
-- Ehm, tabular datasets were relatively easy to reproduce? Maybe not a great point
+We experienced especially the theoretical part of the paper to be well
+structured and though out. The set-up of the two types of
+representations and notions of disentaglement and orthogonality makes sense
+intuitively. Additionally, all loss terms are well described and were therefore
+easy to implement.
+
 ** 5.2 What was difficult
-Oh boy. We might not want to list all of these but just the main ones.
-*** General
-- Training seems very unstable which is evident from the high fluctuation in
-  performance over different seeds (right?) and different number of maximum
-  epochs.This is not addressed in the paper and therefore there is no
-  information on how to deal with it.
+\paragraph{Training instability}
+One of the issues we ran in is that for these models training seems very unstable,
+which is evident from the high fluctuation in performance when we vary the
+random seed or the  number of maximum epochs. This is not addressed in the
+paper and therefore there is no information on how to deal with it. (Reflected
+in high variance in results also?)
+
+\paragraph{Implementation}
 - Limited information on how certain losses were backpropagated with a shared
   encoder network. (resolved after contact with authors)
 - Connected to this is how to do model selection. Unclear what trade-off
@@ -569,7 +575,8 @@ Oh boy. We might not want to list all of these but just the main ones.
 - Exact implementation of the $\lambda$ decay was not clearly reported
   (resolved after contact with authors)
 - Little information about given baseline models such as the VAE.
-*** Hyperparams
+
+\paragraph{Hyperparameters}
 The amount of epochs that the model was trained was not reported
 in either the paper or its supplementary material. This was quite an important
 value given that no explicit stopping criterion was mentioned, either. In
@@ -579,7 +586,8 @@ amongst the not reported hyperparameters were those involved the training of
 the MLP target and sensitive predictors. These include the optimizer used, the
 learning rate, weight decay, amount of epochs aswell as the nonlinearities, to name a
 few.
-*** Data
+
+\paragraph{Dataset details}
 - Little information about the YaleB dataset processing. Which lighting angles
   are part of which class? Why did they only use a part of the whole cropped
   dataset, and how was that selection made?
@@ -600,6 +608,8 @@ We did have been able to communicate with the original authors.
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
 Adam optimzer [cite Adam].
+
+- We should check whether these are in fact the last hyperparameters we used
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}
@@ -612,11 +622,15 @@ Adam optimzer [cite Adam].
       \hline
       & Learning Rate & Weight Decay & Batch Size & Max. Epochs  \\
       \hline
-      Tabular & $10^{-3}$ & $5 \times 10^{-4}$  & 20   & 20 \\
+      Adult & $10^{-3}$ & $5 \times 10^{-4}$  & 64   & 2 \\
       \hline
-      YaleB   & $10^{-4}$ & $5 \times 10^{-2}$ & 20 & 100 \\
+      German & $10^{-3}$ & $5 \times 10^{-4}$  & 64   & 15 \\
       \hline
-      CIFAR   & $10^{-4}, 10^{-2}$ & $10^{-2}, 10^{-3}$ & 20 & 128 \\
+      YaleB   & $10^{-4}$ & $5 \times 10^{-2}$ & 64 & 30 \\
+      \hline
+      CIFAR-10   & $10^{-4}, 10^{-2}$ & $10^{-2}, 10^{-3}$ & 128 & 30 \\
+      \hline
+      CIFAR-100  & $10^{-4}, 10^{-2}$ & $10^{-2}, 10^{-3}$ & 128 & 80 \\
       \hline
     \end{tabular}
   \end{center}
@@ -632,15 +646,18 @@ Adam optimzer [cite Adam].
       \hline
       & $\lambda_{OD}$ & $\lambda_E$ & $\gamma_{OD}$ & $\gamma_E$  \\
       \hline
-      Tabular & $10^{-3}$ & $10^{-3}$  & 20   & 20 \\
+      Adult  & $0.037$ & $0.55$  & $0.8$ & $1.66$ \\
       \hline
-      YaleB   & $10^{-3}$ & $10^{-3}$ & 20 & 100 \\
+      German  & $0.01$ & $1.0$  & $1.4$ & $2.0$ \\
       \hline
-      CIFAR   & $10^{-3}, 10^{-3}^$ & $10^{-3}$ & 20 & 128 \\
+      YaleB  & $0.037$ & $1.0$  & $1.1$ & $2.0$ \\
+      \hline
+      CIFAR-10  & $0.063$ & $1.0$  & $1.7$ & $1.0$ \\
+      \hline
+      CIFAR-100  & $0.0325$ & $0.1$  & $1.2$ & $1.67$ \\
       \hline
     \end{tabular}
   \end{center}
 \end{table}
 #+END_EXPORT
-
 * References

@@ -655,13 +655,15 @@ is not a train-test split reported. However, these details were not as vital
 for reproduction as the aforementioned YaleB issue.
 
 ** 5.3 Communication with original authors
-We did have been able to communicate with the original authors.
-- Got our hands on some missing parameters, such as sizes of latent
-  representations, batch sizes, step_size, and more.
-- Got some clarification on how the $\lambda$ values were updated and how the
-  losses are backpropagated.
-- Would receive some info over their YaleB processing but did not receive this
-  in the end.
+We have had the pleasure of communicating with the original authors of the
+paper. This helped getting our hands on some additional hyperparameters, such
+as the stepsize $t_s$ and the dimensions of the latent representations for some
+datasets, to name a few. Furthermore, we got insight in some implementation
+details, such as how the loss weights $\labmda_{OS}$ and $\lambda_E$ are
+updated and how the losses are backpropagated when dealing with a shared
+encoder network. The authors were going to give us extra information on the
+YaleB dataset specifically, but we were not able to receive said information in
+time.
 
 * Appendix
 ** A Hyperparameters

@@ -579,9 +579,6 @@ Apart from these comparisons, we observe that the `KL' loss component has two no
 #+END_EXPORT
 
 * 5 Discussion
-/Discuss whether we think our results support the claims of the paper. Discuss
-strengths and/or weaknesses of our approach./
-
 The claim of the original authors are as follows: by disentangling the latent
 representation of a data sample into two subspaces that are orthogonal to each
 other, as well as training the model using a loss function that encourages it
@@ -675,12 +672,39 @@ YaleB dataset specifically, but we were not able to receive said information in
 time.
 
 * Appendix
-** A Hyperparameters
+** A Dataset details
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{}
+    \label{tab:data_details1}
+    \begin{tabular}{l|c|c|c|c|c}
+      \hline
+      & sample amount& train/test split & input size & MV target & MV sensitive \\
+      \hline
+      Adult  & $48,842$ & $2:1$  & $108$ & $75\%$ & $67\%$ \\
+      \hline
+      German  & $1000$ & $4:1$  & $61$ & $68\%$ & $70\%$ \\
+      \hline
+      YaleB  & $2433$ & $190:2243$  & $192 \times 168$ & $2.6\%$ & $35\%$ \\
+      \hline
+      CIFAR-10  & $60,000$ & $5:1$  & $3 \times 32 \times 32$ & $50\%$ & $10\%$ \\
+      \hline
+      CIFAR-100  & $60,000$ & $5:1$  & $3 \times 32 \times 32$ & $5\%$ & $1\%$ \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
+*** Pre-processing? Cluster details?
+** B Hyperparameters
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
-Adam optimzer [cite Adam].
+Adam optimizer [cite Adam].
 
 - We should check whether these are in fact the last hyperparameters we used
+- We should [CITE RESNET]
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}

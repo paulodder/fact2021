@@ -682,8 +682,6 @@ undertaken in this research to minutely reimplement their proposed method, we
 conclude that the original paper is relatively difficult to reproduce, and can
 in fact not be reproduced based solely on its contents.
 
-
-
 ** 5.1 What was easy
 We experienced especially the theoretical part of the paper to be well
 structured and though out. The set-up of the two types of

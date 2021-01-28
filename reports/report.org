@@ -1,7 +1,9 @@
 #+BIND: org-export-use-babel nil
-#+TITLE: Report FACT 2021
-#+AUTHOR: Jeroen Jagt, Paul Lodder, Pim Meerdink, Siem Teusink
-#+EMAIL: <paul_lodder@live.nl>
+#+TITLE: Reimplementing Fairness by Learning Orthogonal Disentangled Representations
+# #+AUTHOR: Jeroen Jagt,
+# #+AUTHOR: Paul Lodder,
+# #+AUTHOR: Pim Meerdink,
+# #+AUTHOR: Siem Teusink,
 #+DATE: January 8, 2021
 #+LATEX: \setlength\parindent{0pt}
 #+LaTeX_HEADER: \usepackage[]{neurips_2019}
@@ -18,7 +20,8 @@
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
-# #+LaTeX_HEADER: \usepackage{minted}
+#+LaTeX_HEADER:\author{Siem Teusink \\ University of Amsterdam \\ Faculty of Science \and \textbf{Pim Meerdink} \\ University of Amsterdam \\ Faculty of Science  \and \textbf{Paul Lodder} \\ University of Amsterdam \\ Faculty of Science  \and \textbf{Jeroen Jagt} \\ University of Amsterdam \\ Faculty of Science}
+# #+LaTeX_HEADER:\author{Siem Teusink}
 # #+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
 # #+LATEX_HEADER: \usepackage{bm}
 # #+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
@@ -27,8 +30,10 @@
 #+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
 #+PROPERTY: header-args :exports both :session report :cache :results value
 #+OPTIONS: ^:nil
+#+OPTIONS: author:nil date:nil
 #+LATEX_COMPILER: pdflatex
 #+BIBLIOGRAPHY: refs plain
+
 
 * settings :noexport:
 #+BEGIN_SRC emacs-lisp :exports none
@@ -54,19 +59,11 @@
 
 * Reproducibility Summary
 
-# The implemented model aimed to produce embeddings of input data which are
-# invariant to some sensitive attribute. This, in turn, could allow algorithms to
-# make predictions which are invariant to these sensitive attributes. In order to
-# construct these 'fair' embeddings, Sarhan et al. explicilty modeled the
-# sensitive attributes, in order to ensure the target embeddings' invariance.
-
 ** Scope of Reproducibility
 The reference work presented the results of various experiments on five
-different datasets. Evaluation of the models preformance was done training two
-seperate classifiers. One, dubbed the 'target predictor', predicts the target
-aatribute from our models' target embeddings. The other 'sensitive predictor'
-predicts the sensitive attribute from the target embeddins. We attempt to
-reproduce these accuracies for all datasets.
+different datasets. Evaluation of the models preformance was done through
+computing the sensitive prediction accuracy, aswell as the target predictor
+accuracy. We attempt to reproduce these accuracies for all datasets.
 
 Besides this, the authors present an ablative study for all datasets, in which
 parts of the loss of the model are left out. Finally, the authors also
@@ -77,9 +74,9 @@ effects on the final target and sensitivity accuracies.
 ** Methodology
 As there was no openly available code base released alongside the paper the aim
 of our work was to re-implement and, as a result, reproduce the reference
-paper. To this end, we constructed a code base available at
-[[https://github.com/paulodder/fact2021]]. The implemented method combines two encoder networks, one maps input samples to
-the target space, and the other to the sensitive space. Samples from these
+paper. Our codebase is available at [[https://github.com/paulodder/fact2021]]. The
+implemented method combines two encoder networks, one maps input samples to the
+target space, and the other to the sensitive space. Samples from these
 distributions are fed to discriminator networks. We enforce orthogonality
 aswell as disentanglement of the latent distributions, while backpropogating
 losses through the encoder and discriminator that attempts to minimze the error
@@ -92,16 +89,15 @@ some of the simpeler datasets we found similar patterns and corresponding
 accuracies, but for the more complex tasks the models training became unstable,
 leadning to results that varied significantly across random seeds. This made
 reproduction infeasible.
-** What was easy
+** What was easy and what was difficult
 Conceptually, the paper was interesting and, given some prior knowledge on deep
-learning, variational autoencoders and the math involved, relatively
+learning, variational autoencoders and the math involved, it was also relatively
 straightforward to understand.
-** What was difficult
+
 The most difficult aspect of the project was dealing with missing
-information. Many essential implementation details were missing, and the
-algorithm used to train the model was unclear and incorrect, there were
-inconsistencies in the pseudo code provided. Resolving these isuess all
-provided significant difficulties.
+information. Many essential implementation details were missing, and there were
+inconsistencies in the pseudo code provided. Resolving these isuess provided
+significant difficulties.
 ** Communication with original authors
 Various emails were exchanged with the original authors, in which we received
 explanation about unclear aspects of the paper. In general the authors were
@@ -133,7 +129,7 @@ the reproducibility of the reference work.
 
 * 2 Scope of reproducibility
 
-# jpj: <<TODO>> is this paragraph needed?
+
 The reference work by Sarhan et al. works towards a method of generating
 embeddings of data, while remaining invariant towards a particular
 feature.
@@ -248,7 +244,8 @@ Here $q_{\theta_T} (\bm{z}_T | \bm{x}) = \mathcal{N} (\bm{z}_T | \bm{\mu}_T,
 \bm{I})$. We can construct a similar KL-divergence term for the sensitive
 representations. To enforce the orthogonality between the two representations
 we can make sure that the means of the prior distributions are orthogonal. This
-will indirectly push the posterior distributions to be orthogonal.
+will indirectly push the posterior distributions to be orthogonal. Besides this
+the priors are both disentangled, thus enforcing disentangled latent distributions.
 
 We combine these two loss terms into a single term, which we call the /Orthogonal
 Disentangled/, or /OD/ loss.

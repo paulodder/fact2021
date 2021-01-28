@@ -289,8 +289,10 @@ information on those will follow.
 ** 3.2 Datasets
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
 apply the model to five datasets. Below, we outline some basic properties of
-the datasets, as well as outlining steps taken in the pre processing, and we
-explain the sensitive and target attributes that are to be modelled.
+the datasets and we explain the sensitive and target attributes that are to be
+modelled. For detailed information about the datasets such as train/test
+splits, number of samples and dimensions we refer to Table
+\ref{tab:data_details} in the Appendix.
 
 *** Tabular data
 The Adult and German dataset were obtained from the UCI repository cite:uci.
@@ -302,19 +304,9 @@ were explicitly encoded as a separate category, while continuous variables were
 left unchanged.
 
 For the Adult dataset, the task is to predict whether a persons income exceeds
-$\$50,000$. In total, it contains 48842 rows and 14 attributes. After
-preprocessing, each input sample consisted of 108 features. The sensitive
-attribute for this dataset is binary gender. Approximately 75\% of the samples'
-incomes do not exceed $\$50,000$, and around 67\% are male. The train/test
-split is explicitly defined in the repository, and the train:test ratio is 2:1.
-
-The German dataset contains 1000 rows with 20 attributes, and the task is to
-classify rows as having good or bad credit risk. Similar to the Adult dataset,
-the sensitive attribute is gender. After preprocessing, each input sample
-consisted of 61 features. As no train/test split was defined in the reference
-work nor in the dataset itself, we chose to split the data with a train:test
-ratio of 4:1. 68\% of the rows in the dataset are male, and 70\% have bad
-credit risk.
+$\$50,000$, and the sensitive attribute is gender. For the German dataset the
+task is to classify rows as having good or bad credit risk. Similar to the
+Adult dataset, the sensitive attribute is gender.
 
 *** YaleB data
 
@@ -774,8 +766,11 @@ datasets simultaneously.
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}
-    \caption{}
-    \label{tab:data_details1}
+    \caption{Details concerning the several datasets we used. Here MV target and MV
+    sensitive correspond to how much percent of the data belongs to the biggest target and
+    sensitive class respectively. The input size corresponds to the amount of features in the
+    case of the tabular data and for the picture dimensions of the visual data.}
+    \label{tab:data_details}
     \begin{tabular}{l|c|c|c|c|c}
       \hline
       & sample amount& train/test split & input size & MV target & MV sensitive \\
@@ -795,7 +790,9 @@ datasets simultaneously.
 \end{table}
 #+END_EXPORT
 
-*** Pre-processing? Cluster details?
+*** Pre-processing
+- Clustering YaleB dataset
+- Normalization
 ** B Hyperparameters
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
@@ -853,7 +850,7 @@ Adam optimizer [cite Adam].
   \end{center}
 \end{table}
 #+END_EXPORT
-** B Ablative and sensitive study results in Sarhan et al. (2020)
+** C Ablative and sensitive study results in Sarhan et al. (2020)
 
 For ease of comparison, we include two Figures from the reference paper. All
 rights for Figures [[fig:sarhan_ablative]] and [[fig:sarhan_sensitivity_adult]]

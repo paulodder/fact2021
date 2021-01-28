@@ -1,0 +1,98 @@
+#+BIND: org-export-use-babel nil
+#+TITLE: Reproduce results
+#+AUTHOR: Paul Lodder
+#+EMAIL: <paul_lodder@live.nl>
+#+DATE: January 28, 2021
+#+LATEX: \setlength\parindent{0pt}
+# #+LaTeX_HEADER: \usepackage{pythonhighlight}
+#+LaTeX_HEADER: \usepackage{minted}
+#+LATEX_HEADER: \usepackage[margin=0.8in]{geometry}
+#+LATEX_HEADER_EXTRA:  \usepackage{mdframed}
+#+LATEX_HEADER_EXTRA: \BeforeBeginEnvironment{minted}{\begin{mdframed}}
+#+LATEX_HEADER_EXTRA: \AfterEndEnvironment{minted}{\end{mdframed}}
+#+MACRO: NEWLINE @@latex:\\@@ @@html:<br>@@
+#+PROPERTY: header-args :exports both :session produce_results :cache :results value :tangle yes
+#+OPTIONS: ^:nil
+#+LATEX_COMPILER: pdflatex
+* Introduction
+This file serves the purpose of documenting our code and providing the commands
+that produce the results we report in our paper.
+* Getting started
+First of all, make sure to have followed the steps documented in
+[[file:README.org][README.org]]. Make sure that you have activated the virtualenvironment that you
+initialized to run any of our scripts.
+* General overview
+To train and evaluate a model for any given dataset, we run
+#+BEGIN_SRC sh
+python scripts/train.py --dataset <dataset name>
+#+END_SRC
+where =<dataset name>= is one of =adult=, =german=, =yaleb=, =cifar-10=,
+=cifar-100=. The correct model for the given dataset is loaded by taking the
+(hyper)parameters specified in [[file:src/defaults.py][src/defaults.py]]. E.g. if we are working with
+=adult= data, the following variable is used to determine all parameters:
+#+BEGIN_SRC python
+DEFAULTS_ADULT = {
+    "z_dim": 2,
+    "max_epochs": 2,
+    "batch_size": 64,
+    "lambda_od": 0.037,
+    "gamma_od": 0.8,
+    "encoder_hidden_dims": [64],
+    "lambda_entropy": 0.55,
+    "gamma_entropy": 1.66,
+    "input_dim": 108,
+    "target_output_dim": 1,
+    "sens_output_dim": 1,
+    "target_disc_hidden_dims": [64, 64],
+    "sens_disc_hidden_dims": [64, 64],
+    "target_disc_batch_norm": False,
+    "predictor_epochs": 10,
+    "encoder_lr": 1e-3,
+    "encoder_weight_decay": 5e-4,
+    "discs_lr": 1e-3,
+    "discs_weight_decay": 5e-4,
+    "loss_components": "entropy,kl,orth",
+    "step_size": 30,
+}
+#+END_SRC
+
+Most of these parameters can also be changed by explicitly providing a value as
+a command line argument:
+#+BEGIN_SRC sh
+python scripts/train.py --dataset <dataset name> --step_size 100
+#+END_SRC
+
+The loaded configuration is passed to functions defined in
+[[file:src/iniitializers.py][src/iniitializers.py]], like =get_fodvae(config)= which returns the correct
+model by looking at the given config and associated hyperparameters.
+* Reproducing our results
+Now that you a main idea of our code, let us talk you through reproducing the
+specific results that we present in our paper.
+** Table 2
+This table presents the target and sensitive accuracy achieved on the
+Cifar-10 and Cifar-100 dataset. We produced these results by running:
+#+BEGIN_SRC sh
+python scripts/run_cifar.py
+#+END_SRC
+This script trains the correct models for Cifar-10 and Cifar-100 for 3
+different random seeds, and pickles the results stored in a pickled
+=pd.DataFrame= in the =RESULTS_DIR= defined in your =.env=.
+** Figure 1
+Figure 1 shows multiple bar plots that compare Sarhan et al's (2020) sensitive
+and target accuracies achieved on the raw data, embeddings from a regular VAE,
+and the target representations produced by the proposed model. They performed
+this experiment only on the Adult, German, and YaleB dataset.
+To produce all plots for this figure, we ran:
+#+BEGIN_SRC sh
+bash scripts/train_and_plot_target_and_sens_accs.sh
+#+END_SRC
+This script runs the following script for each of the three datasets:
+#+BEGIN_SRC sh
+python scripts/make_fig2.py --dataset <dataset-name>
+#+END_SRC
+It saves two figures per dataset in =FIGURES_DIR= (as specified in your
+=.env=): =<dataset-name>_sens.png= and =<dataset-name>_target.png= which show
+the sensitive and target accuracies, respectively.
+
+
+

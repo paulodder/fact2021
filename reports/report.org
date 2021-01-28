@@ -421,12 +421,19 @@ the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 
 ** 3.6 Computational Requirements
 
-#+NAME: tab:computational_details
-#+ATTR_LATEX: :caption The average run-time for each of the five datasets and their configurations.
-| Dataset                 | Adult | German | YaleB | CIFAR-10 | CIFAR-100 | Total |
-| Average run-time (min.) |   0.8 |   0.22 |     2 |       11 |        19 |    62 |
-| Number of epochs        |     2 |     15 |    30 |       30 |        55 |     - |
-# <<TODO>> fix this ugly ass org-table @paul
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+\caption{The average run-time for each of the five datasets and their configurations.}
+\centering
+\begin{tabular}{l|r|r|r|r|r|r}
+Dataset & Adult & German & YaleB & CIFAR-10 & CIFAR-100 & Total\\
+Average run-time (min.) & 0.8 & 0.22 & 2 & 11 & 19 & 62\\
+Number of epochs & 2 & 15 & 30 & 30 & 55 & -\\
+\label{tab:computational_details}
+\end{tabular}
+\end{table}
+#+END_EXPORT
+
 
 We used Google Colab Pro to train our models, which supplies one =Tesla
 V100-SXM2-16GB= GPU, and 2 =Intel(R) Xeon(R) CPU @ 2.00GHz= CPUs. Average
@@ -434,7 +441,7 @@ run-times are specified in Table [[tab:computational_details]]. In order to trai
 all models over various seeds for all results, this would be the estimated
 required run-time:
 $$
-(3 * 62) + (5 * 5 * 62) + (8^2 * 5 * 0.8) = 4,296 \text{ minutes}
+(3 * 62) + (5 * 5 * 62) + (2*8^2 * 5 * 0.8) = 4,296 \text{ minutes}
 $$
 # To generate results, we need this # of runs:
 # - normal: 3 * (all datasets)
@@ -775,9 +782,19 @@ datasets simultaneously.
 \end{table}
 #+END_EXPORT
 
-*** Pre-processing
-- Clustering YaleB dataset
-- Normalization
+*** YaleB pre-processing
+
+#+ATTR_LATEX: :width 0.5\linewidth :float nil
+#+CAPTION: Definitions of YaleB sensitive attributes, which are a clustering of lighting positions, which are defined by an elevation and an azimuth.
+#+label: fig:yaleb_lighting_positions
+[[file:../figures/yaleb_lighting_positions.png]]
+
+In order to construct the sensitive attributes for the YaleB dataset, we define
+a five-class clustering for the lighting positions, which corresponds to a
+five-class sensitive attribute. These clusters, as well as the lighting
+positions that are selected for the train partition, are displayed in Figure
+[[fig:yaleb_lighting_positions]].
+
 ** B Hyperparameters
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the

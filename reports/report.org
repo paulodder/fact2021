@@ -298,28 +298,30 @@ of length $32,256$. The target feature was evenly distributed across the dataset
 i.e. the dataset contained 64 images of each person.
 
 *** CIFAR data
+
 The CIFAR-10 and CIFAR-100 datasets were also collected from the University of
-Toronto computer science department website cite:GeBeKr01. It consists of
-60,000 32x32 colour images that are divided into 10 classes such as airplane,
-automobile and bird. For our purposes, we construct a new target attribute, one
-that denotes whether the subject of the image is alive or not. The sensitive
-attribute, then, is the original label of the image. There are 6000 images of
-each original class label, and due to the nature of these classes 60\% are
-alive, and 40\% are not. Due to the convolutional nature of the network that we
-used for these dataset, the images were not flattened and instead the 32x32x3
-images were fed through our network directly. For both datasets the train:test
-ratio was 5:1, the provided split was used.
-The CIFAR-100 dataset is similar to CIFAR-10, except it contains 100 classes of
-600 images each. Similarly to CIFAR-10, the 100 classes in CIFAR-100 are split
-into 20 coarse classes that cluster similar concepts into one category. For
-example: 'beaver'. 'dolphin' and 'otter' all belong to the coarse class
-'aquatic mammals'. More details on this split can be found at cite:proteek. The
-task is the prediction of the coarse class while remaining invariant to the
-finer class. As mentioned before, there are 600 images of each fine class
-(i.e. the original labels), and 3000 images of each coarse class (i.e. our
-targets).
+Toronto computer science department website cite:GeBeKr01. For both datasets,
+the predefined train:test ratio was 5:1, and no pre-processing was applied
+beyond the construction of target labels.
+
+CIFAR-10 consists of $60,000$ $32 \times 32 \times 3$ colour images that are
+divided into 10 classes such as airplane, automobile and bird. For our
+purposes, we construct a new target attribute, one that denotes whether the
+subject of the image is alive or not. The sensitive attribute, then, is the
+original label of the image. There are $6,000$ images of each original class
+label. Of all images, 60\% are labelled as alive, and 40\% are not.
+
+The CIFAR-100 dataset is similar to CIFAR-10, except that images are
+categorized as one of 100 total fine-grained classes. These 100 fine classes
+are split into 20 coarse classes that cluster similar concepts into one
+category. For example: `beaver', `dolphin' and `otter' all belong to the coarse
+class `aquatic mammals' (c.f.  cite:proteek). Here, the coarse class of an
+image is used as the target attribute, while its fine class is used as the
+sensitive attribute. There are 600 images of each fine class, and 3000 images
+of each coarse class.
 
 ** 3.3 Implementation details
+
 Following the paper of cite:sarhan2020fairness, we implement the following networks for the
 several datasets. Note that for all the MLPs described we use ReLU activation functions.
 #+BEGIN_EXPORT latex

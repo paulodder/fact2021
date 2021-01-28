@@ -63,57 +63,77 @@ Summary can be a page long max and needs to be included
 
 \newpage
 * 1 Introduction
-The work of [cite Sarhan] introduces a new way of learning representations that
-are useful for a specified task while robust against sensitive attributes. They
-propose a method that decomposes the latent representation into a target and
-sensitive representation. The representations are made to be orthogonal to
-prevent sensitive information leaking into the target
-representation. Furthermore, they introduce the disentanglement property to
-"split the generative factors of each learned code" [cite Sarhan]. Last, they
-ensure that the target representation is agnostic to the sensitive information
-using a  maximum entropy approach.
+
+The work of \cite{sarhan2020fairness} proposes a new way to learn
+representations that, while meaningful for some specified target task, do not
+contain any information about a sensitive attribute present in the original
+sample. The proposed method to achieve this invariability towards the sensitive
+attribute is to disentangle the latent representation into independent target
+and sensitive representation. As a proxy for independence, orthogonality is
+enforced between these individual representations. Furthermore, in order to
+prevent sensitive information leaking into the target representation, the model
+is trained to learn a target representation which is agnostic to the sensitive
+information, using a maximum entropy approach.
+
+In order to consolidate the claims brought forth in \cite{sarhan2020fairness},
+and assess the reproducibility of this work, our research attempts to reproduce
+the achieved results by reimplementing the proposed method. The remainder of
+this report is as follows. In the next section, we specify the parts of the original work
+that we attempt to reproduce. In Section 3, we summarize the method as proposed in
+\cite{sarhan2020fairness} that we attempt to reimplement. In Section 4, we
+discuss the results we attain. Finally, we discuss the results, and we analyse
+the reproducibility of the reference work.
 
 * 2 Scope of reproducibility
-The reference work by Sarhan et al works towards a method of generating
+
+# jpj: <<TODO>> is this paragraph needed?
+The reference work by Sarhan et al. works towards a method of generating
 embeddings of data, while remaining invariant towards a particular
 feature. This is done by explicitly learning an encoding of the sensitive
 information, and forcing this encoding to be orthogonal and disentangled with
-respect to the actual 'target' embeddings that are to be used in the downstream
+respect to the actual `target' embeddings that are to be used in the downstream
 task.
 
-[cite Sarhan] aim to answer two questions with their experiments. 1) how does
-the learned target representation perform when predicting target attributes,
-and 2) how much information of the sensitive attributes is still present in the
-learned target representation? To answer these questions they report a /target
-accuracy/ and a /sensitive accuracy/, which we define in section
-[[#sec:exp-setup]]. The authors' conducted experiments on five different datasets,
-the results of which can be found in our results section. It is our aim to
-reproduce the accuracies found by the authors.
+The eficacy of the proposed method is assessed using two evaluative
+questions. First, how well can the learned target representation be used in the
+target task? Second, to what degree is information which might reveal the
+sensitive attribute still present in the learned target representation?
 
-Furthermore, the authors conduct an ablative study, in which specific parts of
-the loss of the model we excluded, in order to observe the models behaviour and
-understand the role of each of the loss terms within the training process. For
-example, Sarhan et al remove the orthogonality constraint of the learned
-sensitive and target embeddings by removing a loss term. Performance on the
-same datasets as mentioned before is reported. In total, the authors describe 6
-variants of the model in this section. As such, we will attempt to reproduce
-these results, as well.
+In the reference work, a collection of three single- and two multi-class
+classification tasks are considered for a total of five classification tasks,
+corresponding to five different datasets. For each of these tasks, a version of
+the proposed model is trained, and evaluated using two metrics: /target
+accuracy/ and a /sensitive accuracy/, which correspond to the two
+aforementioned questions. Both of these accuracies, for each of the five tasks
+at hand, are included in our reproduction.
 
+Furthermore, an ablative study is conducted in the reference work, in which
+specific components of the loss function used to train the model are excluded
+(i.e., ablated), in order to observe the behaviour of the model, and understand
+the role of each of these loss components within the training process. For
+instance, the orthogonality constraint of the learned sensitive and target
+embeddings can be ignored by omitting the relevant loss
+component(s). This ablative study, which entails the evaluation of the impact
+of six unique combinations of loss components, is performed on each of the five datasets,
+and is included in our reproduction.
 
-Finally, the authors preform a sensitivity analysis on the parameters that
-weigh the different loss terms. In particular the final target accuracy and
+# jpj: could be more clear, this paragraph
+Finally, the authors perform a sensitivity analysis on the hyperparameters that
+weigh the different loss terms. In particular, the final target accuracy and
 sensitivity accuracy are reported as a function of the weight assigned to the
-entropy term, and the KL term. These results are displayed as a
-heatmap. Besides this two terms that control the decay of these loss terms are
-also varied and the final sensitivity and target accuracy reported in a
-heatmap.
+entropy loss component, and the KL loss component (c.f. Section 3). These
+results are displayed as a heatmap. In similar fashion, an additional heatmap
+is constructed for two hyperparameters that control the decay of these loss terms.
 
 * 3 Methodology
-The code of the author's implementation of this project was not
-available. Therefore, it was our goal to reproduce the implementation from the
-description in the paper. The essential elements of the model are described in
-the next section.
+
+As the code of the original implementation was not available, it was our goal
+to reproduce the method, based on all implementation details expounded in the
+reference work. The essential elements of the model are described in the next
+section.
+
 ** 3.1 Model descriptions
+
 Let $\mathcal{X}$ be the dataset and let $\bm{x} \in \mathbb{R}^D$ be a single
 input sample. Each sample has an associated target vector $\bm{y} \in
 \mathbb{R}^n$ and an associated sensitive attribute vector $\bm{s} \in
@@ -155,16 +175,19 @@ KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s}))
 \end{equation}
 
 Last, we want to ensure that there is some level of independence between the
-two representations, i.e., ideally the posterior $p(\bm{z}_T | \bm{x})$ would be
-statistically independent of $p(\bm{z}_S | \bm{x})$. Following [cite Sarhan] we
-relax this independence requirement to enforcing 1) a disentaglement property
-and 2) orthogonality between the two representations. To enforce these
-properties, we need to /estimate/ the aforementioned posteriors (as they are
-intractable) using Variational Inference. The encoder network will be similar
-to the encoder of a Variational Auto-Encoder (VAE)-like model [cite VAE] that outputs the means and
-variances, $\bm{\mu}_T$ and $\bm{\sigma}_T$ for both representations. To
-enforce the disentangelement property we minimize the KL-divergence between the
-output posterior $q_{\theta_T} (\bm{z}_T | \bm{x})$ and some prior $p (\bm{z}_T)$:
+two representations, i.e., ideally the posterior $p(\bm{z}_T | \bm{x})$ would
+be statistically independent of $p(\bm{z}_S | \bm{x})$. Following
+\cite{sarhan2020fairness} we relax this independence requirement to
+enforcing 1) a disentaglement property and 2) orthogonality between the two
+representations. To enforce these properties, we need to /estimate/ the
+aforementioned posteriors (as they are intractable) using Variational
+Inference. The encoder network will be similar to the encoder of a Variational
+Auto-Encoder (VAE) model [cite VAE], in that it outputs the means $(\bm{\mu}_T,
+\bm{\mu}_S)$ and variances $(\bm{\sigma}_T, \bm{\sigma}_S)$ for both
+representations. To enforce the disentanglement property, we minimize the
+KL-divergence between the output posterior $q_{\theta_T} (\bm{z}_T | \bm{x})$
+and some prior $p (\bm{z}_T)$:
+# jpj: is this indeed the 'disentanglement' property?
 
 \begin{align}
 \label{eq:od-losses}
@@ -179,11 +202,14 @@ representations. To enforce the orthogonality between the two representations
 we can make sure that the means of the prior distributions are orthogonal. This
 will indirectly push the posterior distributions to be orthogonal.
 
-We call these losses combined the /Orthogonal Disentangled/, or /OD/ loss.
+We combine these two loss terms into a single term, which we call the /Orthogonal
+Disentangled/, or /OD/ loss.
+
 $$
 \mathcal{L}_{OD}(\theta_{T}, \theta_S) = \mathcal{L}_{z_{T}}(\theta_{T})  +
 \mathcal{L}_{z_{S}}(\theta_{S})
 $$
+
 We can use the re-parameterization trick [cite reparam trick] to sample
 from the posterior distribution to obtain the latent representations, which can
 then be fed to the respective discriminators.
@@ -215,7 +241,7 @@ information on those will follow.
 ** 3.2 Datasets
 In order to reproduce the results obtained by Sarhan et al. it was necessary to
 apply the model to five datasets. Below, we outline some basic properties of
-the datasets, aswell as outlining steps taken in the pre processing, and we
+the datasets, as well as outlining steps taken in the pre processing, and we
 explain the sensitive and target attributes that are to be modelled.
 
 *** Tabular data
@@ -225,19 +251,19 @@ which contain information about the persons gender, education and
 occupation. For both datasets, the categorical columns were
 one-hot encoded, and the continuous variables were left unchanged.
 The task for the Adult dataset is to predict whether a persons income exceeds
-$50,000. In total, it contains 48842 rows and 14 attributes. In the end,
+\$50,000. In total, it contains 48842 rows and 14 attributes. In the end,
 this left us with 108 features. The sensitive attribute for this dataset is the
 gender. All missing values occurred in categorical columns, these were
-explicitly encoded as a separate category. Approximately 75% of the rows'
-income did not exceed 50K, and around 67% are male. The train/test split is
+explicitly encoded as a separate category. Approximately 75\% of the rows'
+income did not exceed 50K, and around 67\% are male. The train/test split is
 explicitly defined in the repository through aving seperate train and test
 files, the train:test ration is 2:1.
 The German dataset contains 1000 rows and 20 features, and the task is to classify
 rows as having good or bad credit risk. Similar to the adult dataset, the
 sensitive attribute is gender. There are no missing values in the
 dataset. After our preprocessing, the dataset contained 61 columns. We
-randomly split the data with a train:test ration of 4:1. 68% of the rows in the
-dataset are male, and 70% have bad credit risk.
+randomly split the data with a train:test ration of 4:1. 68\% of the rows in the
+dataset are male, and 70\% have bad credit risk.
 
 *** YaleB data
 The yaleb dataset was collected from the University of Toronto computer science
@@ -251,7 +277,7 @@ ourselves as we were unable to find detailed information on how this was done
 in the study by Sarhan et al. Our sensitive attributes' distribution was not
 skewed, with the 'center' class containing around 800 images, and the between
 340 and 380. This was not in line with the paper by Sarhan et al, who mention
-that a majority class classifier could attain 50% accuracy, in our case this is
+that a majority class classifier could attain 50\% accuracy, in our case this is
 around 0.35. Unfortunately, we were unable to find sufficient information to be
 able to replicate the ratios mentioned in the reference paper, and instead
 constructed our own sensitive attributes.
@@ -271,8 +297,8 @@ Toronto computer science department website cite:GeBeKr01. It consists of
 automobile and bird. For our purposes, we construct a new target attribute, one
 that denotes whether the subject of the image is alive or not. The sensitive
 attribute, then, is the original label of the image. There are 6000 images of
-each original class label, and due to the nature of these classes 60% are
-alive, and 40% are not. Due to the convolutional nature of the network that we
+each original class label, and due to the nature of these classes 60\% are
+alive, and 40\% are not. Due to the convolutional nature of the network that we
 used for these dataset, the images were not flattened and instead the 32x32x3
 images were fed through our network directly. For both datasets the train:test
 ratio was 5:1, the provided split was used.
@@ -547,11 +573,34 @@ Apart from these comparisons, we observe that the `KL' loss component has two no
 /Discuss whether we think our results support the claims of the paper. Discuss
 strengths and/or weaknesses of our approach./
 
-- Purely looking at our results, they only support some claims of the original
-  paper. (I suppose, Adult results, and German to an extent? CIFAR-10?)
+The claim of the original authors are as follows: by disentangling the latent
+representation of a data sample into two subspaces that are orthogonal to each
+other, as well as training the model using a loss function that encourages it
+to encode sensitive information into one of these subspaces, and meaningful
+information for the task at hand into the other of those subspaces, it is
+possible to create meaningful representations that do not contain any
+information from which a protected, or sensitive, attribute can be inferred.
 
-- A weakness of our approach could be that, if we would have had more time, we
-  would be able to try out more things to make training more stable.
+In order for our results to support this claim, they would need to show that
+the proposed model is able to create representations that perform well on the
+target task (i.e. attains a high target accuracy), while it performs poorly in
+the inference of the sensitive attribute using the target representation
+(i.e. attains a sensitive accuracy close to the accuracy of majority
+voting). When looking at our results, we observe that this is indeed the case for the
+German dataset. However, for the Adult and CIFAR-10 datasets, the attained
+sensitive accuracy is substantially higher than the majority vote baseline; and
+for the CIFAR-100 and YaleB datasets, the model does not achieve a satisfactory
+performance in terms of target accuracy; and so, results from these four
+datasets do not appear to support the original claim of the authors. Likewise,
+those patterns that the authors observe in their ablative studies are not found
+back in our own ablative studies.
+
+This means that there is a discrepancy between our results and the original
+results from \cite{sarhan2020fairness}. Thus, when considering the large effort
+undertaken in this research to minutely reimplement their proposed method, we
+conclude that the original paper is relatively difficult to reproduce, and can
+in fact not be reproduced based solely on its contents.
+
 
 ** 5.1 What was easy
 We experienced especially the theoretical part of the paper to be well

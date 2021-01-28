@@ -245,50 +245,57 @@ the datasets, as well as outlining steps taken in the pre processing, and we
 explain the sensitive and target attributes that are to be modelled.
 
 *** Tabular data
-The Adult and German dataset were  obtained from the UCI repository cite:uci.
-They both contain census data, including categorical and continuous attributes
-which contain information about the persons gender, education and
-occupation. For both datasets, the categorical columns were
-one-hot encoded, and the continuous variables were left unchanged.
-The task for the Adult dataset is to predict whether a persons income exceeds
-\$50,000. In total, it contains 48842 rows and 14 attributes. In the end,
-this left us with 108 features. The sensitive attribute for this dataset is the
-gender. All missing values occurred in categorical columns, these were
-explicitly encoded as a separate category. Approximately 75\% of the rows'
-income did not exceed 50K, and around 67\% are male. The train/test split is
-explicitly defined in the repository through aving seperate train and test
-files, the train:test ration is 2:1.
-The German dataset contains 1000 rows and 20 features, and the task is to classify
-rows as having good or bad credit risk. Similar to the adult dataset, the
-sensitive attribute is gender. There are no missing values in the
-dataset. After our preprocessing, the dataset contained 61 columns. We
-randomly split the data with a train:test ration of 4:1. 68\% of the rows in the
-dataset are male, and 70\% have bad credit risk.
+The Adult and German dataset were obtained from the UCI repository cite:uci.
+Both of these datasets contain census data, and include categorical and
+continuous attributes which contain information about the person's gender,
+education, and occupation. For both datasets, preprocessing consisted of
+representing categorical columns in a one-hot encoding, where missing values
+were explicitly encoded as a separate category, while continuous variables were
+left unchanged.
+
+For the Adult dataset, the task is to predict whether a persons income exceeds
+$\$50,000$. In total, it contains 48842 rows and 14 attributes. After
+preprocessing, each input sample consisted of 108 features. The sensitive
+attribute for this dataset is binary gender. Approximately 75\% of the samples'
+incomes do not exceed $\$50,000$, and around 67\% are male. The train/test
+split is explicitly defined in the repository, and the train:test ratio is 2:1.
+
+The German dataset contains 1000 rows with 20 attributes, and the task is to
+classify rows as having good or bad credit risk. Similar to the Adult dataset,
+the sensitive attribute is gender. After preprocessing, each input sample
+consisted of 61 features. As no train/test split was defined in the reference
+work nor in the dataset itself, we chose to split the data with a train:test
+ratio of 4:1. 68\% of the rows in the dataset are male, and 70\% have bad
+credit risk.
 
 *** YaleB data
-The yaleb dataset was collected from the University of Toronto computer science
-department website cite:GeBeKr01. The dataset we used contains 2433 grayscale,
-168x192 images of 38 human faces under different lighting conditions. The
-cropped variant was used, the task is to classify images according to the
-subjects of the images. We constructed a sensitive attribute by clustering the
-illumination conditions into 5 classes loosely corresponding to top left,
-bottom left, top right, bottom right and center. We defined these classes
-ourselves as we were unable to find detailed information on how this was done
-in the study by Sarhan et al. Our sensitive attributes' distribution was not
-skewed, with the 'center' class containing around 800 images, and the between
-340 and 380. This was not in line with the paper by Sarhan et al, who mention
-that a majority class classifier could attain 50\% accuracy, in our case this is
-around 0.35. Unfortunately, we were unable to find sufficient information to be
-able to replicate the ratios mentioned in the reference paper, and instead
-constructed our own sensitive attributes.
 
-Our training dataset was comprised of 190 images, just like Sarhan et al. It is
+# jpj: we should reference the original papers that Sarhan et al. reference
+# as well, in corresponding places.
+The Extended YaleB dataset was collected from the University of Toronto
+computer science department website cite:GeBeKr01. The `Cropped' version of the
+dataset was used \citep{KCLee05}, which contains 2433 grayscale, $192 \times
+168$ images of 38 human faces under different lighting conditions. The task is
+to identify to which of the 38 humans an image corresponds. We constructed a
+sensitive attribute by clustering the illumination conditions into 5 classes
+loosely corresponding to top left, bottom left, top right, bottom right and
+center. We defined these classes ourselves as we were unable to find detailed
+information on how this was done in the study by Sarhan et al. Our sensitive
+attributes' distribution was not skewed, with the `front' class containing
+around 800 images, and the between 340 and 380. This was not in line with the
+paper by Sarhan et al, who mention that a majority class classifier could
+attain 50\% accuracy, in our case this is around 0.35. Unfortunately, we were
+unable to find sufficient information to be able to replicate the ratios
+mentioned in the reference paper, and instead constructed our own sensitive
+attributes.
+
+Our training dataset comprised of 190 images, like in the reference work. It is
 important to note that our testing dataset contained 2243 images, while the
-original study's dataset contained only 1096. The reason for this is unclear as
-we used the full dataset, and found no mention of omitting images in the paper
-by reference paper. The images were flattened into vectors of length 32256. The
-target feature was evenly distributed across the dataset, i.e. the dataset
-contained 64 images of each person.
+original study's dataset contained only 1096. The reason for this is unclear,
+as we used the full dataset, and found no mention of the omission of certain
+images in the reference paper. The images were flattened into vectors
+of length $32,256$. The target feature was evenly distributed across the dataset,
+i.e. the dataset contained 64 images of each person.
 
 *** CIFAR data
 The CIFAR-10 and CIFAR-100 datasets were also collected from the University of

@@ -541,17 +541,7 @@ what Sarhan et al. reported for German, but only for particular
 random seeds: upon averaging over multiple random seeds these effects disappeared.
 #+END_EXPORT
 
-
 * 5 Discussion
-/Discuss whether we think our results support the claims of the paper. Discuss
-strengths and/or weaknesses of our approach./
-
-- Purely looking at our results, they only support some claims of the original
-  paper. (I suppose, Adult results, and German to an extent? CIFAR-10?)
-
-- A weakness of our approach could be that, if we would have had more time, we
-  would be able to try out more things to make training more stable.
-
 ** 5.1 What was easy
 - Theoretical idea and mathematics were easy to understand and well written out
 - Ehm, tabular datasets were relatively easy to reproduce? Maybe not a great point
@@ -587,6 +577,7 @@ few.
 - For the German dataset there is not predefined train-test split given.
 
 ** 5.3 Communication with original authors
+
 We did have been able to communicate with the original authors.
 - Got our hands on some missing parameters, such as sizes of latent
   representations, batch sizes, step_size, and more.
@@ -594,6 +585,16 @@ We did have been able to communicate with the original authors.
   losses are backpropagated.
 - Would receive some info over their YaleB processing but did not receive this
   in the end.
+
+** 5.4 Our approach
+Due to the large scope of the research preformed in our reference paper, our
+approach was diverse from the start. Many different avenues were explored from
+the beginning, dataloaders for all of the datasets were implemented and we had
+quickly written code to produce many of the figures necessary to asses the
+reproducibility of the research.  While this meant that we gained a better
+understanding of the models performance and behaviour on all of the datasets
+and tasks from the beginning, it was complicated to work on all the tasks and
+datasets simultaneously.
 
 * Appendix
 ** A Hyperparameters

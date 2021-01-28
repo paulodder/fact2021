@@ -53,13 +53,60 @@
 : refs.bib
 
 * Reproducibility Summary
-Summary can be a page long max and needs to be included
+
+# The implemented model aimed to produce embeddings of input data which are
+# invariant to some sensitive attribute. This, in turn, could allow algorithms to
+# make predictions which are invariant to these sensitive attributes. In order to
+# construct these 'fair' embeddings, Sarhan et al. explicilty modeled the
+# sensitive attributes, in order to ensure the target embeddings' invariance.
+
 ** Scope of Reproducibility
+The reference work presented the results of various experiments on five
+different datasets. Evaluation of the models preformance was done training two
+seperate classifiers. One, dubbed the 'target predictor', predicts the target
+aatribute from our models' target embeddings. The other 'sensitive predictor'
+predicts the sensitive attribute from the target embeddins. We attempt to
+reproduce these accuracies for all datasets.
+
+Besides this, the authors present an ablative study for all datasets, in which
+parts of the loss of the model are left out. Finally, the authors also
+presented a sensitivity analysis, this entailed varying hyperparameters that
+balance the contributions of different aspects of the loss, and observing the
+effects on the final target and sensitivity accuracies.
+
 ** Methodology
+As there was no openly available code base released alongside the paper the aim
+of our work was to re-implement and, as a result, reproduce the reference
+paper. To this end, we constructed a code base available at
+[[https://github.com/paulodder/fact2021]]. The implemented method combines two encoder networks, one maps input samples to
+the target space, and the other to the sensitive space. Samples from these
+distributions are fed to discriminator networks. We enforce orthogonality
+aswell as disentanglement of the latent distributions, while backpropogating
+losses through the encoder and discriminator that attempts to minimze the error
+of the discriminators. Besides this, we also minimze the amount of sensitive
+information in the target embeddings.
 ** Results
+In general, we were able to reproduce some of the results of the paper, but
+most of our results were inconsistent with the findings of Sarhan et al. For
+some of the simpeler datasets we found similar patterns and corresponding
+accuracies, but for the more complex tasks the models training became unstable,
+leadning to results that varied significantly across random seeds. This made
+reproduction infeasible.
 ** What was easy
+Conceptually, the paper was interesting and, given some prior knowledge on deep
+learning, variational autoencoders and the math involved, relatively
+straightforward to understand.
 ** What was difficult
+The most difficult aspect of the project was dealing with missing
+information. Many essential implementation details were missing, and the
+algorithm used to train the model was unclear and incorrect, there were
+inconsistencies in the pseudo code provided. Resolving these isuess all
+provided significant difficulties.
 ** Communication with original authors
+Various emails were exchanged with the original authors, in which we received
+explanation about unclear aspects of the paper. In general the authors were
+very helpful, but despite the fact that a few emails were exchanged, some
+aspect of the paper still remained unclear.
 
 \newpage
 * 1 Introduction
@@ -89,10 +136,11 @@ the reproducibility of the reference work.
 # jpj: <<TODO>> is this paragraph needed?
 The reference work by Sarhan et al. works towards a method of generating
 embeddings of data, while remaining invariant towards a particular
-feature. This is done by explicitly learning an encoding of the sensitive
-information, and forcing this encoding to be orthogonal and disentangled with
-respect to the actual `target' embeddings that are to be used in the downstream
-task.
+feature.
+#  This is done by explicitly learning an encoding of the sensitive
+# information, and forcing this encoding to be orthogonal and disentangled with
+# respect to the actual `target' embeddings that are to be used in the downstream
+# task.
 
 The eficacy of the proposed method is assessed using two evaluative
 questions. First, how well can the learned target representation be used in the
@@ -530,23 +578,23 @@ performance was worse than that of Sarhan et al.
 #+END_EXPORT
 
 *** Ablative
-#+BEGIN_SRC sh
-# # adult
-# bash scripts/ablative.sh adult
-# python scripts/visualize_ablative.py -d adult
-# # german
-# bash scripts/ablative.sh german
-# python scripts/visualize_ablative.py -d german
-# # yaleb
-# bash scripts/ablative.sh yaleb
-# python scripts/visualize_ablative.py -d yaleb
-# # cifar10
-# bash scripts/ablative.sh cifar10
-# python scripts/visualize_ablative.py -d cifar10
-# # cifar100
-# bash scripts/ablative.sh cifar100
-# python scripts/visualize_ablative.py -d cifar100
-#+END_SRC
+# #+BEGIN_SRC sh
+# # # adult
+# # bash scripts/ablative.sh adult
+# # python scripts/visualize_ablative.py -d adult
+# # # german
+# # bash scripts/ablative.sh german
+# # python scripts/visualize_ablative.py -d german
+# # # yaleb
+# # bash scripts/ablative.sh yaleb
+# # python scripts/visualize_ablative.py -d yaleb
+# # # cifar10
+# # bash scripts/ablative.sh cifar10
+# # python scripts/visualize_ablative.py -d cifar10
+# # # cifar100
+# # bash scripts/ablative.sh cifar100
+# # python scripts/visualize_ablative.py -d cifar100
+# #+END_SRC
 
 #+BEGIN_EXPORT latex
 \begin{figure}
@@ -588,14 +636,20 @@ performance was worse than that of Sarhan et al.
      \caption{Target and sensitive accuracies of our model trained using various combinations of loss term components, results are averaged over 5 random seeds. Specifically, Entropy refers to the $\mathcal{L}_E$ component, Orth refers to the orthogonality constraint between the prior means, and KL refers to the $\mathcal{L}_{OD}$ component (c.f. \cite{sarhan2020fairness}).}
      \label{fig:ablative}
 \end{figure}
+#+END_EXPORT
 
 The results of our ablative study are shown in Figure \ref{fig:ablative}, which can be compared with the ablative study of Sarhan et al. in Figure \ref{fig:sarhan_ablative} in Appendix B.
 The baseline measurement was omitted as it was unclear from the text what it
-entailed. In comparison to Sarhan et al., for German, we see that varying loss components seems to have less impact on performance; for Adult, we see similar invariability for target accuracy but a lower impact on sensitive accuracy; for CIFAR-10, we observe a larger variance in performance over seeds and loss components; and lastly, CIFAR-100 and YaleB results are significantly different.
-In summary, our ablative study results generally do not exhibit the same patterns as those of Sarhan et al.
+entailed.
 
-Apart from these comparisons, we observe that the `KL' loss component has two noticable and related effects: for CIFAR-10 and YaleB, the inclusion of this component entails a higher error bar (i.e., a higher variance in performance over multiple runs using different seeds), while for CIFAR-100, when this component is excluded, performance substantially increases beyond the range of majority vote.
-#+END_EXPORT
+In comparison to Sarhan et al., for German, we see that varying loss
+components seems to have less impact on performance; for Adult, we see similar
+invariability for target accuracy but a lower impact on sensitive accuracy; for
+CIFAR-10, we observe a larger variance in performance over seeds and loss
+components; and lastly, CIFAR-100 and YaleB results are significantly
+different.  In summary, our ablative study results generally do not exhibit the
+same patterns as those of Sarhan et al.
+
 
 *** Sensitivity
 
@@ -641,6 +695,7 @@ results from \cite{sarhan2020fairness}. Thus, when considering the large effort
 undertaken in this research to minutely reimplement their proposed method, we
 conclude that the original paper is relatively difficult to reproduce, and can
 in fact not be reproduced based solely on its contents.
+
 
 
 ** 5.1 What was easy
@@ -705,6 +760,17 @@ updated and how the losses are backpropagated when dealing with a shared
 encoder network. The authors were going to give us extra information on the
 YaleB dataset specifically, but we were not able to receive said information in
 time.
+
+
+** 5.4 Our approach
+Due to the large scope of the research preformed in our reference paper, our
+approach was diverse from the start. Many different avenues were explored from
+the beginning, dataloaders for all of the datasets were implemented and we had
+quickly written code to produce many of the figures necessary to asses the
+reproducibility of the research.  While this meant that we gained a better
+understanding of the models performance and behaviour on all of the datasets
+and tasks from the beginning, it was complicated to work on all the tasks and
+datasets simultaneously.
 
 * Appendix
 ** A Hyperparameters

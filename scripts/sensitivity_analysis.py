@@ -40,8 +40,8 @@ def get_sensitivity_results_fname(config, vp2val):
     return f"sensitivity&{config.dataset}&{parameter_spec}&{config.seed}.json"
 
 
-SEEDS = [42, 420, 4200, 0, 1]
-NOF_STEPS = 8
+SEEDS = [42, 420]
+NOF_STEPS = 4
 DATASET_VARYING_PARAMS2VALS = pd.Series(
     {
         (("adult", ("lambda_entropy", "lambda_od"))): (

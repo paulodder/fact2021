@@ -322,8 +322,10 @@ of each coarse class.
 
 ** 3.3 Implementation details
 
-Following the paper of cite:sarhan2020fairness, we implement the following networks for the
-several datasets. Note that for all the MLPs described we use ReLU activation functions.
+Following the paper of cite:sarhan2020fairness, we implement the following
+networks for the several datasets. Note that, for every MLP mentioned below,
+ReLU's are used as (non-final) activation functions.
+
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}
@@ -391,9 +393,26 @@ row as it has no meaningful information with which to make a prediction about
 the sensitive attribute. Again, we use solely accuracy as evaluation metric.
 
 ** 3.6 Computational Requirements
-- Include Hardware used (CPU/GPU used)
-- For each model, include average run-time
-- Include /total hours of GPU time/
+
+#+NAME: tab:computational_details
+#+ATTR_LATEX: :caption The average run-time for each of the five datasets and their configurations.
+| Dataset                 | Adult | German | YaleB | CIFAR-10 | CIFAR-100 | Total |
+| Average run-time (min.) |   0.8 |   0.22 |     2 |       11 |        19 |    62 |
+| Number of epochs        |     2 |     15 |    30 |       30 |        55 |     - |
+# <<TODO>> fix this ugly ass org-table @paul
+
+We used Google Colab Pro to train our models, which supplies one =Tesla
+V100-SXM2-16GB= GPU, and 2 =Intel(R) Xeon(R) CPU @ 2.00GHz= CPUs. Average
+run-times are specified in Table [[tab:computational_details]]. In order to train
+all models over various seeds for all results, this would be the estimated
+required run-time:
+$$
+(3 * 62) + (5 * 5 * 62) + (8^2 * 5 * 0.8) = 4,296 \text{ minutes}
+$$
+# To generate results, we need this # of runs:
+# - normal: 3 * (all datasets)
+# - ablative: 5 * 5 * (all datasets)
+# - sensitivity: (8 ** 2) * 5 * (adult)
 
 * 4 Results
 
@@ -435,7 +454,7 @@ information, resulting in target and sensitive accuracies that are equal to
 accuracies attained by majority vote (see Table \ref{tab:table1}).
 #+END_EXPORT
 
-*** Accuracies Adult, YaleB and German
+*** Adult, YaleB, and German
 
 #+BEGIN_EXPORT latex
 \begin{figure}
@@ -570,13 +589,26 @@ performance was worse than that of Sarhan et al.
      \label{fig:ablative}
 \end{figure}
 
-The results of our ablative study are shown in Figure \ref{fig:ablative}, which can be compared with the ablative study of Sarhan et al. in Appendix <<TODO>>.
+The results of our ablative study are shown in Figure \ref{fig:ablative}, which can be compared with the ablative study of Sarhan et al. in Figure \ref{fig:sarhan_ablative} in Appendix B.
 The baseline measurement was omitted as it was unclear from the text what it
 entailed. In comparison to Sarhan et al., for German, we see that varying loss components seems to have less impact on performance; for Adult, we see similar invariability for target accuracy but a lower impact on sensitive accuracy; for CIFAR-10, we observe a larger variance in performance over seeds and loss components; and lastly, CIFAR-100 and YaleB results are significantly different.
 In summary, our ablative study results generally do not exhibit the same patterns as those of Sarhan et al.
 
 Apart from these comparisons, we observe that the `KL' loss component has two noticable and related effects: for CIFAR-10 and YaleB, the inclusion of this component entails a higher error bar (i.e., a higher variance in performance over multiple runs using different seeds), while for CIFAR-100, when this component is excluded, performance substantially increases beyond the range of majority vote.
 #+END_EXPORT
+
+*** Sensitivity
+
+#+ATTR_LATEX: :width 0.8\linewidth :float nil
+#+CAPTION: Target and sensitive accuracies when varying $\lambda_{OD}$ together with $\lambda_E$ (left), and when varying $\gamma_{OD}$ together with $\gamma_E$ (right).
+#+label: fig:sensitive_adult
+[[file:../figures/sensitive.adult.png]]
+
+The results of our sensitivity study are shown in Figure
+\ref{fig:sensitive_adult}, which can be compared with the sensitivity study of
+Sarhan et al. in Figure \ref{fig:sarhan_sensitive_adult} in Appendix B.
+
+<<TODO>>
 
 * 5 Discussion
 /Discuss whether we think our results support the claims of the paper. Discuss
@@ -731,4 +763,20 @@ Adam optimzer [cite Adam].
   \end{center}
 \end{table}
 #+END_EXPORT
+** B Ablative and sensitive study results in Sarhan et al. (2020)
+
+For ease of comparison, we include two Figures from the reference paper. All
+rights for Figures [[fig:sarhan_ablative]] and [[fig:sarhan_sensitivity_adult]]
+reserved by Sarhan et al.
+
+#+ATTR_LATEX: :width 0.8\linewidth :float nil
+#+CAPTION: Figure 3 from \cite{sarhan2020fairness}, with original caption: /Ablative study. Dark gray and light gray dashed lines represent the accuracy results on the target and sensitive task respectively for the ``Entropy + KL Orth." model./
+#+label: fig:sarhan_ablative
+[[file:../figures/sarhan_ablative.png]]
+
+#+ATTR_LATEX: :width 0.8\linewidth :float nil
+#+CAPTION: Figure 5 from \cite{sarhan2020fairness}, with original caption: /Sensitivity analysis on the Adult dataset/
+#+label: fig:sarhan_sensitivity_adult
+[[file:../figures/sarhan_sensitivity_adult.png]]
+
 * References

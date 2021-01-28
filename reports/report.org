@@ -308,55 +308,44 @@ Adult dataset, the sensitive attribute is gender.
 *** YaleB data
 
 The Extended YaleB dataset was collected from the University of Toronto
-computer science department website cite:georghiades2000few. The `Cropped'
-version of the dataset was used \citep{KCLee05}, which contains 2433 grayscale,
-$192 \times 168$ images of 38 human faces under different lighting
-conditions. The task is to identify to which of the 38 humans an image
-corresponds. We constructed a sensitive attribute by clustering the
-illumination conditions into 5 clusters loosely corresponding to top left,
-bottom left, top right, bottom right and center. We defined these classes
-ourselves as we were unable to find detailed information on how this was done
-in the study by Sarhan et al. Our sensitive attributes' distribution was not
-skewed, with the `front' class containing around 800 images, and each of the
-four other classes between 340 and 380. This was not in line with the paper by
-Sarhan et al, who mention that a majority class classifier could attain 50\%
-accuracy, in our case this is around 0.35. Unfortunately, we were unable to
-find sufficient information to be able to replicate the ratios mentioned in the
-reference paper, and instead constructed our own sensitive attributes.
+computer science department website cite:georghiades2000few. Specifically,
+the `Cropped'version of the dataset was used \citep{KCLee05}, which contains
+grayscale images of 38 human faces under different lighting conditions. The
+task is to identify to which of the 38 humans an image corresponds. We
+constructed a sensitive attribute by clustering the illumination conditions
+into 5 clusters loosely corresponding to top left, bottom left, top right,
+bottom right and center. We defined these classes ourselves as we were unable
+to find detailed information on how this was done in the study by Sarhan et
+al. More details about the clustering of the illumination conditions can be
+found in the Appendix. Not that our majority class is not in line with the
+paper by Sarhan et al, who mention that a majority class classifier could
+attain 50\% accuracy, in our case this is around 50\%. Unfortunately, we were
+unable to find sufficient information to be able to replicate the ratios
+mentioned in the reference paper, and instead constructed our own sensitive
+attributes.
 
 Our training dataset comprised of 190 images corresponding to one lighting
 position from each cluster, following \citep{sarhan2020fairness,
 louizos2015variational}. It is important to note that our testing dataset
 contained 2243 images, while the testing set in the reference work contained
 only 1096. The reason for this is unclear, as we used the full dataset, and
-found no mention of the omission of certain images in the reference paper. The
-images were flattened into vectors of length $32,256$. The target feature was
-evenly distributed across the dataset, i.e. the dataset contained 64 images of
-each person.
+found no mention of the omission of certain images in the reference paper.
 
 *** CIFAR data
 
 The CIFAR-10 and CIFAR-100 datasets were also collected from the University of
-Toronto computer science department website cite:georghiades2000few. For both datasets,
-the predefined train:test ratio was 5:1, and no pre-processing was applied
-beyond the construction of target labels.
-
-CIFAR-10 consists of $60,000$ $32 \times 32 \times 3$ colour images that are
-divided into 10 classes such as airplane, automobile and bird. For our
-purposes, we construct a new target attribute, one that denotes whether the
-subject of the image is alive or not, following \citep{roy2019mitigating}. The
-sensitive attribute, then, is the original label of the image. There are
-$6,000$ images of each original class label. Of all images, 60\% are labelled
-as alive, and 40\% are not.
-
-The CIFAR-100 dataset is similar to CIFAR-10, except that images are
-categorized as one of 100 total fine-grained classes. These 100 fine classes
-are split into 20 coarse classes that cluster similar concepts into one
-category. For example: `beaver', `dolphin' and `otter' all belong to the coarse
-class `aquatic mammals' (c.f.  cite:proteek). Here, the coarse class of an
-image is used as the target attribute, while its fine class is used as the
-sensitive attribute. There are 600 images of each fine class, and 3000 images
-of each coarse class.
+Toronto computer science department website cite:georghiades2000few. CIFAR-10
+consists of colour images that are divided into 10 classes such as
+airplane, automobile and bird. For our purposes, we construct a new target
+attribute, one that denotes whether the subject of the image is alive or not,
+following \citep{roy2019mitigating}. The sensitive attribute, then, is the
+original label of the image. The CIFAR-100 dataset is similar to CIFAR-10,
+except that images are categorized as one of 100 total fine-grained
+classes. These 100 fine classes are split into 20 coarse classes that cluster
+similar concepts into one category. For example: `beaver', `dolphin' and
+`otter' all belong to the coarse class `aquatic mammals' (c.f.
+cite:proteek). Here, the coarse class of an image is used as the target
+attribute, while its fine class is used as the sensitive attribute.
 
 ** 3.3 Implementation details
 
@@ -777,7 +766,7 @@ datasets simultaneously.
       \hline
       YaleB  & $2433$ & $190:2243$  & $192 \times 168$ & $2.6\%$ & $35\%$ \\
       \hline
-      CIFAR-10  & $60,000$ & $5:1$  & $3 \times 32 \times 32$ & $50\%$ & $10\%$ \\
+      CIFAR-10  & $60,000$ & $5:1$  & $3 \times 32 \times 32$ & $60\%$ & $10\%$ \\
       \hline
       CIFAR-100  & $60,000$ & $5:1$  & $3 \times 32 \times 32$ & $5\%$ & $1\%$ \\
       \hline

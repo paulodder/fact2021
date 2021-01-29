@@ -156,7 +156,7 @@ visualize the results, we run
 python scripts/visualize_sensitivity.py --dataset adult
 #+END_SRC
 This stores the produced plot in =FIGURES_DIR/sensitivity.<dataset-name>.png=
-** Appendix Table 4 - Dataset details
+** Table 4 Appendix - Dataset details
 To produce the overview of the dataset details, we run
 #+BEGIN_SRC python
 pythons scripts/show_dataset_details.py
@@ -171,4 +171,6 @@ pythons scripts/show_dataset_details.py
 | Table 3              | =python scripts/run_cifar.py=                         |
 | Figure 1             | =bash scripts/train_and_plot_target_and_sens_accs.sh= |
 | Figure 2             | =bash scripts/all_ablative.sh=                        |
-| Figure 3             | =bash scripts/produce_sensitivity_plot.sh=                                   |
+| Figure 3             | =bash scripts/produce_sensitivity_plot.sh=            |
+| Table 4 (Appendix)   | =python scripts/show_dataset_details.py=              |
+| Figure 4 (Appendix)  | =python scripts/show_yaleb_positions.py |

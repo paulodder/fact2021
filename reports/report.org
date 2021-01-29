@@ -754,9 +754,9 @@ on performance.
 implementation that we resolved either by making a choice that seemed logical
 to us, or through contacting the original author. For example, there was
 limited information on how certain losses were backpropagated with a shared
-encoder network. Besides this, the implementation of the $\lambda$ decay was
-not clearly reported, these issues were both resolved in contact with the
-authors.
+encoder network. Besides this, the implementation of the decay the two
+$\lambda$ parameters was not clearly reported. These issues were both resolved
+in contact with the authors.
 
 \paragraph{Hyperparameters} The amount of epochs that the model was trained was
 not reported in either the paper or its supplementary material. This was quite

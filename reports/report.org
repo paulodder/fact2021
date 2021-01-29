@@ -409,13 +409,16 @@ data that is embedded using our trained model in the target space.
 
 The first classifier, known as the /target predictor/ is trained to predict the
 target label from the target embeddings. In accordance with the reference
-paper, we evaluated the target predictor using accuracy as metric. It is
-desirable that the target predictor performs as well as possible, as this means
-that the target embeddings embed the information necessary for the downstream
-task well.
+paper, we evaluated the target predictor using accuracy as metric. The details
+of the target predictors used are reported in Table \ref{tab:preds} in the
+Appendix. It is desirable that the target predictor performs as well as
+possible, as this means that the target embeddings embed the information
+necessary for the downstream task well.
 
 The second classifier, known as the /sensitive predictor/ is trained to predict
-the sensitive attribute from the target label. It is desirable that this
+the sensitive attribute from the target label. For the sensitive predictor we
+use the exact same architecture and hyperparameters (such as the learning rate)
+as for the sensitive discriminator. It is desirable that this
 classifier preforms poorly, as we would like there to be no information
 pertaining to the sensitive attribute in our target embedding. As such, we
 would like the model to be as close to a 'majority classifier' as possible,
@@ -761,7 +764,7 @@ and tasks from the beginning, it was complicated to work on all the tasks and
 datasets simultaneously.
 
 * Appendix
-** A  Loss terms derivations
+** A Loss terms derivations
 *** Representation loss
 The representation target loss can be computed as follows:
 #+BEGIN_EXPORT latex
@@ -889,9 +892,10 @@ positions that are selected for the train partition, are displayed in Figure
 [[fig:yaleb_lighting_positions]].
 
 ** C Hyperparameters
+
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
-Adam optimzer \citep{kingma2014adam}.
+Adam optimizer \citep{kingma2014adam}.
 <<TODO>> We should check whether these are in fact the last hyperparameters we used
 
 #+BEGIN_EXPORT latex
@@ -924,7 +928,7 @@ Adam optimzer \citep{kingma2014adam}.
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}
-    \caption{The $\lambda_{OD}, \lambda_E, \gamma_{OD}$ and $\gamma_E$ we used in our experiments}
+    \caption{The $\lambda_{OD}, \lambda_E, \gamma_{OD}$ and $\gamma_E$ used for every dataset.}
     \label{tab:hps2}
     \begin{tabular}{l|c|c|c|c}
       \hline
@@ -944,7 +948,32 @@ Adam optimzer \citep{kingma2014adam}.
   \end{center}
 \end{table}
 #+END_EXPORT
-** D Ablative and sensitive study results in Sarhan et al. (2020)
+** D Target predictor details
+We have reported the architectures and hyperparameters of the target predictor
+networks in Table \ref{tab:pred}.
+We used the Adam optimizer \citep{kingma2014adam} to optimize all MLP based
+predictor networks.
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{Details of the target predictor network per dataset.}
+    \label{tab:pred}
+    \begin{tabular}{l|c|c|c|c}
+      \hline
+      & Network Type & Hidden Dims & Learning Rate & Weight Decay \\
+      \hline
+      Tabular & Logistic Regression & -  & -  & - \\
+      \hline
+      YaleB   & MLP &  100 & $10^{-3}$ & 0 \\
+      \hline
+      CIFAR   & MLP &  256, 128 & $10^{-3}$ & 0 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
+** E Ablative and sensitive study results in Sarhan et al. (2020)
 
 For ease of comparison, we include two Figures from the reference paper. All
 rights for Figures [[fig:sarhan_ablative]] and [[fig:sarhan_sensitivity_adult]]

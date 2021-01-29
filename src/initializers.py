@@ -43,28 +43,6 @@ def get_sensitive_discriminator(args):
         nonlinearity=nn.Sigmoid if args.sens_output_dim == 1 else nn.Softmax,
     )
     return model
-    # elif args.dataset == "yaleb":
-    #     model = MLP(
-    #         input_dim=args.z_dim,
-    #         hidden_dims=[100, 100],
-    #         output_dim=5,
-    #         nonlinearity=nn.Softmax,
-    #     )
-    # elif args.dataset == "cifar10":
-    #     model = MLP(
-    #         input_dim=args.z_dim,
-    #         hidden_dims=[256, 128],
-    #         output_dim=10,
-    #         nonlinearity=nn.Sigmoid,
-    #     )
-    # else:
-    #     model = MLP(
-    #         input_dim=args.z_dim,
-    #         hidden_dims=[256, 128],
-    #         output_dim=100,
-    #         nonlinearity=nn.Sigmoid,
-    #     )
-    # return model
 
 
 def get_target_discriminator(config):
@@ -78,28 +56,6 @@ def get_target_discriminator(config):
         else nn.Softmax,
     )
     return model
-    # elif args.dataset == "yaleb":
-    #     model = MLP(
-    #         input_dim=args.z_dim,
-    #         hidden_dims=args.target_output_dim,
-    #         output_dim=args.target_disc_hidden_dims,
-    #         nonlinearity=nn.Softmax,
-    #     )
-    # elif args.dataset == "cifar10":
-    #     model = MLP(
-    #         input_dim=args.z_dim,
-    #         hidden_dims=[256, 128],
-    #         output_dim=1,
-    #         nonlinearity=nn.Sigmoid,
-    #     )
-    # else:
-    #     model = MLP(
-    #         input_dim=args.z_dim,
-    #         hidden_dims=[256, 128],
-    #         output_dim=20,
-    #         nonlinearity=nn.Sigmoid,
-    #     )
-    # return model
 
 
 def get_encoder(config):
@@ -138,102 +94,6 @@ def get_fodvae(config):
         loss_components=loss_components,
     )
     return fvae
-    # if config.dataset == "adult":
-    #     # lambda_od = config.get("lambda_od", 0.036)
-    #     # lambda_entropy = config.get("lambda_entropy", 0.55)
-    #     # gamma_od = config.get("gamma_od", 0.8)
-    #     # gamma_entropy = config.get("gamma_entropy", 0.133)
-    #     # step_size = config.get("step_size", 30)
-    #     # input_dim = 108
-    #     encoder = get_encoder(config)
-
-    #     fvae = FODVAE(
-    #         encoder,
-    #         disc_target,
-    #         disc_sensitive,
-    #         lambda_od=config.lambda_od,
-    #         lambda_entropy=config.lambda_entropy,
-    #         gamma_od=config.gamma_od,
-    #         gamma_entropy=config.gamma_entropy,
-    #         step_size=config.step_size,
-    #         z_dim=config.z_dim,
-    #         dataset=config.dataset,
-    #         loss_components=config.loss_components,
-    #     )
-    #     return fvae
-    # elif config.dataset == "german":
-    #     lambda_od = config.get("lambda_od", 0.036)
-    #     lambda_entropy = config.get("lambda_entropy", 0.55)
-    #     gamma_od = config.get("gamma_od", 0.8)
-    #     gamma_entropy = config.get("gamma_entropy", 0.133)
-    #     step_size = config.get("step_size", 30)
-    #     input_dim = 61
-    #     encoder = MLPEncoder(input_dim=input_dim, z_dim=config.z_dim)
-    #     return fvae
-    # elif config.dataset == "yaleb":
-    #     lambda_od = config.get("lambda_od", 0.037)
-    #     lambda_entropy = config.get("lambda_entropy", 1)
-    #     gamma_od = config.get("gamma_od", 1.1)
-    #     gamma_entropy = config.get("gamma_entropy", 2)
-    #     step_size = config.get("step_size", 100)
-    #     input_dim = 32256
-    #     encoder = MLPEncoder(
-    #         input_dim=input_dim, hidden_dims=[], z_dim=config.z_dim
-    #     )
-    #     # MLP(
-    #     #     input_dim=config.z_dim,
-    #     #     hidden_dims=[100, 100],
-    #     #     output_dim=38,
-    #     #     batch_norm=True,
-    #     #     nonlinearity=nn.Softmax,
-    #     # )
-    #     # fvae = FODVAE(
-    #     #     encoder,
-    #     #     disc_target,
-    #     #     disc_sensitive,
-    #     #     lambda_od=0.036,
-    #     #     lambda_entropy=0.5,
-    #     #     gamma_od=0.8,
-    #     #     gamma_entropy=1.33,
-    #     #     step_size=30,
-    #     #     z_dim=config.z_dim,
-    #     # )
-    #     fvae = FODVAE(
-    #         encoder,
-    #         disc_target,
-    #         disc_sensitive,
-    #         lambda_od=lambda_od,
-    #         lambda_entropy=lambda_entropy,
-    #         gamma_od=gamma_od,
-    #         gamma_entropy=gamma_entropy,
-    #         step_size=step_size,
-    #         z_dim=config.z_dim,
-    #         dataset=config.dataset,
-    #         loss_components=loss_components,
-    #     )
-    #     return fvae
-    # elif config.dataset in {"cifar10", "cifar100"}:
-    #     lambda_od = config.get("lambda_od", 0.036)
-    #     lambda_entropy = config.get("lambda_entropy", 0.55)
-    #     gamma_od = config.get("gamma_od", 0.8)
-    #     gamma_entropy = config.get("gamma_entropy", 0.133)
-    #     step_size = config.get("step_size", 30)
-    #     encoder = ResNetEncoder(z_dim=config.z_dim, continue_training=True)
-    #     disc_target = get_target_discriminator(config)
-    #     fvae = FODVAE(
-    #         encoder,
-    #         disc_target,
-    #         disc_sensitive,
-    #         lambda_od=lambda_od,
-    #         lambda_entropy=lambda_entropy,
-    #         gamma_od=gamma_od,
-    #         gamma_entropy=gamma_entropy,
-    #         step_size=step_size,
-    #         z_dim=config.z_dim,
-    #         dataset=config.dataset,
-    #         loss_components=loss_components,
-    #     )
-    #     return fvae
 
 
 def get_target_predictor_trainer(config):

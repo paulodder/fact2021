@@ -19,34 +19,8 @@ class SanityCIFAR10(pl.LightningModule):
         self.encoder = ResNetEncoder(z_dim=z_dim, continue_training=True)
         self.linear = nn.Linear(z_dim, 1)
         self.nonlinear = nn.Sigmoid()
-        # self.discriminator_target = MLP(
-        #     input_dim=z_dim,
-        #     hidden_dims=[256, 128],
-        #     output_dim=1,
-        #     nonlinearity=nn.Sigmoid,
-        # )
-        # self.discriminator_target = nn.Sequential(
-        #     nn.Linear(in_features=128, out_features=256, bias=True),
-        #     nn.ReLU(),
-        #     nn.Linear(in_features=256, out_features=128, bias=True),
-        #     nn.ReLU(),
-        #     nn.Linear(in_features=128, out_features=1, bias=True),
-        #     nn.Sigmoid(),
-        # )
 
     def configure_optimizers(self):
-        # optim_encoder = torch.optim.Adam(
-        #     self.encoder.parameters(), lr=10 ** -4, weight_decay=10 ** -2
-        # )
-        # disc_params = list(self.discriminator_target.parameters())
-        # # + list(
-        # # self.discriminator_sensitive.parameters()
-        # # )
-        # optim_disc = torch.optim.Adam(
-        #     disc_params, lr=10 ** -2, weight_decay=10 ** -3
-        # )
-
-        # return optim_encoder, optim_disc
         return torch.optim.Adam(self.parameters())
 
     def accuracy(self, pred_y, y):

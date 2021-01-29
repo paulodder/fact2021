@@ -108,7 +108,6 @@ class FODVAE(pl.LightningModule):
         self.discriminator_target = discriminator_target
         self.discriminator_sensitive = discriminator_sensitive
         self.dataset = dataset
-        # self.best_model_tracker = BestModelTracker(self, dataset)
         # Configure hyperparameters that have defaults
         hparams = {
             "gamma_entropy",
@@ -202,25 +201,6 @@ class FODVAE(pl.LightningModule):
             std_sensitive,
         )
 
-    # def yield_sensitive_repr_parameters(self):
-    #     """Return generator with parameters that should be updated according to the
-    #     sensitive representation loss, assuming that the second half of the
-    #     encoder output is used as sensitive latent approximated posterior
-    #     distribution parameters
-    #     """
-    #     final_linear_enc = self.encoder.net[-2]
-    #     w, b = list(final_linear_enc.parameters())
-    #     rel_enc_w = nn.Parameter(w[int(w.shape[0] / 2) :, :])
-    #     rel_enc_b = nn.Parameter(b[int(b.shape[0] / 2) :])
-    #     return (
-    #         params
-    #         for params in (
-    #             rel_enc_w,
-    #             rel_enc_b,
-    #             *self.discriminator_sensitive.parameters(),
-    #         )
-    #     )
-
     def configure_optimizers(self):
         # Optimizer for CIFAR datasets
         optim_encoder = torch.optim.Adam(
@@ -234,24 +214,7 @@ class FODVAE(pl.LightningModule):
         optim_discs = torch.optim.Adam(
             disc_params, lr=self.discs_lr, weight_decay=self.discs_weight_decay
         )
-        # return [
-        #     torch.optim.Adam(self.parameters()),
-        # ]
         return optim_encoder, optim_discs
-
-        # # Optimizer for YaleB dataset
-        # elif self.dataset == "yaleb":
-        #     optim = torch.optim.Adam(
-        #         self.parameters(), lr=10 ** -4, weight_decay=5 * (10 ** -2)
-        #     )
-        #     return optim
-
-        # # Optimizer for Adult and German datasets
-        # elif self.dataset in {"adult", "german"}:
-        #     optim = torch.optim.Adam(
-        #         self.parameters(), lr=1e-3, weight_decay=5e-4
-        #     )
-        #     return optim
 
     automatic_optimization = False
 
@@ -265,7 +228,6 @@ class FODVAE(pl.LightningModule):
         )
 
     def training_epoch_end(self, outputs):
-        # plot_all_embs(self)
         self.decay_lambdas()
 
     def accuracy(self, y, y_pred):

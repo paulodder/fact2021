@@ -389,28 +389,6 @@ networks for the several datasets. Note that, for every MLP mentioned below,
 ReLU's are used as (non-final) activation functions. For the CIFAR-10 and CIFAR-100 tasks, the
 encoder used was the ResNet-18 architecture \citep{he2016identity}.
 
-#+BEGIN_EXPORT latex
-\begin{table}[h!]
-  \begin{center}
-    \caption{Encoder and discriminator implementation details.}
-    \label{tab:imp}
-    \begin{tabular}{l|c|c|c|c|c}
-      \hline
-      \multirow{2}{*}{} & \multicolumn{3}{c|}{Encoder} & \multicolumn{2}{c}{Discriminator} \\
-      \hline
-      & Network Type & Hidden Dims &  Latent Dim & Network type & Hidden Dims  \\
-      \hline
-      Tabular & MLP       & 64  & 2   & MLP & 64, 64 \\
-      \hline
-      YaleB   & MLP       & 100 & 100 & MLP & 100, 100 \\
-      \hline
-      CIFAR   & ResNet-18 & -   & 128 & MLP & 256, 128 \\
-      \hline
-    \end{tabular}
-  \end{center}
-\end{table}
-#+END_EXPORT
-
 ** 3.4 Hyperparameters
 Most used hyperparameters were taken directly from the supplement provided by
 Sarhan et al. Optimal values for some hyperparameters were not reported,
@@ -500,7 +478,7 @@ despite faster training, the model's performance did not increase.
 \caption{The average run-time for each of the five datasets and their configurations.}
 \centering
 \begin{tabular}{l|r|r|r|r|r|r}
-Dataset & Adult & German & YaleB & CIFAR-10 & CIFAR-100 & Total\\
+Dataset & Aduplt & German & YaleB & CIFAR-10 & CIFAR-100 & Total\\
 Average run-time (min.) & 0.8 & 0.22 & 2 & 11 & 19 & 62\\
 Number of epochs & 2 & 15 & 30 & 30 & 55 & -\\
 \label{tab:computational_details}
@@ -975,6 +953,7 @@ positions that are selected for the train partition, are displayed in Figure
 
 ** C Hyperparameters
 
+
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
 Adam optimizer \citep{kingma2014adam}.
@@ -1030,6 +1009,29 @@ Adam optimizer \citep{kingma2014adam}.
   \end{center}
 \end{table}
 #+END_EXPORT
+** D Encoder and Discriminator details
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{Encoder and discriminator implementation details.}
+    \label{tab:imp}
+    \begin{tabular}{l|c|c|c|c|c}
+      \hline
+      \multirow{2}{*}{} & \multicolumn{3}{c|}{Encoder} & \multicolumn{2}{c}{Discriminator} \\
+      \hline
+      & Network Type & Hidden Dims &  Latent Dim & Network type & Hidden Dims  \\
+      \hline
+      Tabular & MLP       & 64  & 2   & MLP & 64, 64 \\
+      \hline
+      YaleB   & MLP       & 100 & 100 & MLP & 100, 100 \\
+      \hline
+      CIFAR   & ResNet-18 & -   & 128 & MLP & 256, 128 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
 ** D Target predictor details
 We have reported the architectures and hyperparameters of the target predictor
 networks in Table \ref{tab:pred}.

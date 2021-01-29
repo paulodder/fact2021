@@ -68,7 +68,7 @@ model by looking at the given config and associated hyperparameters.
 * Reproducing our results
 Now that you a main idea of our code, let us talk you through reproducing the
 specific results that we present in our paper.
-** Table 2
+** Table 3
 This table presents the target and sensitive accuracy achieved on the
 Cifar-10 and Cifar-100 dataset. We produced these results by running:
 #+BEGIN_SRC sh
@@ -76,13 +76,14 @@ python scripts/run_cifar.py
 #+END_SRC
 This script trains the correct models for Cifar-10 and Cifar-100 for 3
 different random seeds, and pickles the results stored in a pickled
-=pd.DataFrame= in the =RESULTS_DIR= defined in your =.env=.
-** Figure 1
+=pd.DataFrame= in the =RESULTS_DIR= defined in your =.env=. The results
+presented in our table are the average of the results across the random seeds.
+** Figure 1 - Comparing performance with other methods
 Figure 1 shows multiple bar plots that compare Sarhan et al's (2020) sensitive
 and target accuracies achieved on the raw data, embeddings from a regular VAE,
 and the target representations produced by the proposed model. They performed
-this experiment only on the Adult, German, and YaleB dataset.
-To produce all plots for this figure, we ran:
+this experiment only on the Adult, German, and YaleB dataset. To produce all
+plots for this figure, we ran:
 #+BEGIN_SRC sh
 bash scripts/train_and_plot_target_and_sens_accs.sh
 #+END_SRC
@@ -93,6 +94,49 @@ python scripts/make_fig2.py --dataset <dataset-name>
 It saves two figures per dataset in =FIGURES_DIR= (as specified in your
 =.env=): =<dataset-name>_sens.png= and =<dataset-name>_target.png= which show
 the sensitive and target accuracies, respectively.
+** Figure 2 - Ablative study
+Figure 2 shows multiple bar plots that compare the target and sensitive
+accuracies when turning on and off particular components of the loss term. To
+support this experiment, we added an additional command line argument
+=--loss_components= which must take one of the following values:
+| =none=            | Nor entropy loss nor OD loss is used                                          |
+| =entropy=         | Entropy loss is used but OD loss is not                                       |
+| =kl,orth=         | OD loss is used and the prior means are orthogonal, entropy loss is not  used |
+| =entropy,kl=      | Entropy loss and OD loss are used, but the prior means are not orthogonal     |
+| =entropy,kl,orth= | Both entropy loss and OD loss are used, the prior means are orthogonal        |
+The results are averaged over 5 random seeds. To produce the results for any
+of our datasets, we run:
+#+BEGIN_SRC sh
+bash ablative.sh <dataset name>
+#+END_SRC
+This will run our model on the given dataset for 5 different random seeds for
+each of the possible =--loss_components= values. The results for stored in
+=RESULTS_DIR= in the following format:
+=ablative.<dataset_name>.<loss-components>.<seed>.json= and each file contains
+the sensitive and target performance as follows:
+#+BEGIN_SRC text
+{
+  "target": <output of classification_report output_dict>,
+  "sensitive": <output of classification_report output_dict>
+}
+#+END_SRC
+
+To visualize the results of the ablative study, we run:
+#+BEGIN_SRC python
+python scripts/visualize_ablative.py --dataset <dataset-name>
+#+END_SRC
+This script will look at all the corresponding files in the =RESULTS_DIR=, and
+produce the corresponding bar plot for the dataset, averaging over the random
+seeds and including the std as an error bar. The resulting figure will be saved
+to =FIGURES_DIR/ablative.<dataset-name>.png=
+
+To produce the results and plots for all of the datasets, we run:
+#+BEGIN_SRC sh
+bash scripts/all_ablative.sh
+#+END_SRC
+
+Which just runs the =ablative.sh= to produce the results, and subsequently the
+=visualize_ablative.py= for each dataset.
 
 
 

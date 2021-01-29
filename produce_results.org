@@ -127,7 +127,8 @@ python scripts/visualize_ablative.py --dataset <dataset-name>
 #+END_SRC
 This script will look at all the corresponding files in the =RESULTS_DIR=, and
 produce the corresponding bar plot for the dataset, averaging over the random
-seeds and including the std as an error bar.
+seeds and including the std as an error bar. The resulting figure will be saved
+to =FIGURES_DIR/ablative.<dataset-name>.png=
 
 To produce the results and plots for all of the datasets, we run:
 #+BEGIN_SRC sh

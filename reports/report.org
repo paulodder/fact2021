@@ -437,7 +437,7 @@ Number of epochs & 2 & 15 & 30 & 30 & 55 & -\\
 
 We used Google Colab Pro to train our models, which supplies one =Tesla
 V100-SXM2-16GB= GPU, and 2 =Intel(R) Xeon(R) CPU @ 2.00GHz= CPUs. Average
-run-times are specified in Table [[tab:computational_details]]. In order to train
+run-times are specified in Table \ref{computational_detail} In order to train
 all models over various seeds for all results, this would be the estimated
 required run-time:
 $$

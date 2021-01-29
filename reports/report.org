@@ -70,7 +70,7 @@ certain sensitive attributes (like sex). The learned representations can be
 considered "fair" as they are independent of sensitive attributes. The authors
 report results on five different datasets, which most notably include (1) the
 ability of the representations to be used for downstream tasks (target
-prediction accuracy) and the extent to which sensitive information is present
+prediction accuracy) and (2) the extent to which sensitive information is present
 in these representations (sensitive prediction accuracy).
 
 In this text we report and compare the obtained results as well as highlight

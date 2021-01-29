@@ -61,38 +61,63 @@
 * Reproducibility Summary
 
 ** Scope of Reproducibility
-The reference work presented the results of various experiments on five
-different datasets. Evaluation of the models performance was done through
-computing the sensitive prediction accuracy, as well as the target predictor
-accuracy. We attempt to reproduce these accuracies for all datasets.
+# A challenging problem in machine learning entails learning representations of
+# data that can be used for downstream prediction tasks, yet that are fair with
+# respect to particular sensitive information
+\cite{sarhan2020fairness} propose a method of learning representations that can
+be used in downstream tasks like prediction, yet that are independent of
+certain sensitive attributes (like sex). The learned representations can be
+considered "fair" as they are independent of sensitive attributes. The authors
+report results on five different datasets, which most notably include (1) the
+ability of the representations to be used for downstream tasks (target
+prediction accuracy) and the extent to which sensitive information is present
+in these representations (sensitive prediction accuracy).
 
-Besides this, the authors present an ablative study for all datasets, in which
-parts of the loss of the model are left out. Finally, the authors also
-presented a sensitivity analysis, this entailed varying hyperparameters that
-balance the contributions of different aspects of the loss, and observing the
-effects on the final target and sensitivity accuracies.
+In this text we report and compare the obtained results as well as highlight
+any difficulties encountered in reproducing the reference paper by
+\cite{sarhan2020fairness}.
+#  a method of learning
+# representations of data that allow for downstream tasks The reference work
+# presents a method of producing representations of data that are in the results
+# of various experiments on five different datasets. Evaluation of the models
+# performance was done through computing the sensitive prediction accuracy, as
+# well as the target predictor accuracy. We attempt to reproduce these accuracies
+# for all datasets.
+
+# Besides this, the authors present an ablative study for all datasets, in which
+# parts of the loss of the model are left out. Finally, the authors also
+# presented a sensitivity analysis, this entailed varying hyperparameters that
+# balance the contributions of different aspects of the loss, and observing the
+# effects on the final target and sensitivity accuracies.
 
 ** Methodology
-As there was no openly available code base released alongside the paper the aim
-of our work was to re-implement and, as a result, reproduce the reference
-paper. Our codebase is available at [[https://github.com/paulodder/fact2021]]. The
-implemented method combines two encoder networks, one maps input samples to the
-target space, and the other to the sensitive space. Samples from these
-distributions are fed to discriminator networks. We enforce orthogonality
-as well as disentanglement of the latent distributions, while backpropogating
-losses through the encoder and discriminator that attempts to minimize the error
-of the discriminators. Besides this, we also minimize the amount of sensitive
-information in the target embeddings.
+As there was no openly available code base, we re-implemented the work. We
+included scripts to automatically download the required data, designed the
+dataloaders, and implemented the models as described in the reference
+paper. Code is available [[https://github.com/paulodder/fact2021]].\\
+#  We re-implemented implemented method combines two encoder networks, one maps
+# input samples to the target space, and the other to the sensitive
+# space. Samples from these distributions are fed to discriminator networks. We
+# enforce orthogonality as well as disentanglement of the latent distributions,
+# while backpropogating losses through the encoder and discriminator that
+# attempts to minimize the error of the discriminators. Besides this, we also
+# minimize the amount of sensitive information in the target embeddings.
 ** Results
-In general, we were able to reproduce some of the results of the paper, but
-most of our results were inconsistent with the findings of Sarhan et al. For
-some of the simpler datasets we found similar patterns and corresponding
-accuracies, but for the more complex tasks the models training became unstable,
+For three out of five datasets we achieved similar target
+prediction accuracy....
+We were able to reproduce some of the results of the paper, but a significant
+part of our results was inconsistent with the findings of
+\cite{sarhan2020fairness}. For some of the simpler datasets we found similar
+patterns, but for the more complex tasks the models training became unstable,
 leading to results that varied significantly across random seeds. This made
 reproduction infeasible.
+# For many tasks we were able to reproduce results under a particular random
+# seed, but saw these effects disappear as we averaged our results over multiple
+# random seeds.
+
 ** What was easy and what was difficult
-Conceptually, the paper was interesting and, given some prior knowledge on deep
-learning, variational autoencoders and the math involved, it was also relatively
+Conceptually, the paper was interesting and, given some prior knowledge on
+variational autoencoders and the math involved, it was also relatively
 straightforward to understand.
 
 The most difficult aspect of the project was dealing with missing
@@ -541,7 +566,7 @@ meaningful information, resulting in target and sensitive accuracies that are
 equal to accuracies attained by majority vote (see Table \ref{tab:table1}).
 #+END_EXPORT
 
-*** COMMENT Adult, YaleB, and German
+***  Adult, YaleB, and German
 
 #+BEGIN_EXPORT latex
 \begin{figure}
@@ -809,7 +834,7 @@ We have had the pleasure of communicating with the original authors of the
 paper. This helped getting our hands on some additional hyperparameters, such
 as the stepsize $t_s$ and the dimensions of the latent representations for some
 datasets, to name a few. Furthermore, we got insight in some implementation
-details, such as how the loss weights $\labmda_{OS}$ and $\lambda_E$ are
+details, such as how the loss weights $\labmda_{OS}$ and $\lambda_{E}$ are
 updated and how the losses are backpropagated when dealing with a shared
 encoder network. The authors were going to give us extra information on the
 YaleB dataset specifically, but we were not able to receive said information in
@@ -820,8 +845,8 @@ Due to the large scope of the research performed in our reference paper, our
 approach was diverse from the start. Many different avenues were explored from
 the beginning, dataloaders for all of the datasets were implemented and we had
 quickly written code to produce many of the figures necessary to asses the
-reproducibility of the research.  While this meant that we gained a better
-understanding of the models performance and behaviour on all of the datasets
+reproducibility of the research. While this meant that we gained a better
+understanding of the models' performance and behaviour on all of the datasets
 and tasks from the beginning, it was complicated to work on all the tasks and
 datasets simultaneously.
 

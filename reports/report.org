@@ -260,8 +260,10 @@ We can use the re-parameterization trick \citep{kingma2013auto} to sample
 from the posterior distribution to obtain the latent representations, which can
 then be fed to the respective discriminators.
 
-We combine all of the aforementioned losses and the objective becomes to
-minimize this combined loss:
+All of the aformentioned individual loss terms are further worked out in the
+Appendix. We combine all of them into one loss term and the objective becomes
+to minimize this combined loss:
+
 \begin{equation}
 \label{eq:total-loss}
 \underset{\theta_{T},\theta_{S},\phi{T},\phi{S}}{argmin}
@@ -269,8 +271,6 @@ minimize this combined loss:
 \mathcal{L}_{S}(\theta_{S^{*}},\phi_{S}) \lambda_{E}\mathcal{L}_{E}(\theta_{T},
 \phi_{S})  + \lambda_{OD}\mathcal{L}_{OD}(\phi_{T},\phi_{S})
 \end{equation}
-
-All of the individual loss terms are further worked out in the Appendix.
 
 Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
 entropy loss respectively. Additionally, we introduce two decay parameters,
@@ -280,10 +280,10 @@ training will be calculated as follows:
 \begin{equation}
 \lambda_{OD}^{(t)} = \lambda_{OD}^{(0)} \gamma_{OD}^{t/t_s}
 \end{equation}
-Here $t_s$ is the so-called /step-size/ parameter, and $\lambda_{OD} is the
+Here $t_s$ is the so-called /step-size/ parameter, and $\lambda_{OD}$ is the
 initial OD loss weight. The maximum entropy loss weight will be computed in the
 same way. $\lambda_{OD}^{(0)}, \lambda_{E}^{(0)}, \gamma_{OD},
-\gamma_{E}$ and $t_s$ are all hyperparamters that we need to set. More
+\gamma_{E}$ and $t_s$ are all hyperparameters that we need to set. More
 information on those will follow.
 
 ** 3.2 Datasets

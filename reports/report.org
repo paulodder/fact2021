@@ -17,6 +17,7 @@
 #+LaTeX_HEADER: \usepackage{microtype}      % microtypography
 #+LaTeX_HEADER: \usepackage{multirow}
 #+LaTeX_HEADER: \usepackage{subcaption}
+#+LaTeX_HEADER: \usepackage{bm}
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
@@ -62,7 +63,7 @@
 ** Scope of Reproducibility
 The reference work presented the results of various experiments on five
 different datasets. Evaluation of the models preformance was done through
-computing the sensitive prediction accuracy, aswell as the target predictor
+computing the sensitive prediction accuracy, as well as the target predictor
 accuracy. We attempt to reproduce these accuracies for all datasets.
 
 Besides this, the authors present an ablative study for all datasets, in which
@@ -87,7 +88,7 @@ In general, we were able to reproduce some of the results of the paper, but
 most of our results were inconsistent with the findings of Sarhan et al. For
 some of the simpeler datasets we found similar patterns and corresponding
 accuracies, but for the more complex tasks the models training became unstable,
-leadning to results that varied significantly across random seeds. This made
+leading to results that varied significantly across random seeds. This made
 reproduction infeasible.
 ** What was easy and what was difficult
 Conceptually, the paper was interesting and, given some prior knowledge on deep
@@ -107,7 +108,7 @@ aspect of the paper still remained unclear.
 \newpage
 * 1 Introduction
 
-One challenging problem in machine learning is to learn representations that
+One challenging problem in machine learning is learning representations that
 are fair with regards to a sensitive attribute present in the original
 samples. A common definition of fairness in this context is that the model's
 output is statistically independent from the sensitive attribute
@@ -130,7 +131,7 @@ proposed method. The remainder of this report is as follows. In the next
 section, we specify the parts of the original work that we attempt to
 reproduce. In Section 3, we summarize the method as proposed in
 \cite{sarhan2020fairness} that we attempt to reimplement. In Section 4, we
-discuss the results we attain. Finally, in Section 5, we discuss the results,
+report the results we attain. Finally, in Section 5, we discuss the results,
 and we analyse the reproducibility of the reference work.
 
 * 2 Scope of reproducibility
@@ -170,7 +171,7 @@ is constructed for two hyperparameters that control the decay of these loss term
 
 * 3 Methodology
 
-As the code of the original implementation was not available, it was our goal
+As the code of the original implementation is not available, it is our goal
 to reproduce the method, based on all implementation details expounded in the
 reference work. The essential elements of the model are described in the next
 section.

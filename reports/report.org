@@ -415,7 +415,7 @@ The second classifier, known as the /sensitive predictor/ is trained to predict
 the sensitive attribute from the target label. It is desirable that this
 classifier preforms poorly, as we would like there to be no information
 pertaining to the sensitive attribute in our target embedding. As such, we
-would like the model to be as close to a `majority classifier' as possible,
+would like the model to be as close to a 'majority classifier' as possible,
 where the model is forced to simply predict the majority label for each data
 row as it has no meaningful information with which to make a prediction about
 the sensitive attribute. Again, we use solely accuracy as evaluation metric.
@@ -629,8 +629,8 @@ The results of our ablative study are shown in Figure \ref{fig:ablative}, which 
 The baseline measurement was omitted as it was unclear from the text what it
 entailed.
 
-In comparison to Sarhan et al., for German, we see that varying loss components
-seems to have less impact on performance; for Adult, we see similar
+In comparison to Sarhan et al., for German, we see that varying loss
+components seems to have less impact on performance; for Adult, we see similar
 invariability for target accuracy but a lower impact on sensitive accuracy; for
 CIFAR-10, we observe a larger variance in performance over seeds and loss
 components; and lastly, CIFAR-100 and YaleB results are significantly
@@ -643,23 +643,13 @@ same patterns as those of Sarhan et al.
 #+ATTR_LATEX: :width 0.8\linewidth :float nil
 #+CAPTION: Target and sensitive accuracies when varying $\lambda_{OD}$ together with $\lambda_E$ (left), and when varying $\gamma_{OD}$ together with $\gamma_E$ (right).
 #+label: fig:sensitive_adult
-[[file:../figures/sensitivity.adult.png]]
+[[file:../figures/sensitive.adult.png]]
 
 The results of our sensitivity study are shown in Figure
 \ref{fig:sensitive_adult}, which can be compared with the sensitivity study of
 Sarhan et al. in Figure \ref{fig:sarhan_sensitive_adult} in Appendix B.
 
-When comparing these sensitivity analyses, it can easily be observed that there
-is very little in common between the two. First off, there is, for each
-subfigure, a sizeable difference in the accuracy ranges. This difference is in
-line with differences encounted in Figures \ref{fig:adult_target} and
-\ref{fig:adult_sens}. More importantly, however, there is very little
-similarity to be found in any of the accuracy landscapes displayed, with peaks
-and valleys located in different places. In the reference sensitivity analysis,
-these landscapes are smooth. However, this is also not reflected in our
-sensitivity analysis. Note that the smoothness of the reference sensitivity
-analysis might be visually exaggerated due to a relatively low number of
-coordinate samples.
+<<TODO>>
 
 * 5 Discussion
 The claim of the original authors are as follows: by disentangling the latent
@@ -711,12 +701,14 @@ performance.
 
 # I don't really now what to do with this part, seemed to be a substantial
 # paragraph before but not if we leave those two commented points out perhaps
-\paragraph{Implementation} There were a few unclear aspects of the model
-implementation that we resolved either by making a choice that seemed logical
-to us, or through contacting the original author. Fo example, there was limited
-information on how certain losses were backpropagated with a shared encoder
-network. Besides this, the implementation of the $\lambda$ decay was not
-clearly reported, these issues were both resolved in contact with the authors.
+\paragraph{Implementation}
+- Little information about given baseline models such as the VAE.
+
+# These two were later resolved so maybe not mention them in the report?
+# - Limited information on how certain losses were backpropagated with a shared
+#   encoder network. (resolved after contact with authors)
+# - Exact implementation of the $\lambda$ decay was not clearly reported
+#  (resolved after contact with authors)
 
 
 \paragraph{Hyperparameters}

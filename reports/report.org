@@ -776,7 +776,7 @@ for this datasets.
 We were unsure about some other details concerning the data as well. Namely,
 the type of data-normalization is not specified, and for the German dataset there
 is not a train-test split reported. However, these details were not as vital
-for reproduction as the aforementioned YaleB issue.
+for reproduction as the aforementioned issue concerning the YaleB dataset.
 
 ** 5.3 Communication with original authors
 We have had the pleasure of communicating with the original authors of the

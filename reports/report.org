@@ -437,7 +437,7 @@ Number of epochs & 2 & 15 & 30 & 30 & 55 & -\\
 
 We used Google Colab Pro to train our models, which supplies one =Tesla
 V100-SXM2-16GB= GPU, and 2 =Intel(R) Xeon(R) CPU @ 2.00GHz= CPUs. Average
-run-times are specified in Table [[tab:computational_details]]. In order to train
+run-times are specified in Table \ref{tab:computational_details}. In order to train
 all models over various seeds for all results, this would be the estimated
 required run-time:
 $$
@@ -628,8 +628,8 @@ The results of our ablative study are shown in Figure \ref{fig:ablative}, which 
 The baseline measurement was omitted as it was unclear from the text what it
 entailed.
 
-In comparison to Sarhan et al., for German, we see that varying loss
-components seems to have less impact on performance; for Adult, we see similar
+In comparison to Sarhan et al., for German, we see that varying loss components
+seems to have less impact on performance; for Adult, we see similar
 invariability for target accuracy but a lower impact on sensitive accuracy; for
 CIFAR-10, we observe a larger variance in performance over seeds and loss
 components; and lastly, CIFAR-100 and YaleB results are significantly
@@ -642,13 +642,23 @@ same patterns as those of Sarhan et al.
 #+ATTR_LATEX: :width 0.8\linewidth :float nil
 #+CAPTION: Target and sensitive accuracies when varying $\lambda_{OD}$ together with $\lambda_E$ (left), and when varying $\gamma_{OD}$ together with $\gamma_E$ (right).
 #+label: fig:sensitive_adult
-[[file:../figures/sensitive.adult.png]]
+[[file:../figures/sensitivity.adult.png]]
 
 The results of our sensitivity study are shown in Figure
 \ref{fig:sensitive_adult}, which can be compared with the sensitivity study of
 Sarhan et al. in Figure \ref{fig:sarhan_sensitive_adult} in Appendix B.
 
-<<TODO>>
+When comparing these sensitivity analyses, it can easily be observed that there
+is very little in common between the two. First off, there is, for each
+subfigure, a sizeable difference in the accuracy ranges. This difference is in
+line with differences encounted in Figures \ref{fig:adult_target} and
+\ref{fig:adult_sens}. More importantly, however, there is very little
+similarity to be found in any of the accuracy landscapes displayed, with peaks
+and valleys located in different places. In the reference sensitivity analysis,
+these landscapes are smooth. However, this is also not reflected in our
+sensitivity analysis. Note that the smoothness of the reference sensitivity
+analysis might be visually exaggerated due to a relatively low number of
+coordinate samples.
 
 * 5 Discussion
 The claim of the original authors are as follows: by disentangling the latent

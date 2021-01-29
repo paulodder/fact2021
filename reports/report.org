@@ -322,7 +322,7 @@ to find detailed information on how this was done in the study by Sarhan et
 al. More details about the clustering of the illumination conditions can be
 found in the Appendix. Not that our majority class is not in line with the
 paper by Sarhan et al, who mention that a majority class classifier could
-attain 50\% accuracy, in our case this is around 50\%. Unfortunately, we were
+attain 50\% accuracy, in our case this is around 35\%. Unfortunately, we were
 unable to find sufficient information to be able to replicate the ratios
 mentioned in the reference paper, and instead constructed our own sensitive
 attributes.
@@ -354,7 +354,8 @@ attribute, while its fine class is used as the sensitive attribute.
 
 Following the paper of \cite{sarhan2020fairness}, we implement the following
 networks for the several datasets. Note that, for every MLP mentioned below,
-ReLU's are used as (non-final) activation functions.
+ReLU's are used as (non-final) activation functions. For the CIFAR-10 and CIFAR-100 tasks, the
+encoder used was the ResNet-18 architecture \citep{he2016identity}.
 
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
@@ -701,8 +702,6 @@ select the best model during training. This trade-off ultimately determines
 which model is selected for testing which can have a large influence on
 performance.
 
-# I don't really now what to do with this part, seemed to be a substantial
-# paragraph before but not if we leave those two commented points out perhaps
 \paragraph{Implementation} There were a few unclear aspects of the model
 implementation that we resolved either by making a choice that seemed logical
 to us, or through contacting the original author. Fo example, there was limited
@@ -883,9 +882,7 @@ positions that are selected for the train partition, are displayed in Figure
 ** C Hyperparameters
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
-Adam optimzer \citep{kingma2014adam}. For the CIFAR-10 and CIFAR-100 tasks, the
-encoder used was the ResNet-18 architecture \citep{he2016identity}.
-
+Adam optimzer \citep{kingma2014adam}.
 <<TODO>> We should check whether these are in fact the last hyperparameters we used
 
 #+BEGIN_EXPORT latex

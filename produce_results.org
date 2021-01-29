@@ -66,18 +66,25 @@ The loaded configuration is passed to functions defined in
 [[file:src/iniitializers.py][src/iniitializers.py]], like =get_fodvae(config)= which returns the correct
 model by looking at the given config and associated hyperparameters.
 * Reproducing our results
+Table [[tab:commands]] summarizes the commands that produce the results presented
+in the corresponding listing our paper. For more information
+#+ATTR_LATEX: :width 0.5\linewidth :float nil
+#+CAPTION: The commands that reproduce the results presented in the corresponding listing from our paper.
+#+label: tab:commands
+| *Listing in our paper* | *Command to reproduce*                                |
+|------------------------+-------------------------------------------------------|
+| /                      | <                                                     |
+| Figure 1               | =bash scripts/train_and_plot_target_and_sens_accs.sh= |
+| Figure 2               | =bash scripts/all_ablative.sh=                        |
+| Figure 3               | =bash scripts/produce_sensitivity_plot.sh=            |
+| Figure 4 (Appendix)    | =python scripts/show_yaleb_positions.py=              |
+| Table 3                | =python scripts/run_cifar.py=                         |
+| Table 4 (Appendix)     | =python scripts/show_dataset_details.py=              |
+For more specific information about each script and the handling of results,
+see the sections below.
+
 Now that you a main idea of our code, let us talk you through reproducing the
 specific results that we present in our paper.
-** Table 3
-This table presents the target and sensitive accuracy achieved on the
-Cifar-10 and Cifar-100 dataset. We produced these results by running:
-#+BEGIN_SRC sh
-python scripts/run_cifar.py
-#+END_SRC
-This script trains the correct models for Cifar-10 and Cifar-100 for 3
-different random seeds, and pickles the results stored in a pickled
-=pd.DataFrame= in the =RESULTS_DIR= defined in your =.env=. The results
-presented in our table are the average of the results across the random seeds.
 ** Figure 1 - Comparing performance with other methods
 Figure 1 shows multiple bar plots that compare Sarhan et al's (2020) sensitive
 and target accuracies achieved on the raw data, embeddings from a regular VAE,
@@ -156,12 +163,6 @@ visualize the results, we run
 python scripts/visualize_sensitivity.py --dataset adult
 #+END_SRC
 This stores the produced plot in =FIGURES_DIR/sensitivity.<dataset-name>.png=
-** Table 4 Appendix - Dataset details
-To produce the overview of the dataset details, we run
-#+BEGIN_SRC python
-python scripts/show_dataset_details.py
-#+END_SRC
-This prints some of the details presented in the table to stdout.
 ** Figure 4 Appendix - YaleB lightning positions
 Figure 4 in our appendix visualizes the clustering of YaleB lightning positions
 that constitute our sensitive classes. To produce the plot, we run:
@@ -169,15 +170,19 @@ that constitute our sensitive classes. To produce the plot, we run:
 python scripts/show_yaleb_positions.py
 #+END_SRC
 which saves =yaleb_lighting_positions.png= to your =FIGURES_DIR=.
-
-
-* tldr
-| Listing in our paper | Command to reproduce                                  |
-|----------------------+-------------------------------------------------------|
-| /                    | <                                                     |
-| Table 3              | =python scripts/run_cifar.py=                         |
-| Figure 1             | =bash scripts/train_and_plot_target_and_sens_accs.sh= |
-| Figure 2             | =bash scripts/all_ablative.sh=                        |
-| Figure 3             | =bash scripts/produce_sensitivity_plot.sh=            |
-| Table 4 (Appendix)   | =python scripts/show_dataset_details.py= TODO         |
-| Figure 4 (Appendix)  | =python scripts/show_yaleb_positions.py=              |
+** Table 3
+This table presents the target and sensitive accuracy achieved on the
+Cifar-10 and Cifar-100 dataset. We produced these results by running:
+#+BEGIN_SRC sh
+python scripts/run_cifar.py
+#+END_SRC
+This script trains the correct models for Cifar-10 and Cifar-100 for 3
+different random seeds, and pickles the results stored in a pickled
+=pd.DataFrame= in the =RESULTS_DIR= defined in your =.env=. The results
+presented in our table are the average of the results across the random seeds.
+** Table 4 Appendix - Dataset details
+To produce the overview of the dataset details, we run
+#+BEGIN_SRC python
+python scripts/show_dataset_details.py
+#+END_SRC
+This prints some of the details presented in the table to stdout.

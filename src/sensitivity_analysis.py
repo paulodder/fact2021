@@ -33,8 +33,3 @@ if __name__ == "__main__":
                 target_acc, sens_acc = main(args, return_accuracy=True)
                 target_mat[p0_ind, p1_ind] = target_acc
                 sens_mat[p0_ind, p1_ind] = sens_acc
-
-    # ('lambda_od', 'gamma_entropy')
-    # ('gamma_od', 'gamma_entropy'): [[],[]]
-    # for param0, param1, vals0, vals1 in ('lambda_od', 'gamma_od'):
-    #     pass

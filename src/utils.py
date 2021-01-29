@@ -13,12 +13,6 @@ import argparse
 DOTENV = dotenv_values(find_dotenv())
 DATA_DIR = Path(DOTENV["DATA_DIR"])
 RESULTS_DIR = Path(DOTENV["RESULTS_DIR"])
-# constants
-# ENTROPY_wo_KL = "entropy_w/o_kl"
-# KL_ORTH_wo_ENTROPY = "kl_orth_w/o_entropy"
-# wo_ENTROPY_KL = "w/o_entropy_kl"
-# ENTROPY_KL_wo_ORTH = "entropy_kl_w/o_orth"
-# ENTROPY_KL_ORTH = "entropy_kl_orth"
 
 
 def current_device():
@@ -54,7 +48,6 @@ def fillnan(tensor, value):
 
 
 def loss_representation(y_pred, y_true, reduction="none"):
-    # y_pred = fillnan(torch.clamp(y_pred, 0, 1), 0.0)
     out = nn.functional.binary_cross_entropy(
         y_pred, y_true, reduction=reduction
     )
@@ -197,12 +190,6 @@ class Config:
             # print(k, v)
             out += "\n{:<30}{:<5}".format(str(k), str(v))
         return out
-
-
-# class ArgumentParser(argparse.ArgumentParser):
-#     def parse_args(self):
-#         namespace = super().parse_args()
-#         return NamespaceWithGet(namespace)
 
 
 def get_result_fname(config):

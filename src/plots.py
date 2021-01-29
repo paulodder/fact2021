@@ -45,18 +45,4 @@ def plot_yaleb_lighting_positions(fname="yaleb_lighting_positions"):
     plt.xlabel("azimuth")
     plt.ylabel("elevation")
 
-    # Plot number of corrupted images for each position
-    # pos2n_bad = {
-    #     ("-010", "+00"): 3,
-    #     ("+095", "+00"): 4,
-    #     ("-050", "-40"): 3,
-    #     ("+050", "-40"): 3,
-    #     ("-110", "+15"): 3,
-    #     ("-110", "-20"): 1,
-    #     ("-035", "+40"): 1,
-    # }
-    # for pos, n_bad in pos2n_bad.items():
-    #     label2coord = lambda l: int(l.replace("+", ""))
-    #     plt.text(label2coord(pos[0]), label2coord(pos[1]), str(n_bad))
-
     plt.savefig(FIGURES_DIR / (fname + ".png"), bbox_inches="tight")

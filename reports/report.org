@@ -65,13 +65,13 @@
 # data that can be used for downstream prediction tasks, yet that are fair with
 # respect to particular sensitive information
 \cite{sarhan2020fairness} propose a method of learning representations that can
-be used in downstream tasks like prediction, yet that are independent of
-certain sensitive attributes (like sex). The learned representations can be
-considered ``fair" as they are independent of sensitive attributes. The authors
-report results on five different datasets, which most notably include (1) the
-ability of the representations to be used for downstream tasks (target
-prediction accuracy) and the extent to which sensitive information is present
-in these representations (sensitive prediction accuracy).
+be used in downstream tasks, yet that are independent of certain sensitive
+attributes, such as race or sex. The learned representations can be considered
+``fair" as they are independent of sensitive attributes. The authors report
+results on five different datasets, which most notably include (1) the ability
+of the representations to be used for downstream tasks (target prediction
+accuracy) and (2) the extent to which sensitive information is present in these
+representations (sensitive prediction accuracy).
 
 In this text we report and compare the obtained results as well as highlight
 any difficulties encountered in reproducing the reference paper by
@@ -103,17 +103,12 @@ paper. Code is available [[https://github.com/paulodder/fact2021]].\\
 # attempts to minimize the error of the discriminators. Besides this, we also
 # minimize the amount of sensitive information in the target embeddings.
 ** Results
-For three out of five datasets we achieved similar target
-prediction accuracy....
 We were able to reproduce some of the results of the paper, but a significant
 part of our results was inconsistent with the findings of
 \cite{sarhan2020fairness}. For some of the simpler datasets we found similar
 patterns, but for the more complex tasks the models training became unstable,
 leading to results that varied significantly across random seeds. This made
 reproduction infeasible.
-# For many tasks we were able to reproduce results under a particular random
-# seed, but saw these effects disappear as we averaged our results over multiple
-# random seeds.
 
 ** What was easy and what was difficult
 Conceptually, the paper was interesting and, given some prior knowledge on
@@ -353,7 +348,7 @@ to find detailed information on how this was done in the study by Sarhan et
 al. More details about the clustering of the illumination conditions can be
 found in the Appendix. Note that our majority class is not in line with the
 paper by Sarhan et al, who mention that a majority class classifier could
-attain 50\% accuracy, in our case this is around 35\%. Unfortunately, we were
+attain 50% accuracy, in our case this is around 35%. Unfortunately, we were
 unable to find sufficient information to be able to replicate the ratios
 mentioned in the reference paper, and instead constructed our own sensitive
 attributes.
@@ -386,28 +381,6 @@ Following the paper of \cite{sarhan2020fairness}, we implement the following
 networks for the several datasets. Note that, for every MLP mentioned below,
 ReLU's are used as (non-final) activation functions. For the CIFAR-10 and CIFAR-100 tasks, the
 encoder used was the ResNet-18 architecture \citep{he2016identity}.
-
-#+BEGIN_EXPORT latex
-\begin{table}[h!]
-  \begin{center}
-    \caption{Encoder and discriminator implementation details.}
-    \label{tab:imp}
-    \begin{tabular}{l|c|c|c|c|c}
-      \hline
-      \multirow{2}{*}{} & \multicolumn{3}{c|}{Encoder} & \multicolumn{2}{c}{Discriminator} \\
-      \hline
-      & Network Type & Hidden Dims &  Latent Dim & Network type & Hidden Dims  \\
-      \hline
-      Tabular & MLP       & 64  & 2   & MLP & 64, 64 \\
-      \hline
-      YaleB   & MLP       & 100 & 100 & MLP & 100, 100 \\
-      \hline
-      CIFAR   & ResNet-18 & -   & 128 & MLP & 256, 128 \\
-      \hline
-    \end{tabular}
-  \end{center}
-\end{table}
-#+END_EXPORT
 
 ** 3.4 Hyperparameters
 Most used hyperparameters were taken directly from the reference work, or its
@@ -498,7 +471,7 @@ despite faster training, the model's performance did not increase.
 \caption{The average run-time for each of the five datasets and their configurations.}
 \centering
 \begin{tabular}{l|r|r|r|r|r|r}
-Dataset & Adult & German & YaleB & CIFAR-10 & CIFAR-100 & Total\\
+Dataset & Aduplt & German & YaleB & CIFAR-10 & CIFAR-100 & Total\\
 Average run-time (min.) & 0.8 & 0.22 & 2 & 11 & 19 & 62\\
 Number of epochs & 2 & 15 & 30 & 30 & 55 & -
 \label{tab:computational_details}
@@ -956,6 +929,7 @@ positions that are selected for the train partition, are displayed in Figure
 
 ** C Hyperparameters
 
+
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
 Adam optimizer \citep{kingma2014adam}.
@@ -1011,6 +985,29 @@ Adam optimizer \citep{kingma2014adam}.
   \end{center}
 \end{table}
 #+END_EXPORT
+** D Encoder and Discriminator details
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{Encoder and discriminator implementation details.}
+    \label{tab:imp}
+    \begin{tabular}{l|c|c|c|c|c}
+      \hline
+      \multirow{2}{*}{} & \multicolumn{3}{c|}{Encoder} & \multicolumn{2}{c}{Discriminator} \\
+      \hline
+      & Network Type & Hidden Dims &  Latent Dim & Network type & Hidden Dims  \\
+      \hline
+      Tabular & MLP       & 64  & 2   & MLP & 64, 64 \\
+      \hline
+      YaleB   & MLP       & 100 & 100 & MLP & 100, 100 \\
+      \hline
+      CIFAR   & ResNet-18 & -   & 128 & MLP & 256, 128 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
 ** D Target predictor details
 We have reported the architectures and hyperparameters of the target predictor
 networks in Table \ref{tab:pred}.

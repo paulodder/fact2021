@@ -260,7 +260,7 @@ We can use the re-parameterization trick \citep{kingma2013auto} to sample
 from the posterior distribution to obtain the latent representations, which can
 then be fed to the respective discriminators.
 
-All of the aformentioned individual loss terms are further worked out in the
+All of the aforementioned individual loss terms are further worked out in the
 Appendix. We combine all of them into one loss term and the objective becomes
 to minimize this combined loss:
 

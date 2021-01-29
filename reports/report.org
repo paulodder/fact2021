@@ -859,7 +859,7 @@ The OD sensitive loss can be computed in a similar way.
       \hline
       German  & $1000$ & $4:1$  & $61$ & $68\%$ & $70\%$ \\
       \hline
-      YaleB  & $2433$ & $190:2243$  & $192 \times 168$ & $2.6\%$ & $35\%$ \\
+      YaleB  & $2433$ & $190:2243$  & $192 \times 168$ & $2.7\%$ & $35.6\%$ \\
       \hline
       CIFAR-10  & $60,000$ & $5:1$  & $3 \times 32 \times 32$ & $60\%$ & $10\%$ \\
       \hline

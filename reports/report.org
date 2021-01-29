@@ -108,12 +108,12 @@ aspect of the paper still remained unclear.
 \newpage
 * 1 Introduction
 
-One challenging problem in machine learning is learning representations that
+A challenging problem in machine learning is learning representations that
 are fair with regards to a sensitive attribute present in the original
 samples. A common definition of fairness in this context is that the model's
 output is statistically independent from the sensitive attribute
 \citep{xie2017controllable, roy2019mitigating, quadrianto2019discovering,
-fairmlbook}. The work of \cite{sarhan2020fairness} proposes a new way to learn
+fairmlbook}. \cite{sarhan2020fairness} proposes a new way to learn
 fair representations that are invariant towards the sensitive attribute, but
 are still useful for the task at hand. The proposed method to achieve this
 invariability is to disentangle the latent representation into independent
@@ -640,19 +640,28 @@ components; and lastly, CIFAR-100 and YaleB results are significantly
 different.  In summary, our ablative study results generally do not exhibit the
 same patterns as those of Sarhan et al.
 
-
-*** Sensitivity
+*** Sensitivity analysis on Adult
 
 #+ATTR_LATEX: :width 0.8\linewidth :float nil
 #+CAPTION: Target and sensitive accuracies when varying $\lambda_{OD}$ together with $\lambda_E$ (left), and when varying $\gamma_{OD}$ together with $\gamma_E$ (right).
 #+label: fig:sensitive_adult
-[[file:../figures/sensitive.adult.png]]
+[[file:../figures/sensitivity.adult.png]]
 
 The results of our sensitivity study are shown in Figure
 \ref{fig:sensitive_adult}, which can be compared with the sensitivity study of
 Sarhan et al. in Figure \ref{fig:sarhan_sensitive_adult} in Appendix B.
 
-<<TODO>>
+When comparing these sensitivity analyses, it can easily be observed that there
+is very little in common between the two. First off, there is, for each
+subfigure, a sizeable difference in the accuracy ranges. This difference is in
+line with differences encounted in Figures \ref{fig:adult_target} and
+\ref{fig:adult_sens}. More importantly, however, there is very little
+similarity to be found in any of the accuracy landscapes displayed, with peaks
+and valleys located in different places. In the reference sensitivity analysis,
+these landscapes are smooth. However, this is also not reflected in our
+sensitivity analysis. Note that the smoothness of the reference sensitivity
+analysis might be visually exaggerated due to a relatively low number of
+coordinate samples.
 
 * 5 Discussion
 The claim of the original authors are as follows: by disentangling the latent

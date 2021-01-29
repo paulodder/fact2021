@@ -1,7 +1,7 @@
 #+BIND: org-export-use-babel nil
 #+TITLE: FACT 2021
-This repository contains all work relating to the UvA FACT 2021
-course.
+This repository contains all work relating to the UvA FACT 2021 course. Our
+main report is in [[file:reports/report.org][reports/report.org]] (or [[file:reports/report.pdf][reports/report.pdf]]).
 * Setup
 ** Virtualenv
 Fire up a =python3.8= virtualenvironment and install the requirements accordingly:
@@ -22,3 +22,5 @@ To get the data, make sure to have =DATA_DIR= set in your =.env= and run
 #+BEGIN_SRC sh
 bash scripts/get_all.sh
 #+END_SRC
+* Reproducing our results
+To reproduce our results, see [[file:produce_results.org][produce_results.org]] (or [[produce_results.org][produce_results.pdf]]).

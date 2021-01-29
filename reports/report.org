@@ -17,6 +17,7 @@
 #+LaTeX_HEADER: \usepackage{microtype}      % microtypography
 #+LaTeX_HEADER: \usepackage{multirow}
 #+LaTeX_HEADER: \usepackage{subcaption}
+#+LaTeX_HEADER: \usepackage{bm}
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
@@ -62,7 +63,7 @@
 ** Scope of Reproducibility
 The reference work presented the results of various experiments on five
 different datasets. Evaluation of the models preformance was done through
-computing the sensitive prediction accuracy, aswell as the target predictor
+computing the sensitive prediction accuracy, as well as the target predictor
 accuracy. We attempt to reproduce these accuracies for all datasets.
 
 Besides this, the authors present an ablative study for all datasets, in which
@@ -87,7 +88,7 @@ In general, we were able to reproduce some of the results of the paper, but
 most of our results were inconsistent with the findings of Sarhan et al. For
 some of the simpeler datasets we found similar patterns and corresponding
 accuracies, but for the more complex tasks the models training became unstable,
-leadning to results that varied significantly across random seeds. This made
+leading to results that varied significantly across random seeds. This made
 reproduction infeasible.
 ** What was easy and what was difficult
 Conceptually, the paper was interesting and, given some prior knowledge on deep
@@ -107,7 +108,7 @@ aspect of the paper still remained unclear.
 \newpage
 * 1 Introduction
 
-One challenging problem in machine learning is to learn representations that
+One challenging problem in machine learning is learning representations that
 are fair with regards to a sensitive attribute present in the original
 samples. A common definition of fairness in this context is that the model's
 output is statistically independent from the sensitive attribute
@@ -130,7 +131,7 @@ proposed method. The remainder of this report is as follows. In the next
 section, we specify the parts of the original work that we attempt to
 reproduce. In Section 3, we summarize the method as proposed in
 \cite{sarhan2020fairness} that we attempt to reimplement. In Section 4, we
-discuss the results we attain. Finally, in Section 5, we discuss the results,
+report the results we attain. Finally, in Section 5, we discuss the results,
 and we analyse the reproducibility of the reference work.
 
 * 2 Scope of reproducibility
@@ -170,7 +171,7 @@ is constructed for two hyperparameters that control the decay of these loss term
 
 * 3 Methodology
 
-As the code of the original implementation was not available, it was our goal
+As the code of the original implementation is not available, it is our goal
 to reproduce the method, based on all implementation details expounded in the
 reference work. The essential elements of the model are described in the next
 section.
@@ -268,6 +269,8 @@ minimize this combined loss:
 \mathcal{L}_{S}(\theta_{S^{*}},\phi_{S}) \lambda_{E}\mathcal{L}_{E}(\theta_{T},
 \phi_{S})  + \lambda_{OD}\mathcal{L}_{OD}(\phi_{T},\phi_{S})
 \end{equation}
+
+All of the individual loss terms are further worked out in the Appendix.
 
 Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
 entropy loss respectively. Additionally, we introduce two decay parameters,
@@ -437,7 +440,7 @@ Number of epochs & 2 & 15 & 30 & 30 & 55 & -\\
 
 We used Google Colab Pro to train our models, which supplies one =Tesla
 V100-SXM2-16GB= GPU, and 2 =Intel(R) Xeon(R) CPU @ 2.00GHz= CPUs. Average
-run-times are specified in Table \ref{computational_detail} In order to train
+run-times are specified in Table \ref{tab:computational_details}. In order to train
 all models over various seeds for all results, this would be the estimated
 required run-time:
 $$
@@ -700,12 +703,14 @@ performance.
 
 # I don't really now what to do with this part, seemed to be a substantial
 # paragraph before but not if we leave those two commented points out perhaps
-\paragraph{Implementation} There were a few unclear aspects of the model
-implementation that we resolved either by making a choice that seemed logical
-to us, or through contacting the original author. Fo example, there was limited
-information on how certain losses were backpropagated with a shared encoder
-network. Besides this, the implementation of the $\lambda$ decay was not
-clearly reported, these issues were both resolved in contact with the authors.
+\paragraph{Implementation}
+- Little information about given baseline models such as the VAE.
+
+# These two were later resolved so maybe not mention them in the report?
+# - Limited information on how certain losses were backpropagated with a shared
+#   encoder network. (resolved after contact with authors)
+# - Exact implementation of the $\lambda$ decay was not clearly reported
+#  (resolved after contact with authors)
 
 
 \paragraph{Hyperparameters}
@@ -751,7 +756,93 @@ and tasks from the beginning, it was complicated to work on all the tasks and
 datasets simultaneously.
 
 * Appendix
-** A Dataset details
+** A  Loss terms derivations
+*** Representation loss
+The representation target loss can be computed as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    \mathcal{L}_{T}(\theta_{T},\phi_{T})
+    &= KL(p(\bm{y}|\bm{x})\parallel q_{\phi_{T}}(\bm{y}|\bm{z}_{T})) \\
+    &= - \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log q_{\phi_T} (\bm{s} | \bm{z}_T)
+    + \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log p(\bm{y} | \bm{x})
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+The second part of this expression solely depends on the true posterior of our
+data and hence does not depend on our neural network. Therefore, we drop it
+here. What remains is equal to the cross-entropy loss:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \label{eq:rep_target_loss}
+\mathcal{L}_{T}(\theta_{T},\phi_{T}) = \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log q_{\phi_T} (\bm{s} | \bm{z}_T)
+\end{equation}
+#+END_EXPORT
+This is the same as the cross-entropy loss over the output of the
+discriminator. The representation sensitive loss can be computed in similar
+fashion.
+*** Maximum Entropy loss
+We can compute the entropy loss as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    \mathcal{L}_{E}(\phi_{S},\theta_{T})
+    &= KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s})) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log \mathcal{U}(\bm{s}) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \log \frac{1}{m} \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    + \log m
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+The second term is a constant and will be the same for every loss no matter the
+network, hence we drop it:
+\begin{equation}
+\label{eq:entropy_loss}
+\mathcal{L}_{E}(\phi_{S},\theta_{T}) = \sum_{\bm{s}}
+q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+\end{equation}
+Note that by dropping the last term, the entropy loss will always be negative.
+*** Orthogonal-Disentangled loss
+We can write out the OD target loss as follows,
+#+BEGIN_EXPORT latex
+\[
+\begin{aligned}
+  \mathcal{L}_{\bm{z}_{T}}(\theta_{T})
+  &= KL(q_{\theta_{T}}(\bm{z}_{T} \vert \bm{x}) \parallel p(\bm{z}_{T})) \\
+  &= - \sum_{i=1}^{d_T} KL(q_{\theta_{T}}z_{T}^i \vert \bm{x}) \parallel p(z_{T}^i))
+\end{aligned}
+\]
+#+END_EXPORT
+because both the prior and the encoder posterior are independent Gaussian distributions, the
+KL divergence between the two is simply a sum over KL divergences between the
+univariate Gaussians $q_{\theta_{T}}(z_{T}^i \vert \bm{x})$ and $p(z_{T}^i)$.
+
+One KL divergence terms can be computed as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    KL(q_{\theta_{T}}(z^i_T \vert \bm{x}) \parallel p(z^i_T))
+    &= - \int q_{\theta_{T}}(z^i_T \vert \bm{x}) \log \frac{q_{\theta_{T}}(z^i_T \vert \bm{x})}
+    {p(z^i_T)} d\bm{x} \\
+    &= \frac{1}{2} \log (2 \pi \sigma_{p_T}^i)
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 (\sigma_{p_T}^i)^2}
+    - \frac{1}{2} (1 + \log 2\pi (\sigma_{q_T}^i)^2) \\
+    &= \log \frac{\sigma_{p_T}^i}{\sigma_{q_T}^i}
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 (\sigma_{p_T}^i)^2}
+    - \frac{1}{2}
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+In practice, we will compute the element-wise KL divergence between the prior
+and posterior and sum over the result. The OD losses therefore require the
+output /means/ and /variances/ of the encoder network and the /prior distributions/
+of the latent variable.
+The OD sensitive loss can be computed in a similar way.
+
+** B Dataset details
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}
@@ -792,7 +883,7 @@ five-class sensitive attribute. These clusters, as well as the lighting
 positions that are selected for the train partition, are displayed in Figure
 [[fig:yaleb_lighting_positions]].
 
-** B Hyperparameters
+** C Hyperparameters
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
 Adam optimzer \citep{kingma2014adam}. For the CIFAR-10 and CIFAR-100 tasks, the
@@ -850,7 +941,7 @@ encoder used was the ResNet-18 architecture \citep{he2016identity}.
   \end{center}
 \end{table}
 #+END_EXPORT
-** C Ablative and sensitive study results in Sarhan et al. (2020)
+** D Ablative and sensitive study results in Sarhan et al. (2020)
 
 For ease of comparison, we include two Figures from the reference paper. All
 rights for Figures [[fig:sarhan_ablative]] and [[fig:sarhan_sensitivity_adult]]

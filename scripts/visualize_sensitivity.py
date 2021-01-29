@@ -37,11 +37,11 @@ def get_varying_param2vals2seed2results(args):
     rel_files = [
         f
         for f in (RESULTS_DIR.glob("*json"))
-        if f.name.startswith(f"sensitivity&{args.dataset}")
+        if f.name.startswith(f"sensitivity_{args.dataset}")
     ]
 
     def get_parameter_spec(fname):
-        return fname.name.split("&")[2]
+        return fname.name.split("_", 2)[-1].rsplit("_", 1)[0]
 
     def get_varying_params(fname):
         return tuple(re.findall("[a-z_]+", get_parameter_spec(fname)))
@@ -50,7 +50,7 @@ def get_varying_param2vals2seed2results(args):
         return tuple(re.findall("[0-9.]+", get_parameter_spec(fname)))
 
     def get_seed(fname):
-        return fname.stem.split("&")[-1]
+        return fname.stem.split("_")[-1]
 
     def load_results(fname):
         with open(fname) as f:
@@ -84,7 +84,7 @@ def plot_heat_matrix(coord2val, ax):
         *zip(
             *enumerate(
                 sorted(
-                    set([xy[0] for xy in coord2val.index]),
+                    set([xy[1] for xy in coord2val.index]),
                     key=float,
                     reverse=True,
                 )
@@ -94,19 +94,14 @@ def plot_heat_matrix(coord2val, ax):
     coord2ind1 = pd.Series(
         *zip(
             *enumerate(
-                sorted(set([xy[1] for xy in coord2val.index]), key=float)
+                sorted(set([xy[0] for xy in coord2val.index]), key=float)
             )
         )
     )
     hmap = np.zeros((coord2ind0.size, coord2ind1.size))
     for coord0, ind0 in coord2ind0.iteritems():
         for coord1, ind1 in coord2ind1.iteritems():
-            # breakpoint()
-            hmap[ind0, ind1] = coord2val[(coord0, coord1)]
-            # print(coord2val[coord2val.index == (coord0, coord1)].get(0))
-            # hmap[ind0, ind1] = coord2val[
-            #     coord2val.index == (coord0, coord1)
-            # ].get(0)
+            hmap[ind0, ind1] = coord2val[(coord1, coord0)]
 
     def get_labels(vals):
         return [
@@ -220,8 +215,8 @@ if __name__ == "__main__":
         plot_heat_matrix(vals2acc_mean_s, ax_s)
         ax_s.set_title("Sensitive accuracy")
         for this_ax in [ax_s, ax_t]:
-            this_ax.set_xlabel(PARAM_NAME2PRETTY_NAME[varying_params[0]])
-            this_ax.set_ylabel(PARAM_NAME2PRETTY_NAME[varying_params[1]])
+            this_ax.set_xlabel(PARAM_NAME2PRETTY_NAME[varying_params[1]])
+            this_ax.set_ylabel(PARAM_NAME2PRETTY_NAME[varying_params[0]])
     out_fpath = FIGURES_DIR / f"sensitivity.{args.dataset}.png"
     fig.savefig(out_fpath)
     print(f"Saved fig to {out_fpath.relative_to(PROJECT_DIR)}")

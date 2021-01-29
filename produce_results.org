@@ -142,9 +142,26 @@ results for this plot, we run:
 #+BEGIN_SRC bash
 python scripts/sensitivity_analysis.py --dataset adult
 #+END_SRC
-It runs our model on the Adult dataset for 64 different combinations of
-$\lambda_{OD}$-$\lambda_{E}$, where $\lambda_{OD}$ varies from $0.01$ to
-$0.09$, and $\lambda_{E}$ varies from $0.1$ to $1$
+It trains and evaluates our model on the Adult dataset for 64 different
+combinations of $\lambda_{OD}$-$\lambda_{E}$, where $\lambda_{OD}$ varies from
+$0.01$ to $0.09$, and $\lambda_{E}$ varies from $0.1$ to $1$ and for 64
+different combinations of $\gamma_{OD}$-$\gamma_{E}$ where $\gamma_{OD}$ varies
+from $1$ and $2$ and $\gamma_{E}$ varies from $0.8$ to $1.7$. The results were
+produced for 5 different random seeds, and were saved in files formatted as:\\
+=sensitivity&<dataset-name>&lambda_entropy=<value0>_lambda_od=<value1>&<seed>.json=
+and\\
+=sensitivity&<dataset-name>&gamma_entropy=<value0>_gamma_od=<value1>&<seed>.json=. To
+visualize the results, we run
+#+BEGIN_SRC bash
+python scripts/visualize_sensitivity.py --dataset adult
+#+END_SRC
+This stores the produced plot in =FIGURES_DIR/sensitivity.<dataset-name>.png=
+** Table 4 Appendix - Dataset details
+To produce the overview of the dataset details, we run
+#+BEGIN_SRC python
+pythons scripts/show_dataset_details.py
+#+END_SRC
+
 
 
 * tldr
@@ -154,4 +171,6 @@ $0.09$, and $\lambda_{E}$ varies from $0.1$ to $1$
 | Table 3              | =python scripts/run_cifar.py=                         |
 | Figure 1             | =bash scripts/train_and_plot_target_and_sens_accs.sh= |
 | Figure 2             | =bash scripts/all_ablative.sh=                        |
-|                      |                                                       |
+| Figure 3             | =bash scripts/produce_sensitivity_plot.sh=            |
+| Table 4 (Appendix)   | =python scripts/show_dataset_details.py=              |
+| Figure 4 (Appendix)  | =python scripts/show_yaleb_positions.py |

@@ -703,15 +703,12 @@ performance.
 
 # I don't really now what to do with this part, seemed to be a substantial
 # paragraph before but not if we leave those two commented points out perhaps
-\paragraph{Implementation}
-- Little information about given baseline models such as the VAE.
-
-# These two were later resolved so maybe not mention them in the report?
-# - Limited information on how certain losses were backpropagated with a shared
-#   encoder network. (resolved after contact with authors)
-# - Exact implementation of the $\lambda$ decay was not clearly reported
-#  (resolved after contact with authors)
-
+\paragraph{Implementation} There were a few unclear aspects of the model
+implementation that we resolved either by making a choice that seemed logical
+to us, or through contacting the original author. Fo example, there was limited
+information on how certain losses were backpropagated with a shared encoder
+network. Besides this, the implementation of the $\lambda$ decay was not
+clearly reported, these issues were both resolved in contact with the authors.
 
 \paragraph{Hyperparameters}
 The amount of epochs that the model was trained was not reported

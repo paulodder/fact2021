@@ -26,8 +26,8 @@ To train and evaluate a model for any given dataset, we run
 #+BEGIN_SRC sh
 python scripts/train.py --dataset <dataset name>
 #+END_SRC
-where =<dataset name>= is one of =adult=, =german=, =yaleb=, =cifar-10=,
-=cifar-100=. The correct model for the given dataset is loaded by taking the
+where =<dataset name>= is one of =adult=, =german=, =yaleb=, =cifar10=,
+=cifar100=. The correct model for the given dataset is loaded by taking the
 (hyper)parameters specified in [[file:src/defaults.py][src/defaults.py]]. E.g. if we are working with
 =adult= data, the following variable is used to determine all parameters:
 #+BEGIN_SRC python
@@ -111,7 +111,7 @@ bash ablative.sh <dataset name>
 #+END_SRC
 This will run our model on the given dataset for 5 different random seeds for
 each of the possible =--loss_components= values. The results for stored in
-=RESULTS_DIR= in the following format:
+=RESULTS_DIR= in the following format:\\
 =ablative.<dataset_name>.<loss-components>.<seed>.json= and each file contains
 the sensitive and target performance as follows:
 #+BEGIN_SRC text
@@ -120,7 +120,6 @@ the sensitive and target performance as follows:
   "sensitive": <output of classification_report output_dict>
 }
 #+END_SRC
-
 To visualize the results of the ablative study, we run:
 #+BEGIN_SRC python
 python scripts/visualize_ablative.py --dataset <dataset-name>
@@ -134,9 +133,25 @@ To produce the results and plots for all of the datasets, we run:
 #+BEGIN_SRC sh
 bash scripts/all_ablative.sh
 #+END_SRC
-
 Which just runs the =ablative.sh= to produce the results, and subsequently the
 =visualize_ablative.py= for each dataset.
+** Figure 3 - sensitivy analysis
+Figure 3 shows a sensitivy analysis done on the Adult dataset by varying
+$\lambda_{OD}$-$\lambda_{E}$ and $\gamma_{OD}$-$\gamma_{E}$. To produce the
+results for this plot, we run:
+#+BEGIN_SRC bash
+python scripts/sensitivity_analysis.py --dataset adult
+#+END_SRC
+It runs our model on the Adult dataset for 64 different combinations of
+$\lambda_{OD}$-$\lambda_{E}$, where $\lambda_{OD}$ varies from $0.01$ to
+$0.09$, and $\lambda_{E}$ varies from $0.1$ to $1$
 
 
-
+* tldr
+| Listing in our paper | Command to reproduce                                  |
+|----------------------+-------------------------------------------------------|
+| /                    | <                                                     |
+| Table 3              | =python scripts/run_cifar.py=                         |
+| Figure 1             | =bash scripts/train_and_plot_target_and_sens_accs.sh= |
+| Figure 2             | =bash scripts/all_ablative.sh=                        |
+|                      |                                                       |

@@ -108,12 +108,12 @@ aspect of the paper still remained unclear.
 \newpage
 * 1 Introduction
 
-One challenging problem in machine learning is learning representations that
+A challenging problem in machine learning is learning representations that
 are fair with regards to a sensitive attribute present in the original
 samples. A common definition of fairness in this context is that the model's
 output is statistically independent from the sensitive attribute
 \citep{xie2017controllable, roy2019mitigating, quadrianto2019discovering,
-fairmlbook}. The work of \cite{sarhan2020fairness} proposes a new way to learn
+fairmlbook}. \cite{sarhan2020fairness} proposes a new way to learn
 fair representations that are invariant towards the sensitive attribute, but
 are still useful for the task at hand. The proposed method to achieve this
 invariability is to disentangle the latent representation into independent

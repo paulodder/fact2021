@@ -103,17 +103,12 @@ paper. Code is available [[https://github.com/paulodder/fact2021]].\\
 # attempts to minimize the error of the discriminators. Besides this, we also
 # minimize the amount of sensitive information in the target embeddings.
 ** Results
-For three out of five datasets we achieved similar target
-prediction accuracy....
 We were able to reproduce some of the results of the paper, but a significant
 part of our results was inconsistent with the findings of
 \cite{sarhan2020fairness}. For some of the simpler datasets we found similar
 patterns, but for the more complex tasks the models training became unstable,
 leading to results that varied significantly across random seeds. This made
 reproduction infeasible.
-# For many tasks we were able to reproduce results under a particular random
-# seed, but saw these effects disappear as we averaged our results over multiple
-# random seeds.
 
 ** What was easy and what was difficult
 Conceptually, the paper was interesting and, given some prior knowledge on

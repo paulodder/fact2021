@@ -385,10 +385,12 @@ and as a result we empirically set these to values that seemed to result in
 satisfactory performance. We discuss which hyperparameters we were missing in
 the discussion section, and report all hyperparameters that we used in the
 Appendix.
+
 ** 3.5 Experimental setup and code
 :PROPERTIES:
 :CUSTOM_ID: sec:exp-setup
 :END:
+
 *** Setup Reproducibility
 Our implementation and instructions to run the code are available at
 [[https://github.com/paulodder/fact2021]] (to be cleaned up). The repository
@@ -398,6 +400,7 @@ perform several tasks. All dataset can be downloaded using the
 the ablative study can be ran using =ablative.sh= and the sensitive analysis
 can be performed using =sensitive_analysis.py=. If necessary, =make_fig2.py=
 can be used to make figures, such as \ref{fig:adult_german_yaleb}, of the results.
+
 *** Evaluation
 Evaluation of the embeddings learned by our model is non trivial, as we must
 gather whether the embeddings adequately represent the data for the downstream
@@ -421,6 +424,35 @@ would like the model to be as close to a 'majority classifier' as possible,
 where the model is forced to simply predict the majority label for each data
 row as it has no meaningful information with which to make a prediction about
 the sensitive attribute. Again, we use solely accuracy as evaluation metric.
+
+*** Additional avenues of exploration
+
+For the sake of completeness, we briefly report alternatives that were explored
+but did not yield improved results, and were therefore abandoned. None of the
+features described below were used to generate results.
+
+In order to select the best performing model in order to evaluate, two
+independent selection mechanisms were implemented, but not used in the final
+experiments. One, we attempted to select the best iteration of the FODVAE model
+(over all epochs) by keeping track of the version in which performance was
+best. We first defined performance as train target accuracy (higher is better);
+then, as test target accuracy subtracted by test crossover accuracy (again,
+higher is better). Two, we attemped to select the best iteration of target and
+sensitive predictors during their training, again by tracking based on their
+performance. Here, performance was defined as test target accuracy. However,
+this augmentation was discarded as we were unsure whether this was implemented
+correctly, as results did not improve (even though it should, in theory).
+
+For YaleB, various model architectures were implemented in an attempt to amend
+performance on this dataset. We experimented with variations in the
+dimensionality and number of hidden layers of the encoder and discriminators,
+activation functions (specifically, we tried =Tanh=), and the hyperparameters
+learning rate, max epochs, batch size, $\lambda_{OD}$, $\lambda_{E}$,
+$\gamma_{OD}$, and $\gamma_{E}$.
+
+For CIFAR-10 and CIFAR-100, we experimented with freezing the ResNet-18 encoder
+(with the exception of the final, Linear layer, which was reinitialized), but
+despite faster training, the model's performance did not increase.
 
 ** 3.6 Computational Requirements
 

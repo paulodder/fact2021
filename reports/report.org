@@ -639,7 +639,7 @@ components; and lastly, CIFAR-100 and YaleB results are significantly
 different.  In summary, our ablative study results generally do not exhibit the
 same patterns as those of Sarhan et al.
 
-*** Sensitivity
+*** Sensitivity analysis on Adult
 
 #+ATTR_LATEX: :width 0.8\linewidth :float nil
 #+CAPTION: Target and sensitive accuracies when varying $\lambda_{OD}$ together with $\lambda_E$ (left), and when varying $\gamma_{OD}$ together with $\gamma_E$ (right).

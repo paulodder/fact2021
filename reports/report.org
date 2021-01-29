@@ -17,6 +17,7 @@
 #+LaTeX_HEADER: \usepackage{microtype}      % microtypography
 #+LaTeX_HEADER: \usepackage{multirow}
 #+LaTeX_HEADER: \usepackage{subcaption}
+#+LaTeX_HEADER: \usepackage{bm}
 #+LaTeX_HEADER: \usepackage[dvipsnames]{xcolor}
 #+LaTeX_HEADER: \usepackage[normalem]{ulem}
 #+LaTeX_HEADER: \newif{\ifhidecomments}
@@ -60,43 +61,63 @@
 * Reproducibility Summary
 
 ** Scope of Reproducibility
-The reference work presented the results of various experiments on five
-different datasets. Evaluation of the models preformance was done through
-computing the sensitive prediction accuracy, aswell as the target predictor
-accuracy. We attempt to reproduce these accuracies for all datasets.
+# A challenging problem in machine learning entails learning representations of
+# data that can be used for downstream prediction tasks, yet that are fair with
+# respect to particular sensitive information
+\cite{sarhan2020fairness} propose a method of learning representations that can
+be used in downstream tasks, yet that are independent of certain sensitive
+attributes, such as race or sex. The learned representations can be considered
+"fair" as they are independent of sensitive attributes. The authors report
+results on five different datasets, which most notably include (1) the ability
+of the representations to be used for downstream tasks (target prediction
+accuracy) and (2) the extent to which sensitive information is present in these
+representations (sensitive prediction accuracy).
 
-Besides this, the authors present an ablative study for all datasets, in which
-parts of the loss of the model are left out. Finally, the authors also
-presented a sensitivity analysis, this entailed varying hyperparameters that
-balance the contributions of different aspects of the loss, and observing the
-effects on the final target and sensitivity accuracies.
+In this text we report and compare the obtained results as well as highlight
+any difficulties encountered in reproducing the reference paper by
+\cite{sarhan2020fairness}.
+#  a method of learning
+# representations of data that allow for downstream tasks The reference work
+# presents a method of producing representations of data that are in the results
+# of various experiments on five different datasets. Evaluation of the models
+# performance was done through computing the sensitive prediction accuracy, as
+# well as the target predictor accuracy. We attempt to reproduce these accuracies
+# for all datasets.
+
+# Besides this, the authors present an ablative study for all datasets, in which
+# parts of the loss of the model are left out. Finally, the authors also
+# presented a sensitivity analysis, this entailed varying hyperparameters that
+# balance the contributions of different aspects of the loss, and observing the
+# effects on the final target and sensitivity accuracies.
 
 ** Methodology
-As there was no openly available code base released alongside the paper the aim
-of our work was to re-implement and, as a result, reproduce the reference
-paper. Our codebase is available at [[https://github.com/paulodder/fact2021]]. The
-implemented method combines two encoder networks, one maps input samples to the
-target space, and the other to the sensitive space. Samples from these
-distributions are fed to discriminator networks. We enforce orthogonality
-aswell as disentanglement of the latent distributions, while backpropogating
-losses through the encoder and discriminator that attempts to minimze the error
-of the discriminators. Besides this, we also minimze the amount of sensitive
-information in the target embeddings.
+As there was no openly available code base, we re-implemented the work. We
+included scripts to automatically download the required data, designed the
+dataloaders, and implemented the models as described in the reference
+paper. Code is available [[https://github.com/paulodder/fact2021]].\\
+#  We re-implemented implemented method combines two encoder networks, one maps
+# input samples to the target space, and the other to the sensitive
+# space. Samples from these distributions are fed to discriminator networks. We
+# enforce orthogonality as well as disentanglement of the latent distributions,
+# while backpropogating losses through the encoder and discriminator that
+# attempts to minimize the error of the discriminators. Besides this, we also
+# minimize the amount of sensitive information in the target embeddings.
 ** Results
-In general, we were able to reproduce some of the results of the paper, but
-most of our results were inconsistent with the findings of Sarhan et al. For
-some of the simpeler datasets we found similar patterns and corresponding
-accuracies, but for the more complex tasks the models training became unstable,
-leadning to results that varied significantly across random seeds. This made
+We were able to reproduce some of the results of the paper, but a significant
+part of our results was inconsistent with the findings of
+\cite{sarhan2020fairness}. For some of the simpler datasets we found similar
+patterns, but for the more complex tasks the models training became unstable,
+leading to results that varied significantly across random seeds. This made
 reproduction infeasible.
+
 ** What was easy and what was difficult
-Conceptually, the paper was interesting and, given some prior knowledge on deep
-learning, variational autoencoders and the math involved, it was also relatively
+Conceptually, the paper was interesting and, given some prior knowledge on
+variational autoencoders and the math involved, it was also relatively
 straightforward to understand.
 
 The most difficult aspect of the project was dealing with missing
 information. Many essential implementation details were missing, and there were
-inconsistencies in the pseudo code provided. Resolving these isuess provided
+inconsistencies in the pseudo code provided. Resolving these issues provided
 significant difficulties.
 ** Communication with original authors
 Various emails were exchanged with the original authors, in which we received
@@ -107,70 +128,73 @@ aspect of the paper still remained unclear.
 \newpage
 * 1 Introduction
 
-One challenging problem in machine learning is to learn representations that
-are fair with regards to a sensitive attribute present in the original
-samples. A common definition of fairness in this context is that the model's
-output is statistically independent from the sensitive attribute
+A challenging problem in machine learning is learning representations that are
+fair with regards to a sensitive attribute present in the original samples. A
+common definition of fairness in this context is that the model's output is
+statistically independent from the sensitive attribute
 \citep{xie2017controllable, roy2019mitigating, quadrianto2019discovering,
-fairmlbook}. The work of \cite{sarhan2020fairness} proposes a new way to learn
-fair representations that are invariant towards the sensitive attribute, but
-are still useful for the task at hand. The proposed method to achieve this
+fairmlbook}. \cite{sarhan2020fairness} proposed a new way to learn fair
+representations that are invariant towards the sensitive attribute, but are
+still useful for the task at hand. The proposed method to achieve this
 invariability is to disentangle the latent representation into independent
-target and sensitive representation \citep{locatello2019fairness}. As a proxy
+target and sensitive representations \citep{locatello2019fairness}. As a proxy
 for independence, orthogonality is enforced between these individual
 representations. Furthermore, in order to prevent sensitive information leaking
 into the target representation, the model is trained to learn a target
-representation which is agnostic to the sensitive information, using a maximum
-entropy approach.
+representation which is agnostic to the sensitive information, maximizing the
+entropy of our sensitive attribute given the target representation.
 
 In order to consolidate the claims brought forth in the reference work of this
 report \cite{sarhan2020fairness}, and assess the reproducibility of this work,
-our research attempts to reproduce the achieved results by reimplementing the
-proposed method. The remainder of this report is as follows. In the next
-section, we specify the parts of the original work that we attempt to
-reproduce. In Section 3, we summarize the method as proposed in
-\cite{sarhan2020fairness} that we attempt to reimplement. In Section 4, we
-discuss the results we attain. Finally, in Section 5, we discuss the results,
+our research attempts to reproduce the achieved results by re-implementing the
+proposed method. In the next section, we specify the parts of the original work
+that we attempt to reproduce. In Section 3, we summarize the method as proposed
+by \cite{sarhan2020fairness} that we attempt to reimplement. In Section 4, we
+report the results we attain. Finally, in Section 5, we discuss the results,
 and we analyse the reproducibility of the reference work.
 
 * 2 Scope of reproducibility
+The reference work by \cite{sarhan2020fairness} works towards a method of
+generating embeddings of data useful for downstream tasks, while remaining
+invariant towards a particular (sensitive) feature. The efficacy of this
+proposed method is assessed using two evaluative questions. First, how well can
+the learned target representation be used in the target task? Second, to what
+degree is information which might reveal the sensitive attribute still present
+in the learned target representation?
 
-The reference work by Sarhan et al. works towards a method of generating
-embeddings of data, while remaining invariant towards a particular feature. The
-eficacy of this proposed method is assessed using two evaluative
-questions. First, how well can the learned target representation be used in the
-target task? Second, to what degree is information which might reveal the
-sensitive attribute still present in the learned target representation?
-
-In the reference work, a collection of three single- and two multi-class
+In the reference work, a collection of three binary- and two multi-class
 classification tasks are considered for a total of five classification tasks,
 corresponding to five different datasets. For each of these tasks, a version of
 the proposed model is trained, and evaluated using two metrics: /target
-accuracy/ and a /sensitive accuracy/, which correspond to the two
-aforementioned questions. Both of these accuracies, for each of the five tasks
-at hand, are included in our reproduction.
+accuracy/ and a /sensitive accuracy/. The target accuracy measures how well we
+are able to predict the target attribute based on the produced target
+representation, and the sensitive accuracy measures how well we are able to
+predict the sensitive attribute based on the target representation. Both of
+these accuracies, for each of the five tasks at hand, are included in our
+reproduction.
 
 Furthermore, an ablative study is conducted in the reference work, in which
 specific components of the loss function used to train the model are excluded
-(i.e., ablated), in order to observe the behaviour of the model, and understand
-the role of each of these loss components within the training process. For
-instance, the orthogonality constraint of the learned sensitive and target
-embeddings can be ignored by omitting the relevant loss
-component(s). This ablative study, which entails the evaluation of the impact
-of six unique combinations of loss components, is performed on each of the five datasets,
-and is included in our reproduction.
+(i.e., ablated), in order to observe the behaviour of the model and understand
+the role of each of these loss components within the training process. This
+ablative study, which entails the evaluation of the impact of five unique
+combinations of loss components, is performed on each of the five datasets, and
+is included in our reproduction.
 
 # jpj: could be more clear, this paragraph
 Finally, the authors perform a sensitivity analysis on the hyperparameters that
-weigh the different loss terms. In particular, the final target accuracy and
-sensitivity accuracy are reported as a function of the weight assigned to the
-entropy loss component, and the KL loss component (c.f. Section 3). These
-results are displayed as a heatmap. In similar fashion, an additional heatmap
-is constructed for two hyperparameters that control the decay of these loss terms.
+control the relative importance of two of the loss terms they used. For each
+combination of these hyperparameters, we display the target and sensitive
+accuracy achieved on the produced target embeddings as a heatmap.
+# that
+# weigh the different loss terms. In particular, the final target accuracy and
+# sensitivity accuracy are reported as a function of the weight assigned to the
+# entropy loss component, and the KL loss component (c.f. Section 3). These
+# results are displayed as a heatmap. In similar fashion, an additional heatmap
+# is constructed for two hyperparameters that control the decay of these loss terms.
 
 * 3 Methodology
-
-As the code of the original implementation was not available, it was our goal
+As the code of the original implementation is not available, it is our goal
 to reproduce the method, based on all implementation details expounded in the
 reference work. The essential elements of the model are described in the next
 section.
@@ -182,20 +206,21 @@ input sample. Each sample has an associated target vector $\bm{y} \in
 \mathbb{R}^n$ and an associated sensitive attribute vector $\bm{s} \in
 \mathbb{R}^m$, with $n$ and $m$ classes respectively. The aim is to create two
 latent representations; a target latent representation $\bm{z}_T$ and a
-sensitive latent representation $\bm{z}_S$. The encoder has the following shape:
-The first part of the encoder $f(\bm{x}, \theta)$ can be shared between the target
-and sensitive representation, depending on the dataset. After a data sample
-$\bm{x}$ is fed through said shared encoder, the result is fed through two separate encoders,
-$q_{\theta_T}(\bm{z}_T | \bm{x})$ and $q_{\theta_S}(\bm{z}_S | \bm{x})$, to
-create the target and sensitive representations respectively. The target and
-sensitive encoders are parameterized by $\theta_T$ and $\theta_S$
-respectively. The shared part of the encoder is therefore paramaterized by
-$\theta = \theta_T \cap \theta_S$.
-Each representation is then used as input for the corresponding discriminator,
-either the target discriminator $q_{\phi_T}(\bm{z}_T | \bm{x})$ or the
-sensitive discriminator $q_{\theta_S}(\bm{z}_S | \bm{x})$.
-The encoder and discriminator are trained in supervised fashion to minimize the
-following losses, which combined we call the representation loss:
+sensitive latent representation $\bm{z}_S$. The encoder has the following
+shape: The first part of the encoder n$f(\bm{x}, \theta)$ can be shared between
+the target and sensitive representation, depending on the dataset. After a data
+sample $\bm{x}$ is fed through said shared encoder, the result is fed through
+two separate encoders $q_{\theta_T}(\bm{z}_T | \bm{x})$ and
+$q_{\theta_S}(\bm{z}_S | \bm{x})$, which each output a distribution in the
+latent space from which we sample the target and sensitive representations
+respectively. The target and sensitive encoders are parameterized by $\theta_T$
+and $\theta_S$ respectively. The shared part of the encoder is therefore
+paramaterized by $\theta = \theta_T \cap \theta_S$.  The representations
+$z_{T}$ and $z_{S}$ are then used as input for the target
+($q_{\phi_T}(\bm{z}_T | \bm{x})$) and sensitive ($q_{\theta_S}(\bm{z}_S |
+\bm{x})$) discriminator, respectively. The encoder and discriminator are trained
+in supervised fashion to minimize the following losses, which we call
+the representation losses:
 \begin{align}
 \label{eq:recon-losses}
 \mathcal{L}_{T}(\theta_{T},\phi_{T}) &= KL(p(\bm{y}|\bm{x})\parallel
@@ -206,10 +231,12 @@ q_{\phi_{S}}(\bm{y}|\bm{z}_{S}))
 
 Here $\theta_S^* = \theta_S \backslash \theta$. These losses are effectively
 equal to the cross-entropy between the predicted values for the targets and
-sensitive attributes and their actual values.
+sensitive attributes and their actual values. Note that by backpropagating our
+sensitive representation loss through $\theta_{S}^{*}$, we prevent the shared
+parameters $\theta$ from being updated twice.
 
 To ensure no sensitive info leaking into the target representation, we maximize
-the entropy of the sensitive discriminator given the target representation,
+the entropy of the sensitive attribute given the target representation,
 following \cite{roy2019mitigating, sarhan2020fairness}. This is achieved by
 minimizing
 \begin{equation}
@@ -222,30 +249,39 @@ Last, we want to ensure that there is some level of independence between the
 two representations, i.e., ideally the posterior $p(\bm{z}_T | \bm{x})$ would
 be statistically independent of $p(\bm{z}_S | \bm{x})$. Following
 \cite{sarhan2020fairness} we relax this independence requirement to
-enforcing 1) a disentaglement property and 2) orthogonality between the two
-representations. To enforce these properties, we need to /estimate/ the
-aforementioned posteriors (as they are intractable) using Variational
-Inference. The encoder network will be similar to the encoder of a Variational
-Auto-Encoder (VAE) model \citep{kingma2013auto}, in that it outputs the means $(\bm{\mu}_T,
-\bm{\mu}_S)$ and variances $(\bm{\sigma}_T, \bm{\sigma}_S)$ for both
-representations. To enforce the disentanglement property, we minimize the
-KL-divergence between the output posterior $q_{\theta_T} (\bm{z}_T | \bm{x})$
-and some prior $p (\bm{z}_T)$:
-# jpj: is this indeed the 'disentanglement' property?
+enforcing 1) a disentaglement property (i.e. independence across dimensions)
+and 2) orthogonality between the two representations. To enforce these
+properties, we need to /estimate/ the aforementioned posteriors (as they are
+intractable) using variational inference $\citep{kingma2014autoencoding}$. The
+encoder network is be similar to the encoder of a Variational Auto-Encoder
+(VAE) model $\citep{kingma2013auto}$, in that it outputs the means $(\bm{\mu}_T,
+\bm{\mu}_S)$ and covariance matrix diagonals $(\text{diag}({\bm{\sigma}_T}),
+\text{diag}({\bm{\sigma}_S}))$ for both latent distributions. We enforce
+disentanglement by only computing the diagonals of our covariance matrices and
+we enforce orthogonality by minimizing the KL divergence between each latent
+distribution with its prior, where we initialize the priors with orthogonal
+means:
+# :To enforce disentanglementminimize the
+# KL-divergence between the output posterior $q_{\theta_T} (\bm{z}_T | \bm{x})$
+# and some prior $p (\bm{z}_T)$:
+# # jpj: is this indeed the 'disentanglement' property?
+$\mathcal{L}_{z_{T}}(\theta_{T}) &= KL(q_{\theta_{T}}(\bm{z}_{T} \vert \bm{x})
+\parallel p(\bm{z}_{T}))$ and $\mathcal{L}_{z_{S}}(\theta_{S}) &= KL(q_{\theta_{S}}(\bm{z}_{S} \vert \bm{x}) \parallel p(\bm{z}_{S}))$
+# \begin{align}
+# \label{eq:od-losses}
 
-\begin{align}
-\label{eq:od-losses}
-\mathcal{L}_{z_{T}}(\theta_{T}) &= KL(q_{\theta_{T}}(\bm{z}_{T} \vert \bm{x}) \parallel
-  p(\bm{z}_{T}))
-\end{align}
+# \end{align}
 
 Here $q_{\theta_T} (\bm{z}_T | \bm{x}) = \mathcal{N} (\bm{z}_T | \bm{\mu}_T,
-\text{diag} (\bm{\sigma}_T ^2))$ and $p (\bm{z}_T) = \mathcal{N} (\bm{0} ,
-\bm{I})$. We can construct a similar KL-divergence term for the sensitive
-representations. To enforce the orthogonality between the two representations
-we can make sure that the means of the prior distributions are orthogonal. This
-will indirectly push the posterior distributions to be orthogonal. Besides this
-the priors are both disentangled, thus enforcing disentangled latent distributions.
+\text{diag} (\bm{\sigma}_T ^2))$ and $q_{\theta_S} (\bm{z}_S | \bm{x}) =
+\mathcal{N} (\bm{z}_S | \bm{\mu}_S, \text{diag} (\bm{\sigma}_S ^2))$.
+
+# We can construct a similar KL-divergence term for the sensitive
+# representations. To enforce the orthogonality between the two representations
+# we can make sure that the means of the prior distributions are
+# orthogonal. This will indirectly push the posterior distributions to be
+# orthogonal. Besides this the priors are both disentangled, thus enforcing
+# disentangled latent distributions.
 
 We combine these two loss terms into a single term, which we call the /Orthogonal
 Disentangled/, or /OD/ loss.
@@ -255,40 +291,41 @@ $$
 \mathcal{L}_{z_{S}}(\theta_{S})
 $$
 
-We can use the re-parameterization trick \citep{kingma2013auto} to sample
-from the posterior distribution to obtain the latent representations, which can
-then be fed to the respective discriminators.
+We use the re-parameterization trick \citep{kingma2013auto} to sample from the
+approximated posterior distribution to obtain the latent representations, which
+can then be fed to the respective discriminators.
 
-We combine all of the aforementioned losses and the objective becomes to
-minimize this combined loss:
+All of the aforementioned individual loss terms are further worked out in the
+Appendix. We combine all of them into one loss term and arrive at the following
+objective:
+
 \begin{equation}
 \label{eq:total-loss}
-\underset{\theta_{T},\theta_{S},\phi{T},\phi{S}}{argmin}
+\underset{\theta_{T},\theta_{S},\phi_{T},\phi_{S}}{argmin}
 \mathcal{L}_{T}(\theta_{T},\phi_{T}) +
-\mathcal{L}_{S}(\theta_{S^{*}},\phi_{S}) \lambda_{E}\mathcal{L}_{E}(\theta_{T},
+\mathcal{L}_{S}(\theta_{S^{*}},\phi_{S}) + \lambda_{E}\mathcal{L}_{E}(\theta_{T},
 \phi_{S})  + \lambda_{OD}\mathcal{L}_{OD}(\phi_{T},\phi_{S})
 \end{equation}
 
-Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
-entropy loss respectively. Additionally, we introduce two decay parameters,
-$\gamma_{OD}$ and $\gamma_{E}$ which allows us to change the weights of the
-aforementioned losses while training. The OD loss weight at epoch $t$ during
-training will be calculated as follows:
+Here $\lambda_{OD}$ and $\lambda_E$ determine the relative importance of the OD
+loss and the entropy loss respectively. Additionally, we use two decay
+parameters, $\gamma_{OD}$ and $\gamma_{E}$ which allows us to change the
+weights of the aforementioned losses while training. The OD loss weight at
+epoch $t$ during training will be calculated as follows:
 \begin{equation}
 \lambda_{OD}^{(t)} = \lambda_{OD}^{(0)} \gamma_{OD}^{t/t_s}
 \end{equation}
-Here $t_s$ is the so-called /step-size/ parameter, and $\lambda_{OD} is the
-initial OD loss weight. The maximum entropy loss weight will be computed in the
-same way. $\lambda_{OD}^{(0)}, \lambda_{E}^{(0)}, \gamma_{OD},
-\gamma_{E}$ and $t_s$ are all hyperparamters that we need to set. More
-information on those will follow.
+Here $t_s$ is the so-called /step-size/ parameter, and $\lambda_{OD}$ is the
+initial OD loss weight. The entropy loss weight will be computed in the same
+way. $\lambda_{OD}^{(0)}, \lambda_{E}^{(0)}, \gamma_{OD}, \gamma_{E}$ and $t_s$
+are all hyperparameters that we need to set.
 
 ** 3.2 Datasets
-In order to reproduce the results obtained by Sarhan et al. it was necessary to
-apply the model to five datasets. Below, we outline some basic properties of
-the datasets and we explain the sensitive and target attributes that are to be
-modelled. For detailed information about the datasets such as train/test
-splits, number of samples and dimensions we refer to Table
+In order to reproduce the results obtained by \cite{sarhan2020fairness} it was
+necessary to apply the model to five datasets. Below, we outline some basic
+properties of the datasets and we explain the sensitive and target attributes
+that are to be modeled. For detailed information about the datasets such as
+train/test splits, number of samples and dimensions we refer to Table
 \ref{tab:data_details} in the Appendix.
 
 *** Tabular data
@@ -306,10 +343,9 @@ task is to classify rows as having good or bad credit risk. Similar to the
 Adult dataset, the sensitive attribute is gender.
 
 *** YaleB data
-
 The Extended YaleB dataset was collected from the University of Toronto
 computer science department website \cite{georghiades2000few}. Specifically,
-the `Cropped'version of the dataset was used \citep{KCLee05}, which contains
+the `Cropped` version of the dataset was used \citep{KCLee05}, which contains
 grayscale images of 38 human faces under different lighting conditions. The
 task is to identify to which of the 38 humans an image corresponds. We
 constructed a sensitive attribute by clustering the illumination conditions
@@ -317,9 +353,9 @@ into 5 clusters loosely corresponding to top left, bottom left, top right,
 bottom right and center. We defined these classes ourselves as we were unable
 to find detailed information on how this was done in the study by Sarhan et
 al. More details about the clustering of the illumination conditions can be
-found in the Appendix. Not that our majority class is not in line with the
+found in the Appendix. Note that our majority class is not in line with the
 paper by Sarhan et al, who mention that a majority class classifier could
-attain 50\% accuracy, in our case this is around 50\%. Unfortunately, we were
+attain 50\% accuracy, in our case this is around 35\%. Unfortunately, we were
 unable to find sufficient information to be able to replicate the ratios
 mentioned in the reference paper, and instead constructed our own sensitive
 attributes.
@@ -332,7 +368,6 @@ only 1096. The reason for this is unclear, as we used the full dataset, and
 found no mention of the omission of certain images in the reference paper.
 
 *** CIFAR data
-
 The CIFAR-10 and CIFAR-100 datasets were also collected from the University of
 Toronto computer science department website \citep{georghiades2000few}. CIFAR-10
 consists of colour images that are divided into 10 classes such as
@@ -351,7 +386,8 @@ attribute, while its fine class is used as the sensitive attribute.
 
 Following the paper of \cite{sarhan2020fairness}, we implement the following
 networks for the several datasets. Note that, for every MLP mentioned below,
-ReLU's are used as (non-final) activation functions.
+ReLU's are used as (non-final) activation functions. For the CIFAR-10 and CIFAR-100 tasks, the
+encoder used was the ResNet-18 architecture \citep{he2016identity}.
 
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
@@ -382,45 +418,83 @@ and as a result we empirically set these to values that seemed to result in
 satisfactory performance. We discuss which hyperparameters we were missing in
 the discussion section, and report all hyperparameters that we used in the
 Appendix.
+
 ** 3.5 Experimental setup and code
 :PROPERTIES:
 :CUSTOM_ID: sec:exp-setup
 :END:
+
 *** Setup Reproducibility
 Our implementation and instructions to run the code are available at
-[[https://github.com/paulodder/fact2021]] (to be cleaned up). The repository
-contains a folder =scripts= that contains all the scripts necessary to
-perform several tasks. All dataset can be downloaded using the
-=get_all.sh= script. The model can be trained and evaluated using =train.py=,
-the ablative study can be ran using =ablative.sh= and the sensitive analysis
-can be performed using =sensitive_analysis.py=. If necessary, =make_fig2.py=
-can be used to make figures, such as \ref{fig:adult_german_yaleb}, of the results.
+[[https://github.com/paulodder/fact2021]]. The repository contains a folder
+=scripts= that contains all the scripts necessary to perform several tasks. All
+instructions for setting up are in the =README= and instructions for
+reproducing any of the numbers or figures reported in this text can be found in
+=produce_results.pdf= in the aforementioned repository.
+# The model can be trained and evaluated using =train.py=, the ablative
+# study can be ran using =ablative.sh= and the sensitive analysis can be
+# performed using =sensitive_analysis.py=. If necessary, =make_fig2.py= can be
+# used to make figures, such as \ref{fig:adult_german_yaleb}, of the results.
+
 *** Evaluation
 Evaluation of the embeddings learned by our model is non trivial, as we must
 gather whether the embeddings adequately represent the data for the downstream
-task (e.g. classification), while also ensuring that the embeddings contain no
-sensitive information. In order to quantitively evaluate our model after
-completing training, we train two classifiers. These classifiers use the test
-data that is embedded using our trained model in the target space.
+task (e.g. classification of target attribute), while also ensuring that the
+embeddings contain no sensitive information. In order to quantitively evaluate
+our model after completing training, we train two classifiers. These
+classifiers use the test data that is embedded using our trained model in the
+target space.
 
 The first classifier, known as the /target predictor/ is trained to predict the
 target label from the target embeddings. In accordance with the reference
-paper, we evaluated the target predictor using accuracy as metric. It is
-desirable that the target predictor performs as well as possible, as this means
-that the target embeddings embed the information necessary for the downstream
-task well.
+paper, we evaluated the target predictor using accuracy as metric. The details
+of the target predictors used are reported in Table \ref{tab:preds} in the
+Appendix. It is desirable that the target predictor performs as well as
+possible, as this means that the target embeddings embed the information
+necessary for the downstream task well.
 
 The second classifier, known as the /sensitive predictor/ is trained to predict
-the sensitive attribute from the target label. It is desirable that this
-classifier preforms poorly, as we would like there to be no information
-pertaining to the sensitive attribute in our target embedding. As such, we
-would like the model to be as close to a 'majority classifier' as possible,
-where the model is forced to simply predict the majority label for each data
-row as it has no meaningful information with which to make a prediction about
-the sensitive attribute. Again, we use solely accuracy as evaluation metric.
+the sensitive attribute from the target representation. For the sensitive
+predictor we use the exact same architecture and hyperparameters as for the
+sensitive discriminator. It is desirable that this classifier performs
+poorly, as we would like there to be no information pertaining to the sensitive
+attribute in our target embedding. As such, we would like the model to be as
+close to a 'majority classifier' as possible, where the model is forced to
+simply predict the majority label for each data row as it has no meaningful
+information with which to make a prediction about the sensitive
+attribute. Again, we use solely accuracy as evaluation metric.
+
+*** Additional avenues of exploration
+For the sake of completeness, we briefly report alternatives that were explored
+but did not yield improved results, and were therefore abandoned. None of the
+features described below were used to generate results.
+
+In order to select the best performing model to evaluate, two independent
+selection mechanisms were implemented, but not used in the final
+experiments. (1) We attempted to select the best iteration of the proposed
+model (over all epochs) by keeping track of the version in which performance
+was best. We first defined performance as train target accuracy (higher is
+better). Later, to also take into account the extent of sensitive information
+leakage in the target representations, we also included the accuracy of
+predicting sensitive attributes based on target representations. (2) we
+attempted to select the best iteration of target and sensitive predictors
+during their training, again by tracking based on their performance. Here,
+performance was defined as test target accuracy. However, this augmentation was
+discarded as we were unsure whether this was implemented correctly, as results
+did not improve (even though it should, in theory).
+
+For YaleB, various model architectures were implemented in an attempt to amend
+performance on this dataset. We experimented with variations in the
+dimensionality and number of hidden layers of the encoder and discriminators,
+activation functions (specifically, we tried =Tanh=), and the hyperparameters
+learning rate, max epochs, batch size, $\lambda_{OD}$, $\lambda_{E}$,
+$\gamma_{OD}$, and $\gamma_{E}$.
+
+For CIFAR-10 and CIFAR-100, we experimented with freezing the ResNet-18 encoder
+(with the exception of the final, Linear layer, which was reinitialized), but
+despite faster training, the model's performance did not increase.
 
 ** 3.6 Computational Requirements
-
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
 \caption{The average run-time for each of the five datasets and their configurations.}
@@ -437,7 +511,7 @@ Number of epochs & 2 & 15 & 30 & 30 & 55 & -\\
 
 We used Google Colab Pro to train our models, which supplies one =Tesla
 V100-SXM2-16GB= GPU, and 2 =Intel(R) Xeon(R) CPU @ 2.00GHz= CPUs. Average
-run-times are specified in Table \ref{computational_detail} In order to train
+run-times are specified in Table \ref{tab:computational_details}. In order to train
 all models over various seeds for all results, this would be the estimated
 required run-time:
 $$
@@ -449,13 +523,12 @@ $$
 # - sensitivity: (8 ** 2) * 5 * (adult)
 
 * 4 Results
-
-In order to judge the reproducibility of the model proposed by
+To judge the reproducibility of the model proposed by
 \cite{sarhan2020fairness}, we compare their results with those results we were
 able to attain using our implementation. First, we compare target and sensitive
 accuracy attained by training and evaluating the proposed model on each of the
-five datasets. Second, we compare the ablative study with the ablative study of
-Sarhan et al. Finally, we make the same comparison for the sensitive study.
+five datasets. Second, we compare the results of the ablative study. Finally,
+we make the same comparison for the sensitive study.
 
 ** 4.1 Results reproducing original paper
 
@@ -470,7 +543,7 @@ Sarhan et al. Finally, we make the same comparison for the sensitive study.
       \hline
       \multirow{2}{*}{} & \multicolumn{2}{c|}{CIFAR-10} & \multicolumn{2}{c}{CIFAR-100} \\
       \hline
-      & Target Acc. \uparrow & Sensitive Acc. \downarrow & Target Acc. \uparrow & Sensitive Acc. \downarrow \\
+                        & Target Acc. \uparrow & Sensitive Acc. \downarrow & Target Acc. \uparrow & Sensitive Acc. \downarrow \\
       \hline
       Sarhan et al. & 0.9725 & 0.1907 & 0.7074 & 0.1447 \\
       Ours & 0.9582 & 0.3462 & 0.0500 & 0.0100 \\
@@ -480,15 +553,15 @@ Sarhan et al. Finally, we make the same comparison for the sensitive study.
 \end{table}
 
 While we have been able to reproduce the CIFAR-10 target accuracy attained by
-Sarhan et al., the CIFAR-10 sensitive accuracy we attained is
-substantially higher than theirs, as displayed in Table \ref{tab:table1}. As
-for the CIFAR-100 dataset, our results strongly differed from those reported by Sarhan et al.,
-as our model was not able to learn a representation that carried meaningful
-information, resulting in target and sensitive accuracies that are equal to
-accuracies attained by majority vote (see Table \ref{tab:table1}).
+Sarhan et al., the CIFAR-10 sensitive accuracy we attained is substantially
+higher than theirs, as displayed in Table \ref{tab:table1}. As for the
+CIFAR-100 dataset, our results strongly differed from those reported by Sarhan
+et al., as our model was not able to learn a representation that carried
+meaningful information, resulting in target and sensitive accuracies that are
+equal to accuracies attained by majority vote (see Table \ref{tab:table1}).
 #+END_EXPORT
 
-*** Adult, YaleB, and German
+***  Adult, YaleB, and German
 
 #+BEGIN_EXPORT latex
 \begin{figure}
@@ -535,32 +608,39 @@ accuracies attained by majority vote (see Table \ref{tab:table1}).
          \label{fig:yaleb_sens}
      \end{subfigure}
 
-     \caption{Performance of the proposed model, together
-     with majority label classifier (denoted by the horizontal dashed line) and various
-     other models for Adult, German, and YaleB datasets, compared between Sarhan et al. and our reproduction. The bars denoted by X correspond to direct use of the
-input data for our target prediction. Furthermore, a VAE was trained on the
-Adult and German datasets using MSE loss as reconstruction loss, and the
-accuracies denoted with `VAE' correspond to the performance achieved by target
-and sensitive predictors trained on these VAE embeddings as input features. For
-YaleB, Logistic Regression was also performed on the raw data to predict the
-sensitive and target attributes, whose performance is denoted by `LR'.}
+     \caption{Performance of the proposed model, together with majority label
+       classifier (denoted by the horizontal dashed line) and various other
+       models for Adult, German, and YaleB datasets, compared between Sarhan et
+       al. and our reproduction. The bars denoted by X correspond to direct use
+       of the input data for our target prediction. Furthermore, a VAE was
+       trained on the Adult and German datasets using MSE loss as
+       reconstruction loss, and the accuracies denoted with `VAE' correspond to
+       the performance achieved by target and sensitive predictors trained on
+       these VAE embeddings as input features. For YaleB, Logistic Regression
+       was also performed on the raw data to predict the sensitive and target
+       attributes, whose performance is denoted by `LR'.}
      \label{fig:adult_german_yaleb}
 \end{figure}
 
-Note that for the following results, we focus on the comparison between performances of the proposed models. We have included a comparison of the alternative models in Figure \ref{fig:adult_german_yaleb} mainly to be able to investigate discrepancies in our reimplementation outside of the proposed method itself (e.g. significant differences in the dataset definition, pre-processing, et cetera).
+Note that for the following results, we focus on the comparison between
+performances of the proposed models. We have included a comparison of the
+alternative models in Figure \ref{fig:adult_german_yaleb} mainly to be able to
+investigate discrepancies in our reimplementation outside of the proposed
+method itself (e.g. significant differences in the dataset definition,
+pre-processing, et cetera).
 
 Our results for Adult, as displayed in Figure \ref{fig:adult_german_yaleb}, are
 similar to those obtained by \cite{sarhan2020fairness}, with the only
 difference being a small increase in our sensitive accuracy with regards to
-theirs.
-As for German, we observe similar, yet not identical, target and
+theirs.  As for German, we observe similar, yet not identical, target and
 sensitive accuracies. We have to note that for runs during training with
-certain random seeds, a target accuracy was obtained that was identical to the $76\%$
-reported by Sarhan et al.; however, over multiple runs, we obtain a lower
-accuracy around $73\%$ (see Figure \ref{fig:adult_german_yaleb}).
-For YaleB, we were not able to reproduce the accuracies reported by Sarhan et al. Instead,
-our model achieved a lower target accuracy, and a sensitive accuracy which is further away from the majority label classifier, suggesting that our model's
-performance was worse than that of Sarhan et al.
+certain random seeds, a target accuracy was obtained that was identical to the
+$76\%$ reported by Sarhan et al.; however, over multiple runs, we obtain a
+lower average accuracy around $73\%$ (see Figure \ref{fig:adult_german_yaleb}).
+For YaleB, we were not able to reproduce the accuracies reported by Sarhan et
+al. Instead, our model achieved a lower target accuracy, and a sensitive
+accuracy which is further away from the majority label classifier, suggesting
+that our model's performance was worse than that of Sarhan et al.
 #+END_EXPORT
 
 *** Ablative
@@ -619,14 +699,23 @@ performance was worse than that of Sarhan et al.
          \label{fig:ablative_yaleb}
      \end{subfigure}
 
-     \caption{Target and sensitive accuracies of our model trained using various combinations of loss term components, results are averaged over 5 random seeds. Specifically, Entropy refers to the $\mathcal{L}_E$ component, Orth refers to the orthogonality constraint between the prior means, and KL refers to the $\mathcal{L}_{OD}$ component (c.f. \cite{sarhan2020fairness}).}
+     \caption{Target and sensitive accuracies of our model trained using
+       various combinations of loss term components, results are averaged over
+       5 random seeds. Specifically, Entropy refers to the $\mathcal{L}_E$
+       component, Orth refers to the orthogonality constraint between the prior
+       means, and KL refers to the $\mathcal{L}_{OD}$ component
+       (c.f. \cite{sarhan2020fairness}).}
      \label{fig:ablative}
 \end{figure}
 #+END_EXPORT
 
-The results of our ablative study are shown in Figure \ref{fig:ablative}, which can be compared with the ablative study of Sarhan et al. in Figure \ref{fig:sarhan_ablative} in Appendix B.
-The baseline measurement was omitted as it was unclear from the text what it
-entailed.
+The results of our ablative study are shown in Figure \ref{fig:ablative}, which
+can be compared with the ablative study of Sarhan et al. in Figure
+\ref{fig:sarhan_ablative} in Appendix B. As a discussion of the potential
+implications of the various combinations explored in this ablative study forego
+the scope of this paper, we refer to \cite{sarhan2020fairness} for a detailed
+overview. The baseline measurement was omitted as it was unclear from the text
+what it entailed.
 
 In comparison to Sarhan et al., for German, we see that varying loss
 components seems to have less impact on performance; for Adult, we see similar
@@ -634,21 +723,31 @@ invariability for target accuracy but a lower impact on sensitive accuracy; for
 CIFAR-10, we observe a larger variance in performance over seeds and loss
 components; and lastly, CIFAR-100 and YaleB results are significantly
 different.  In summary, our ablative study results generally do not exhibit the
-same patterns as those of Sarhan et al.
+same patterns as those of Sarhan et al. This may, however, be attributed to our
+use of random seed averaging.
 
-
-*** Sensitivity
+*** Sensitivity analysis on Adult
 
 #+ATTR_LATEX: :width 0.8\linewidth :float nil
 #+CAPTION: Target and sensitive accuracies when varying $\lambda_{OD}$ together with $\lambda_E$ (left), and when varying $\gamma_{OD}$ together with $\gamma_E$ (right).
 #+label: fig:sensitive_adult
-[[file:../figures/sensitive.adult.png]]
+[[file:../figures/sensitivity.adult.png]]
 
 The results of our sensitivity study are shown in Figure
 \ref{fig:sensitive_adult}, which can be compared with the sensitivity study of
 Sarhan et al. in Figure \ref{fig:sarhan_sensitive_adult} in Appendix B.
 
-<<TODO>>
+When comparing these sensitivity analyses, it can easily be observed that there
+is very little in common between the two. First off, there is, for each
+subfigure, a sizeable difference in the accuracy ranges. This difference is in
+line with differences encountered in Figures \ref{fig:adult_target} and
+\ref{fig:adult_sens}. More importantly, however, there is very little
+similarity to be found in any of the accuracy landscapes displayed, with peaks
+and valleys located in different places. In the reference sensitivity analysis,
+these landscapes are smooth. However, this is also not reflected in our
+sensitivity analysis. Note that the smoothness of the reference sensitivity
+analysis might be visually exaggerated due to a relatively low number of
+coordinate samples compared to ours.
 
 * 5 Discussion
 The claim of the original authors are as follows: by disentangling the latent
@@ -664,14 +763,14 @@ the proposed model is able to create representations that perform well on the
 target task (i.e. attains a high target accuracy), while it performs poorly in
 the inference of the sensitive attribute using the target representation
 (i.e. attains a sensitive accuracy close to the accuracy of majority
-voting). When looking at our results, we observe that this is indeed the case for the
-German dataset. However, for the Adult and CIFAR-10 datasets, the attained
-sensitive accuracy is substantially higher than the majority vote baseline; and
-for the CIFAR-100 and YaleB datasets, the model does not achieve a satisfactory
-performance in terms of target accuracy; and so, results from these four
-datasets do not appear to support the original claim of the authors. Likewise,
-those patterns that the authors observe in their ablative studies are not found
-back in our own ablative studies.
+voting). When looking at our results, we observe that this is indeed the case
+for the German dataset. However, for the Adult and CIFAR-10 datasets, the
+attained sensitive accuracy is substantially higher than the majority vote
+baseline; and for the CIFAR-100 and YaleB datasets, the model does not achieve
+a satisfactory performance in terms of target accuracy; and so, results from
+these four datasets do not appear to support the original claim of the
+authors. Likewise, those patterns that the authors observe in their ablative
+studies are reproduced in our own ablative studies.
 
 This means that there is a discrepancy between our results and the original
 results from \cite{sarhan2020fairness}. Thus, when considering the large effort
@@ -687,37 +786,33 @@ intuitively. Additionally, all loss terms are well described and were therefore
 easy to implement.
 
 ** 5.2 What was difficult
-\paragraph{Performance fluctuations and training instability}
-One of the issues we ran into is that for these models training seems to be unstable,
-which is evident from the high fluctuation in performance when we vary the
-random seed or the  number of maximum epochs. (Reflected in high variance in
-results also?) This is not addressed in the paper and therefore there is no
-information on how to deal with it. To add to this, it was unclear what
-trade-off between target and sensitive accuracy was used by the authors to
-select the best model during training. This trade-off ultimately determines
-which model is selected for testing which can have a large influence on
-performance.
+\paragraph{Performance fluctuations and training instability} One of the issues
+we ran into is that for these models training seems to be unstable, which is
+evident from the high fluctuation in performance when we vary the random seed
+or the number of maximum epochs. This is not addressed in the paper and
+therefore there is no information on how to deal with it. To add to this, it
+was unclear what trade-off between target and sensitive accuracy was used by
+the authors to select the best model during training. This trade-off ultimately
+determines which model is selected for testing which can have a large influence
+on performance.
 
-# I don't really now what to do with this part, seemed to be a substantial
-# paragraph before but not if we leave those two commented points out perhaps
 \paragraph{Implementation} There were a few unclear aspects of the model
 implementation that we resolved either by making a choice that seemed logical
-to us, or through contacting the original author. Fo example, there was limited
-information on how certain losses were backpropagated with a shared encoder
-network. Besides this, the implementation of the $\lambda$ decay was not
-clearly reported, these issues were both resolved in contact with the authors.
+to us, or through contacting the original author. For example, there was
+limited information on how certain losses were backpropagated with a shared
+encoder network. Besides this, the implementation of the $\lambda$ decay was
+not clearly reported, these issues were both resolved in contact with the
+authors.
 
-
-\paragraph{Hyperparameters}
-The amount of epochs that the model was trained was not reported
-in either the paper or its supplementary material. This was quite an important
-value given that no explicit stopping criterion was mentioned, either. In
-correspondene with Sarhan, we were able to set values for the step_size
-hyperparameter that correspond to those used by the original team. Furthermore,
-amongst the not reported hyperparameters were those involved the training of
-the MLP target and sensitive predictors. These include the optimizer used, the
-learning rate, weight decay, amount of epochs aswell as the nonlinearities, to name a
-few.
+\paragraph{Hyperparameters} The amount of epochs that the model was trained was
+not reported in either the paper or its supplementary material. This was quite
+an important value given that no explicit stopping criterion was mentioned
+either. In correspondene with Sarhan, we were able to set values for the
+=step_size= hyperparameter that correspond to those used by the original
+team. Furthermore, amongst the not reported hyperparameters were those involved
+the training of the network-based target and sensitive predictors. These
+include the optimizer used, the learning rate, weight decay, amount of epochs
+as well as the nonlinearities, to name a few.
 
 \paragraph{Dataset details}
 As mentioned in YaleB paragraph of the Datasets section we have made a number
@@ -734,24 +829,110 @@ We have had the pleasure of communicating with the original authors of the
 paper. This helped getting our hands on some additional hyperparameters, such
 as the stepsize $t_s$ and the dimensions of the latent representations for some
 datasets, to name a few. Furthermore, we got insight in some implementation
-details, such as how the loss weights $\labmda_{OS}$ and $\lambda_E$ are
+details, such as how the loss weights $\labmda_{OS}$ and $\lambda_{E}$ are
 updated and how the losses are backpropagated when dealing with a shared
 encoder network. The authors were going to give us extra information on the
 YaleB dataset specifically, but we were not able to receive said information in
 time.
 
 ** 5.4 Our approach
-Due to the large scope of the research preformed in our reference paper, our
+Due to the large scope of the research performed in our reference paper, our
 approach was diverse from the start. Many different avenues were explored from
 the beginning, dataloaders for all of the datasets were implemented and we had
 quickly written code to produce many of the figures necessary to asses the
-reproducibility of the research.  While this meant that we gained a better
-understanding of the models performance and behaviour on all of the datasets
+reproducibility of the research. While this meant that we gained a better
+understanding of the models' performance and behaviour on all of the datasets
 and tasks from the beginning, it was complicated to work on all the tasks and
 datasets simultaneously.
 
 * Appendix
-** A Dataset details
+** A Loss terms derivations
+*** Representation loss
+The representation target loss can be computed as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    \mathcal{L}_{T}(\theta_{T},\phi_{T})
+    &= KL(p(\bm{y}|\bm{x})\parallel q_{\phi_{T}}(\bm{y}|\bm{z}_{T})) \\
+    &= - \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log q_{\phi_T} (\bm{s} | \bm{z}_T)
+    + \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log p(\bm{y} | \bm{x})
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+The second part of this expression solely depends on the true posterior of our
+data and hence does not depend on our neural network. Therefore, we drop it
+here. What remains is equal to the cross-entropy loss:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \label{eq:rep_target_loss}
+\mathcal{L}_{T}(\theta_{T},\phi_{T}) = \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log q_{\phi_T} (\bm{s} | \bm{z}_T)
+\end{equation}
+#+END_EXPORT
+This is the same as the cross-entropy loss over the output of the
+discriminator. The representation sensitive loss can be computed in similar
+fashion.
+*** Maximum Entropy loss
+We can compute the entropy loss as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    \mathcal{L}_{E}(\phi_{S},\theta_{T})
+    &= KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s})) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log \mathcal{U}(\bm{s}) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \log \frac{1}{m} \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    + \log m
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+The second term is a constant and will be the same for every loss no matter the
+network, hence we drop it:
+\begin{equation}
+\label{eq:entropy_loss}
+\mathcal{L}_{E}(\phi_{S},\theta_{T}) = \sum_{\bm{s}}
+q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+\end{equation}
+Note that by dropping the last term, the entropy loss will always be negative.
+*** Orthogonal-Disentangled loss
+We can write out the OD target loss as follows,
+#+BEGIN_EXPORT latex
+\[
+\begin{aligned}
+  \mathcal{L}_{\bm{z}_{T}}(\theta_{T})
+  &= KL(q_{\theta_{T}}(\bm{z}_{T} \vert \bm{x}) \parallel p(\bm{z}_{T})) \\
+  &= - \sum_{i=1}^{d_T} KL(q_{\theta_{T}}z_{T}^i \vert \bm{x}) \parallel p(z_{T}^i))
+\end{aligned}
+\]
+#+END_EXPORT
+because both the prior and the encoder posterior are independent Gaussian distributions, the
+KL divergence between the two is simply a sum over KL divergences between the
+univariate Gaussians $q_{\theta_{T}}(z_{T}^i \vert \bm{x})$ and $p(z_{T}^i)$.
+
+One KL divergence terms can be computed as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    KL(q_{\theta_{T}}(z^i_T \vert \bm{x}) \parallel p(z^i_T))
+    &= - \int q_{\theta_{T}}(z^i_T \vert \bm{x}) \log \frac{q_{\theta_{T}}(z^i_T \vert \bm{x})}
+    {p(z^i_T)} d\bm{x} \\
+    &= \frac{1}{2} \log (2 \pi \sigma_{p_T}^i)
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 (\sigma_{p_T}^i)^2}
+    - \frac{1}{2} (1 + \log 2\pi (\sigma_{q_T}^i)^2) \\
+    &= \log \frac{\sigma_{p_T}^i}{\sigma_{q_T}^i}
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 (\sigma_{p_T}^i)^2}
+    - \frac{1}{2}
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+In practice, we will compute the element-wise KL divergence between the prior
+and posterior and sum over the result. The OD losses therefore require the
+output /means/ and /variances/ of the encoder network and the /prior distributions/
+of the latent variable.
+The OD sensitive loss can be computed in a similar way.
+
+** B Dataset details
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}
@@ -768,7 +949,7 @@ datasets simultaneously.
       \hline
       German  & $1000$ & $4:1$  & $61$ & $68\%$ & $70\%$ \\
       \hline
-      YaleB  & $2433$ & $190:2243$  & $192 \times 168$ & $2.6\%$ & $35\%$ \\
+      YaleB  & $2433$ & $190:2243$  & $192 \times 168$ & $2.7\%$ & $35.6\%$ \\
       \hline
       CIFAR-10  & $60,000$ & $5:1$  & $3 \times 32 \times 32$ & $60\%$ & $10\%$ \\
       \hline
@@ -792,12 +973,11 @@ five-class sensitive attribute. These clusters, as well as the lighting
 positions that are selected for the train partition, are displayed in Figure
 [[fig:yaleb_lighting_positions]].
 
-** B Hyperparameters
+** C Hyperparameters
+
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
-Adam optimzer \citep{kingma2014adam}. For the CIFAR-10 and CIFAR-100 tasks, the
-encoder used was the ResNet-18 architecture \citep{he2016identity}.
-
+Adam optimizer \citep{kingma2014adam}.
 <<TODO>> We should check whether these are in fact the last hyperparameters we used
 
 #+BEGIN_EXPORT latex
@@ -830,7 +1010,7 @@ encoder used was the ResNet-18 architecture \citep{he2016identity}.
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}
-    \caption{The $\lambda_{OD}, \lambda_E, \gamma_{OD}$ and $\gamma_E$ we used in our experiments}
+    \caption{The $\lambda_{OD}, \lambda_E, \gamma_{OD}$ and $\gamma_E$ used for every dataset.}
     \label{tab:hps2}
     \begin{tabular}{l|c|c|c|c}
       \hline
@@ -850,7 +1030,32 @@ encoder used was the ResNet-18 architecture \citep{he2016identity}.
   \end{center}
 \end{table}
 #+END_EXPORT
-** C Ablative and sensitive study results in Sarhan et al. (2020)
+** D Target predictor details
+We have reported the architectures and hyperparameters of the target predictor
+networks in Table \ref{tab:pred}.
+We used the Adam optimizer \citep{kingma2014adam} to optimize all MLP based
+predictor networks.
+#+BEGIN_EXPORT latex
+\begin{table}[h!]
+  \begin{center}
+    \caption{Details of the target predictor network per dataset.}
+    \label{tab:pred}
+    \begin{tabular}{l|c|c|c|c}
+      \hline
+      & Network Type & Hidden Dims & Learning Rate & Weight Decay \\
+      \hline
+      Tabular & Logistic Regression & -  & -  & - \\
+      \hline
+      YaleB   & MLP &  100 & $10^{-3}$ & 0 \\
+      \hline
+      CIFAR   & MLP &  256, 128 & $10^{-3}$ & 0 \\
+      \hline
+    \end{tabular}
+  \end{center}
+\end{table}
+#+END_EXPORT
+
+** E Ablative and sensitive study results in Sarhan et al. (2020)
 
 For ease of comparison, we include two Figures from the reference paper. All
 rights for Figures [[fig:sarhan_ablative]] and [[fig:sarhan_sensitivity_adult]]

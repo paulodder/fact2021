@@ -41,6 +41,11 @@ if __name__ == "__main__":
     df = pd.DataFrame(columns=["target_acc", "sens_acc"])
 
     args = train.parse_args()
+    if args.dataset not in ["cifar10", "cifar100"]:
+        raise ValueError(
+            "Only cifar10 and cifar100 can be ran with this script"
+        )
+
     config = utils.Config(args)
 
     config.dataset = "cifar10"

@@ -37,6 +37,7 @@ def get_config(dataset):
     uniform_dist = lambda mini, maxi, steps=15: {
         "values": [float(n) for n in np.linspace(mini, maxi, steps)]
     }
+
     if dataset == "yaleb":
         params = {
             "lambda_od": uniform_dist(0.0, 1.5, 5),
@@ -46,7 +47,7 @@ def get_config(dataset):
             "step_size": {"value": 30},
             "max_epochs": {"value": 25},
         }
-    if dataset == "cifar100":
+    elif dataset == "cifar100":
         params = {
             "lambda_od": uniform_dist(0.0, 0.3, 5),
             "lambda_entropy": uniform_dist(0.0, 0.3, 5),
@@ -56,6 +57,8 @@ def get_config(dataset):
             "max_epochs": {"value": 80},
             "encoder_lr": {"value": 1e-5},
         }
+    else:
+        raise ValueError("No config defined for this dataset")
     return {
         "name": f"{dataset}_sweep",
         "method": "grid",

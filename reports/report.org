@@ -68,13 +68,14 @@
 be used in downstream tasks like prediction, yet that are independent of
 certain sensitive attributes (like sex). The learned representations can be
 considered "fair" as they are independent of sensitive attributes. The authors
-report results on five different datasets, which most notably include the
-ability of the representations to be used for downstream tasks like prediction
-of relevant attributes and the extent to which sensitive information is present
-in these representations.
+report results on five different datasets, which most notably include (1) the
+ability of the representations to be used for downstream tasks (target
+prediction accuracy) and the extent to which sensitive information is present
+in these representations (sensitive prediction accuracy).
 
-In this text we report the obtained results as well as highlight any difficulties
-encountered in reproducing the reference paper by \cite{sarhan2020fairness}.
+In this text we report and compare the obtained results as well as highlight
+any difficulties encountered in reproducing the reference paper by
+\cite{sarhan2020fairness}.
 #  a method of learning
 # representations of data that allow for downstream tasks The reference work
 # presents a method of producing representations of data that are in the results
@@ -102,6 +103,8 @@ paper. Code is available [[https://github.com/paulodder/fact2021]].\\
 # attempts to minimize the error of the discriminators. Besides this, we also
 # minimize the amount of sensitive information in the target embeddings.
 ** Results
+For three out of five datasets we achieved similar target
+prediction accuracy....
 We were able to reproduce some of the results of the paper, but a significant
 part of our results was inconsistent with the findings of
 \cite{sarhan2020fairness}. For some of the simpler datasets we found similar
@@ -563,7 +566,7 @@ meaningful information, resulting in target and sensitive accuracies that are
 equal to accuracies attained by majority vote (see Table \ref{tab:table1}).
 #+END_EXPORT
 
-*** COMMENT Adult, YaleB, and German
+***  Adult, YaleB, and German
 
 #+BEGIN_EXPORT latex
 \begin{figure}

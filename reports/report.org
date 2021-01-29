@@ -270,6 +270,8 @@ minimize this combined loss:
 \phi_{S})  + \lambda_{OD}\mathcal{L}_{OD}(\phi_{T},\phi_{S})
 \end{equation}
 
+All of the individual loss terms are further worked out in the Appendix.
+
 Here $\lambda_{OD}$ and $\lambda_E$ are weights of the OD loss and the maximum
 entropy loss respectively. Additionally, we introduce two decay parameters,
 $\gamma_{OD}$ and $\gamma_{E}$ which allows us to change the weights of the
@@ -754,7 +756,93 @@ and tasks from the beginning, it was complicated to work on all the tasks and
 datasets simultaneously.
 
 * Appendix
-** A Dataset details
+** A  Loss terms derivations
+*** Representation loss
+The representation target loss can be computed as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    \mathcal{L}_{T}(\theta_{T},\phi_{T})
+    &= KL(p(\bm{y}|\bm{x})\parallel q_{\phi_{T}}(\bm{y}|\bm{z}_{T})) \\
+    &= - \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log q_{\phi_T} (\bm{s} | \bm{z}_T)
+    + \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log p(\bm{y} | \bm{x})
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+The second part of this expression solely depends on the true posterior of our
+data and hence does not depend on our neural network. Therefore, we drop it
+here. What remains is equal to the cross-entropy loss:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \label{eq:rep_target_loss}
+\mathcal{L}_{T}(\theta_{T},\phi_{T}) = \sum_{\bm{y}} p(\bm{y} | \bm{x}) \log q_{\phi_T} (\bm{s} | \bm{z}_T)
+\end{equation}
+#+END_EXPORT
+This is the same as the cross-entropy loss over the output of the
+discriminator. The representation sensitive loss can be computed in similar
+fashion.
+*** Maximum Entropy loss
+We can compute the entropy loss as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    \mathcal{L}_{E}(\phi_{S},\theta_{T})
+    &= KL(q_{\phi_S}(\bm{s}|\bm{z}_{T})\parallel\mathcal{U}(\bm{s})) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log \mathcal{U}(\bm{s}) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    - \log \frac{1}{m} \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \\
+    &= \sum_{\bm{s}} q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+    + \log m
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+The second term is a constant and will be the same for every loss no matter the
+network, hence we drop it:
+\begin{equation}
+\label{eq:entropy_loss}
+\mathcal{L}_{E}(\phi_{S},\theta_{T}) = \sum_{\bm{s}}
+q_{\phi_S}(\bm{s}|\bm{z}_{T}) \log q_{\phi_S}(\bm{s}|\bm{z}_{T})
+\end{equation}
+Note that by dropping the last term, the entropy loss will always be negative.
+*** Orthogonal-Disentangled loss
+We can write out the OD target loss as follows,
+#+BEGIN_EXPORT latex
+\[
+\begin{aligned}
+  \mathcal{L}_{\bm{z}_{T}}(\theta_{T})
+  &= KL(q_{\theta_{T}}(\bm{z}_{T} \vert \bm{x}) \parallel p(\bm{z}_{T})) \\
+  &= - \sum_{i=1}^{d_T} KL(q_{\theta_{T}}z_{T}^i \vert \bm{x}) \parallel p(z_{T}^i))
+\end{aligned}
+\]
+#+END_EXPORT
+because both the prior and the encoder posterior are independent Gaussian distributions, the
+KL divergence between the two is simply a sum over KL divergences between the
+univariate Gaussians $q_{\theta_{T}}(z_{T}^i \vert \bm{x})$ and $p(z_{T}^i)$.
+
+One KL divergence terms can be computed as follows:
+#+BEGIN_EXPORT latex
+\begin{equation}
+  \begin{aligned}
+    KL(q_{\theta_{T}}(z^i_T \vert \bm{x}) \parallel p(z^i_T))
+    &= - \int q_{\theta_{T}}(z^i_T \vert \bm{x}) \log \frac{q_{\theta_{T}}(z^i_T \vert \bm{x})}
+    {p(z^i_T)} d\bm{x} \\
+    &= \frac{1}{2} \log (2 \pi \sigma_{p_T}^i)
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 (\sigma_{p_T}^i)^2}
+    - \frac{1}{2} (1 + \log 2\pi (\sigma_{q_T}^i)^2) \\
+    &= \log \frac{\sigma_{p_T}^i}{\sigma_{q_T}^i}
+    + \frac{(\sigma_{q_T}^i)^2(\mu_{q_T}^i - \mu_{p_T}^i)^2}{2 (\sigma_{p_T}^i)^2}
+    - \frac{1}{2}
+  \end{aligned}
+\end{equation}
+#+END_EXPORT
+In practice, we will compute the element-wise KL divergence between the prior
+and posterior and sum over the result. The OD losses therefore require the
+output /means/ and /variances/ of the encoder network and the /prior distributions/
+of the latent variable.
+The OD sensitive loss can be computed in a similar way.
+
+** B Dataset details
 #+BEGIN_EXPORT latex
 \begin{table}[h!]
   \begin{center}
@@ -795,7 +883,7 @@ five-class sensitive attribute. These clusters, as well as the lighting
 positions that are selected for the train partition, are displayed in Figure
 [[fig:yaleb_lighting_positions]].
 
-** B Hyperparameters
+** C Hyperparameters
 The hyperparameters that we used for our reported results can be found in table
 \ref{tab:hps1} and \ref{tab:hps2}. Note that for all experiments we used the
 Adam optimzer \citep{kingma2014adam}. For the CIFAR-10 and CIFAR-100 tasks, the
@@ -853,7 +941,7 @@ encoder used was the ResNet-18 architecture \citep{he2016identity}.
   \end{center}
 \end{table}
 #+END_EXPORT
-** C Ablative and sensitive study results in Sarhan et al. (2020)
+** D Ablative and sensitive study results in Sarhan et al. (2020)
 
 For ease of comparison, we include two Figures from the reference paper. All
 rights for Figures [[fig:sarhan_ablative]] and [[fig:sarhan_sensitivity_adult]]

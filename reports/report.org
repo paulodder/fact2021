@@ -355,7 +355,7 @@ to find detailed information on how this was done in the study by Sarhan et
 al. More details about the clustering of the illumination conditions can be
 found in the Appendix. Note that our majority class is not in line with the
 paper by Sarhan et al, who mention that a majority class classifier could
-attain 50\% accuracy, in our case this is around 35\%. Unfortunately, we were
+attain 50% accuracy, in our case this is around 35%. Unfortunately, we were
 unable to find sufficient information to be able to replicate the ratios
 mentioned in the reference paper, and instead constructed our own sensitive
 attributes.

@@ -5,6 +5,5 @@ cd $THIS_DIR
 cd ..
 source .env
 cd $CURRENT_DIR
-DATASET=$1
-python $PROJECT_DIR/scripts/sensitivity_analysis.py --dataset $DATASET
-python $PROJECT_DIR/scripts/visualize_sensitivity.py --dataset $DATASET
+python $PROJECT_DIR/scripts/sensitivity_analysis.py --dataset adult
+python $PROJECT_DIR/scripts/visualize_sensitivity.py --dataset adult

@@ -754,9 +754,9 @@ on performance.
 implementation that we resolved either by making a choice that seemed logical
 to us, or through contacting the original author. For example, there was
 limited information on how certain losses were backpropagated with a shared
-encoder network. Besides this, the implementation of the $\lambda$ decay was
-not clearly reported, these issues were both resolved in contact with the
-authors.
+encoder network. Besides this, the implementation of the decay the two
+$\lambda$ parameters was not clearly reported. These issues were both resolved
+in contact with the authors.
 
 \paragraph{Hyperparameters} The amount of epochs that the model was trained was
 not reported in either the paper or its supplementary material. This was quite
@@ -776,7 +776,7 @@ for this datasets.
 We were unsure about some other details concerning the data as well. Namely,
 the type of data-normalization is not specified, and for the German dataset there
 is not a train-test split reported. However, these details were not as vital
-for reproduction as the aforementioned YaleB issue.
+for reproduction as the aforementioned issue concerning the YaleB dataset.
 
 ** 5.3 Communication with original authors
 We have had the pleasure of communicating with the original authors of the
